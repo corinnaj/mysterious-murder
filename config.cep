@@ -1,0 +1,140 @@
+character : type.
+
+old_lady : character.
+young_wife : character.
+husband : character.
+son : character.
+daughter : character.
+daughter_in_law : character.
+maid : character.
+
+place : type.
+object : type.
+
+foyer : place.
+tea_room : place.
+winter_garden : place.
+bedroom : place.
+kitchen : place.
+
+money : object.
+weapon : object.
+
+inside object : place.
+held_by character : place.
+
+atc character place : pred.
+ato object place : pred.
+
+affection character character : pred.
+attraction character character : pred.
+anger character character : pred.
+
+married character character : pred.
+lovers character character : pred.
+related character character : pred.
+not_related character character : pred.
+
+sad	character : pred.
+mad character : pred.
+dead character : pred.
+
+has character object : pred.
+wants character object : pred.
+
+adjacent place place : bwd.
+adjacent foyer tea_room.
+adjacent winter_garden foyer.
+adjacent foyer winter_garden.
+adjacent tea_room foyer.
+adjacent bedroom tea_room.
+adjacent tea_room bedroom.
+adjacent kitchen tea_room.
+adjacent tea_room kitchen.
+
+
+context init =
+{ atc maid kitchen,
+	atc son winter_garden,
+	atc young_wife bedroom,
+	atc husband bedroom,
+	atc old_lady tea_room,
+	atc daughter tea_room,
+	atc daughter_in_law tea_room,
+	ato weapon kitchen,
+	ato weapon winter_garden,
+
+	married husband young_wife, married young_wife husband,
+	married son daughter_in_law, married daughter_in_law son,
+	lovers son young_wife, lovers young_wife son,
+
+	related son daughter, related daughter son,
+	related husband son, related son husband,
+	related daughter son, related son daughter,
+
+	not_related son daughter_in_law, not_related daughter_in_law son,
+	not_related maid son, not_related son maid,
+
+	has husband money,
+	wants daughter_in_law money,
+	wants maid money,
+
+	anger old_lady husband,
+	anger son daughter
+}.
+
+stage play = {
+
+pick_up :
+	$atc C P * ato O P
+	-o has C O.
+
+become_lovers :
+	$attraction P P' * $attraction P' P * $not_related P P' * $not_related P' P
+	-o lovers P P' * lovers P P'.
+
+date :
+	$affection P' P * $affection P P'
+	-o affection P' P * affection P P'.
+
+move :
+	atc C P * adjacent P P'
+	-o atc C P'.
+
+fight :
+	$anger C C'
+	-o anger C' C * anger C C'.
+
+murder_anger :
+	$atc P L * atc P' L * $has P weapon *
+	anger P P' * anger P P' * anger P P'
+	-o !dead P'.
+
+murder_cheating :
+	$atc P L * atc P' L * $has P weapon *
+	$married P P'' * lovers P' P''
+	-o !dead P'.
+
+murder_money :
+	$atc P L * atc P' L * $has P weapon *
+	wants P money * has P' money
+	-o !dead P' * has P money.
+
+get_married_for_love :
+	$affection C C' * $affection C C' * $affection C C' *
+	$affection C' C * $affection C' C * $affection C' C *
+	$not_related C C' * not_related C' C
+	-o married C C'.
+
+grief :
+	affection C C' * dead C'
+	-o sad C.
+
+suicide :
+	sad C * sad C * sad C * sad C * has C weapon
+	-o !dead C.
+
+} #interactive play.
+qui * stage play -o stage auto.
+
+#trace _ play init.
