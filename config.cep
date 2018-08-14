@@ -80,7 +80,11 @@ context init =
 	wants maid money,
 
 	anger old_lady husband,
-	anger son daughter
+	anger son daughter,
+
+	affection son daughter_in_law,
+	affection son husband,
+	affection husband son
 }.
 
 stage play = {
@@ -94,14 +98,16 @@ become_lovers :
 	-o lovers P P' * lovers P P'.
 
 date :
-	$affection P' P * $affection P P'
-	-o affection P' P * affection P P'.
+	$atc C L * $atc C' L *
+	$affection C' C * $affection C C'
+	-o affection C' C * affection C C'.
 
 move :
 	atc C P * adjacent P P'
 	-o atc C P'.
 
 fight :
+	$atc C L * $atc C' L *
 	$anger C C'
 	-o anger C' C * anger C C'.
 
@@ -134,7 +140,6 @@ suicide :
 	sad C * sad C * sad C * sad C * has C weapon
 	-o !dead C.
 
-} #interactive play.
-qui * stage play -o stage auto.
-
-#trace _ play init.
+}
+%% theoretically you should be able to replace _ with a number to limit the steps taken
+#trace _ play init. 
