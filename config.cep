@@ -146,6 +146,7 @@ suicide :
 	sad C * sad C * sad C * sad C * has C weapon
 	-o !dead C.
 
-}
+} #interactive play.
+
 %% theoretically you should be able to replace _ with a number to limit the steps taken
 #trace _ play init. 
