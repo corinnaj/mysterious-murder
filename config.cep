@@ -84,6 +84,7 @@ context init =
 
 	affection son daughter_in_law,
 	affection son husband,
+	affection son daughter,
 	affection husband son
 }.
 
@@ -110,6 +111,11 @@ fight :
 	$atc C L * $atc C' L *
 	$anger C C'
 	-o anger C' C * anger C C'.
+
+make_up :
+	$atc C L * $atc C' L *
+	anger C C' * anger C' C * $affection C C'
+	-o .
 
 murder_anger :
 	$atc P L * atc P' L * $has P weapon *
