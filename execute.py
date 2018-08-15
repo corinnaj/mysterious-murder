@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import signal
 import sys
 import subprocess
 import random
@@ -12,8 +13,9 @@ if len(sys.argv) != 4:
 ceptre = sys.argv[1]
 cep = sys.argv[2]
 steps = int(sys.argv[3])
+num_steps = steps
 
-rule_option_regex = re.compile(r'^\d: \(.+\)')
+rule_option_regex = re.compile(r'^\d+: \(.+\)')
 
 options = []
 
@@ -28,15 +30,20 @@ with subprocess.Popen([ceptre, cep], stdout=subprocess.PIPE, stdin=subprocess.PI
             buf = ''
         elif buf == '?- ':
             steps -= 1
-            if steps == 0:
+            if steps <= 0:
                 proc.stdin.write(b'0\n')
+                proc.stdin.close()
                 print('Finishing simulation')
                 break
             else:
                 option = random.randrange(1, len(options))
-                print('picking ' + options[option])
+                print('%s/%s picking %s (of %s)' % (num_steps - steps, num_steps, options[option].rstrip(), len(options)))
                 proc.stdin.write(b'%s\n' % str(option).encode('utf-8'))
                 proc.stdin.flush()
+                # abort early
+                if ('murder' in options[option]):
+                    print('Murder happened!')
+                    steps = 0
                 options = []
 
 subprocess.run('dot -Tps trace.dot -o trace.ps'.split(' '))
