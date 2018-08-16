@@ -46,5 +46,5 @@ with subprocess.Popen([ceptre, cep], stdout=subprocess.PIPE, stdin=subprocess.PI
                     steps = 0
                 options = []
 
-subprocess.run('dot -Tps trace.dot -o trace.ps'.split(' '))
-subprocess.run('xdg-open trace.ps'.split(' '))
+subprocess.run('dot -Tsvg trace.dot -o trace.svg'.split(' '))
+subprocess.run('xdg-open trace.svg'.split(' '))
