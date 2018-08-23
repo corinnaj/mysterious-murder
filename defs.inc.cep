@@ -1,0 +1,34 @@
+character : type.
+
+old_lady : character.
+young_wife : character.
+husband : character.
+son : character.
+daughter : character.
+daughter_in_law : character.
+maid : character.
+
+object : type.
+
+money : object.
+weapon : object.
+
+existsO object : pred.
+existsC character : pred.
+
+affection character character : pred.
+attraction character character : pred.
+anger character character : pred.
+
+married character character : pred.
+lovers character character : pred.
+related character character : pred.
+not_related character character : pred.
+
+sad	character : pred.
+mad character : pred.
+dead character : pred.
+
+has character object : pred.
+wants character object : pred.
+

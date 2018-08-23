@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+import os
 import random
 
 characters = []
@@ -104,12 +107,17 @@ def print_sym_pred(name, a, b):
     result += ',\n'
     return result
 
-with open('init', 'w') as f:
+def generate_init_context(f):
     f.write('context init = {\n')
     f.write(createCharacters(5));
     f.write(createFamilies())
     f.write(createTraits())
     f.write(createRelationships())
+    f.seek(f.tell() - 3)
+    f.truncate()
     f.write('}.')
 
-print('init created')
+if __name__ == '__main__':
+    with open('init', 'w') as f:
+        generate_init_context(f)
+    print('init created')

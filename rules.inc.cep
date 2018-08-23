@@ -1,0 +1,65 @@
+
+stage play = {
+
+get_weapon :
+	existsO weapon * $existsC C
+	-o has C weapon.
+
+become_lovers :
+	$attraction P P' * $attraction P' P * $not_related P P' * $not_related P' P
+	-o lovers P P' * lovers P P'.
+
+spend_time :
+	$affection C' C * $affection C C'
+	-o affection C' C * affection C C'.
+
+fight :
+	$anger C C'
+	-o anger C' C * anger C C'.
+
+make_up :
+	anger C C' * anger C' C * $affection C C'
+	-o .
+
+murder_anger :
+	$has P weapon *
+	anger P P' * anger P P' * anger P P'
+	-o !dead P'.
+
+murder_cheating :
+	$has P weapon *
+	$married P P'' * lovers P' P''
+	-o !dead P'.
+
+murder_money :
+	$has P weapon *
+	wants P money * has P' money
+	-o !dead P' * has P money.
+
+steal_not_caught :
+	wants C money * has C' money
+	-o has C money.
+
+steal_caught :
+	$wants C money * $has C' money
+	-o anger C' C * anger C' C * anger C' C.
+
+get_married_for_love :
+	$affection C C' * $affection C C' * $affection C C' *
+	$affection C' C * $affection C' C * $affection C' C *
+	$not_related C C' * not_related C' C
+	-o married C C'.
+
+grief :
+	affection C C' * dead C'
+	-o sad C.
+
+suicide :
+	sad C * sad C * sad C * sad C * has C weapon
+	-o !dead C.
+
+} #interactive play.
+
+%% theoretically you should be able to replace _ with a number to limit the steps taken
+#trace _ play init. 
+
