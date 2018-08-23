@@ -5,13 +5,20 @@ import random
 
 characters = []
 
+def createWeapons(amount):
+    result = ''
+    for _ in range(amount):
+        result += print_pred_one('existsO', 'weapon')
+    result += '\n'
+    return result
+
+
 def createCharacters(number):
     result = ''
     for x in range(97, 97 + number):
-        result += 'existsC '
-        result += chr(x)
+        result += print_pred_one('existsC', chr(x))
         characters.append(chr(x))
-        result += ',\n'
+        result += '\n'
     return result
 
 def createFamilies():
@@ -53,6 +60,15 @@ def createRelationships():
             result += print_relationship('anger', r, characters[i], characters[j])
     return result
 
+def createRichPeople():
+    result = ''
+    for c in characters:
+        if random.random() < 0.2:
+            result += print_pred_two('has', c, 'money')
+    result += '\n'
+    return result
+
+
 def print_relationship(name, amount, character1, character2):
     result = ''
     for i in range(0, amount):
@@ -73,21 +89,21 @@ def print_trait_balance(a, b, numA, numB, character):
     result += print_trait(b, numB, character)
     return result
 
-def print_pred_one(name, character):
+def print_pred_one(pred_name, argument):
     result = ''
-    result += name
+    result += pred_name
     result += ' '
-    result += character
+    result += argument
     result += ', '
     return result
 
-def print_pred_two(name, character1, character2):
+def print_pred_two(pred_name, argument1, argument2):
     result = ''
-    result += name
+    result += pred_name
     result += ' '
-    result += character1
+    result += argument1
     result += ' '
-    result += character2
+    result += argument2
     result += ', '
     return result
 
@@ -109,7 +125,9 @@ def print_sym_pred(name, a, b):
 
 def generate_init_context(f):
     f.write('context init = {\n')
-    f.write(createCharacters(5));
+    f.write(createWeapons(2))
+    f.write(createCharacters(5))
+    f.write(createRichPeople())
     f.write(createFamilies())
     f.write(createTraits())
     f.write(createRelationships())
