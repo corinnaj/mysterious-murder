@@ -5,6 +5,76 @@ import random
 
 characters = []
 
+class Character:
+    def __init__(self, name):
+        self.name = name
+        self.related = []
+        self.lovers = []
+        self.married = None
+        self.traits = {}
+        self.relationships = {}
+
+    def random_trait(self, name, opposite_name, max_degree=3):
+        r = random.randrange(max_degree)
+        self.traits[(name, opposite_name)] = (r, max_degree - r)
+
+    def relationship(self, name, towards, degree):
+        self.relationships[name] = (towards, degree)
+
+    def related(self, other):
+        self.related.append(other)
+        other.related.append(self)
+
+    def married(self, other):
+        self.married = other
+        other.married = self
+
+    def lovers(self, other):
+        self.lovers.add(other)
+        other.lovers.add(self)
+
+    def init_to_string(self):
+        rules = ['existsC ' + self.name + ',']
+        if self.married:
+            rules.append('married ' + self.name + ' ' + self.married.name)
+
+        for r in self.related:
+            rules.append('related ' + self.name + ' ' + r.name)
+
+        for trait, degree in self.traits:
+            for _ in range(degree[0]):
+                rules.append(trait[0] + ' ' + self.name)
+            for _ in range(3 - degree[1]):
+                rules.append(trait[1] + ' ' + self.name)
+
+        for relationship, degree in self.relationships:
+            for _ in range(degree):
+                rules.append(relationship[0] + ' ' + self.name + ' ' + relationship[1])
+
+        return ',\n'.join(rules)
+
+    def def_to_string(self):
+        return self.name + ' : character'
+
+def create_characters(count):
+    characters = [Character(chr(97 + n)) for n in range(number)]
+    for i in range(0, count):
+        character = characters[i]
+        for j in range(i + 1, count):
+            if random.random() <0.2:
+                character.related(characters[j])
+            else:
+                rand = random.random()
+                if rand < 0.25 and not character.married:
+                    character.married(characters[j])
+                elif rand < 0.4:
+                    character.lovers(characters[j])
+
+        character.random_trait('naive', 'cunning')
+        character.random_trait('loyal', 'greedy')
+        character.random_trait('sadness', 'happiness')
+        character.random_trait('paranoia', 'safety')
+
 def createCharacters(number):
     result = ''
     for x in range(97, 97 + number):
