@@ -3,14 +3,16 @@
 import os
 import random
 import names
+from rules_generator import Type, Predicate, T_CHARACTER
 
 characters = []
 
-class Character:
-    def __init__(self, name):
+class Character(Type):
+    def __init__(self):
         self.gender = 'male' if random.randrange(2) == 1 else 'female'
         self.full_name = names.get_full_name(gender=self.gender)
         self.name = self.full_name.replace(' ', '_').lower()
+        self.parent = T_CHARACTER
         self.related = []
         self.lovers = []
         self.possessions = []
@@ -70,7 +72,7 @@ class Character:
         return self.name + ' : character.'
 
 def create_characters(count):
-    characters = [Character(chr(97 + n)) for n in range(count)]
+    characters = [Character() for _ in range(count)]
     for i in range(0, count):
         character = characters[i]
         for j in range(i + 1, count):
@@ -90,7 +92,7 @@ def create_characters(count):
     return characters
 
 def generate_init_context(f):
-    characters = create_characters(6)
+    characters = create_characters(5)
     f.write('\n'.join([c.def_to_string() for c in characters]))
     f.write('\n\ncontext init = {\n')
     f.write(',\n'.join([c.init_to_string() for c in characters]))
