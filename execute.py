@@ -20,9 +20,10 @@ num_steps = steps
 #
 rule_option_regex = re.compile(r'^\d+: \(.+\)')
 
-options = []
 
 def start_ceptre(cep_file):
+  global steps, num_steps, ceptre
+  options = []
   print(cep_file)
   with subprocess.Popen([ceptre, cep_file], stdout=subprocess.PIPE, stdin=subprocess.PIPE, bufsize=1) as proc:
     buf = ''

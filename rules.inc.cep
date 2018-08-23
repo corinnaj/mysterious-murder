@@ -52,10 +52,10 @@ get_married_for_love :
 
 grief :
 	affection C C' * dead C'
-	-o sad C.
+	-o sadness C.
 
 suicide :
-	sad C * sad C * sad C * sad C * has C weapon
+	sadness C * sadness C * sadness C * sadness C * has C weapon
 	-o !dead C.
 
 } #interactive play.

@@ -1,12 +1,10 @@
 character : type.
 
-old_lady : character.
-young_wife : character.
-husband : character.
-son : character.
-daughter : character.
-daughter_in_law : character.
-maid : character.
+a : character.
+b : character.
+c : character.
+d : character.
+e : character.
 
 object : type.
 
@@ -25,7 +23,12 @@ lovers character character : pred.
 related character character : pred.
 not_related character character : pred.
 
-sad	character : pred.
+naive character : pred.
+cunning character : pred.
+loyal character : pred.
+greedy character : pred.
+sadness	character : pred.
+paranoia character : pred.
 mad character : pred.
 dead character : pred.
 

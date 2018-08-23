@@ -7,7 +7,7 @@ characters = []
 
 def createCharacters(number):
     result = ''
-    for x in range(65, 65 + number):
+    for x in range(97, 97 + number):
         result += 'existsC '
         result += chr(x)
         characters.append(chr(x))
@@ -16,7 +16,7 @@ def createCharacters(number):
 
 def createFamilies():
     result = ''
-    for i in range(1, len(characters)):
+    for i in range(0, len(characters)):
         for j in range(i + 1, len(characters)):
             if random.random() < 0.2:
                 result += print_sym_pred('related', characters[i], characters[j])
@@ -35,7 +35,7 @@ def createTraits():
         r = random.randrange(3)
         result += print_trait_balance('naive', 'cunning', r, 3 - r, c)
         r = random.randrange(3)
-        result += print_trait_balance('loyal', 'cunning', r, 3 - r, c)
+        result += print_trait_balance('loyal', 'greedy', r, 3 - r, c)
 
         r = random.randrange(3)
         result += print_trait('paranoia', r, c)

@@ -6,3 +6,6 @@ trace.ps
 trace.svg
 
 init
+script.cep
+
+__pycache__
