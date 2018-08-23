@@ -20,6 +20,24 @@ num_steps = steps
 #
 rule_option_regex = re.compile(r'^\d+: \(.+\)')
 
+class StreamMultiplex:
+  def __init__(self, files):
+    self.files = files
+
+  def write(self, message):
+    for f in self.files: f.write(message)
+
+  def flush(self):
+    for f in self.files: f.flush()
+
+  def seek(self, p):
+    for f in self.files: f.seek(p)
+
+  def truncate(self):
+    for f in self.files: f.truncate()
+
+  def tell(self):
+    return self.files[0].tell()
 
 def start_ceptre(cep_file):
   global steps, num_steps, ceptre
@@ -60,7 +78,8 @@ if __name__ == '__main__':
   with open('script.cep', 'w+') as f:
     with open('defs.inc.cep', 'r') as df:
       f.write(df.read())
-    generate_init_context(f)
+    with open('init.inc.cep', 'w+') as init_f:
+      generate_init_context(StreamMultiplex([f, init_f]))
     with open('rules.inc.cep', 'r') as rf:
       f.write(rf.read())
     f.flush()
