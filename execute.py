@@ -55,7 +55,8 @@ def start_ceptre(cep_file):
   subprocess.run('xdg-open trace.svg'.split(' '))
 
 if __name__ == '__main__':
-  with tempfile.NamedTemporaryFile('w+') as f:
+  #with tempfile.NamedTemporaryFile('w+') as f:
+  with open('script.cep', 'w+') as f:
     with open('defs.inc.cep', 'r') as df:
       f.write(df.read())
     generate_init_context(f)
