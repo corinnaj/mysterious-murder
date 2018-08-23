@@ -2,14 +2,18 @@
 
 import os
 import random
+import names
 
 characters = []
 
 class Character:
     def __init__(self, name):
-        self.name = name
+        self.gender = 'male' if random.randrange(2) == 1 else 'female'
+        self.full_name = names.get_full_name(gender=self.gender)
+        self.name = self.full_name.replace(' ', '_').lower()
         self.related = []
         self.lovers = []
+        self.possessions = []
         self.married = None
         self.traits = {}
         self.relationships = {}
@@ -21,27 +25,33 @@ class Character:
     def relationship(self, name, towards, degree):
         self.relationships[name] = (towards, degree)
 
-    def related(self, other):
+    def add_relation(self, other):
         self.related.append(other)
         other.related.append(self)
 
-    def married(self, other):
+    def marry(self, other):
         self.married = other
         other.married = self
 
-    def lovers(self, other):
-        self.lovers.add(other)
-        other.lovers.add(self)
+    def loves(self, other):
+        self.lovers.append(other)
+        other.lovers.append(self)
+
+    def possess(self, obj):
+        self.possessions.append(obj)
 
     def init_to_string(self):
-        rules = ['existsC ' + self.name + ',']
+        rules = ['existsC ' + self.name]
         if self.married:
             rules.append('married ' + self.name + ' ' + self.married.name)
 
         for r in self.related:
             rules.append('related ' + self.name + ' ' + r.name)
 
-        for trait, degree in self.traits:
+        for l in self.lovers:
+            rules.append('lovers ' + self.name + ' ' + l.name)
+
+        for trait, degree in self.traits.items():
             for _ in range(degree[0]):
                 rules.append(trait[0] + ' ' + self.name)
             for _ in range(3 - degree[1]):
@@ -51,143 +61,44 @@ class Character:
             for _ in range(degree):
                 rules.append(relationship[0] + ' ' + self.name + ' ' + relationship[1])
 
+        for possession in self.possessions:
+            rules.append('has ' + self.name + ' ' + possession)
+
         return ',\n'.join(rules)
 
     def def_to_string(self):
-        return self.name + ' : character'
+        return self.name + ' : character.'
 
 def create_characters(count):
-    characters = [Character(chr(97 + n)) for n in range(number)]
+    characters = [Character(chr(97 + n)) for n in range(count)]
     for i in range(0, count):
         character = characters[i]
         for j in range(i + 1, count):
             if random.random() <0.2:
-                character.related(characters[j])
+                character.add_relation(characters[j])
             else:
                 rand = random.random()
                 if rand < 0.25 and not character.married:
-                    character.married(characters[j])
+                    character.marry(characters[j])
                 elif rand < 0.4:
-                    character.lovers(characters[j])
+                    character.loves(characters[j])
 
         character.random_trait('naive', 'cunning')
         character.random_trait('loyal', 'greedy')
-        character.random_trait('sadness', 'happiness')
-        character.random_trait('paranoia', 'safety')
 
-def createCharacters(number):
-    result = ''
-    for x in range(97, 97 + number):
-        result += 'existsC '
-        result += chr(x)
-        characters.append(chr(x))
-        result += ',\n'
-    return result
-
-def createFamilies():
-    result = ''
-    for i in range(0, len(characters)):
-        for j in range(i + 1, len(characters)):
-            if random.random() < 0.2:
-                result += print_sym_pred('related', characters[i], characters[j])
-            else:
-                result += print_sym_pred('not_related', characters[i], characters[j])
-                rand = random.random()
-                if rand < 0.25:
-                    result += print_sym_pred('married', characters[i], characters[j]) 
-                elif rand < 0.4:
-                    result += print_sym_pred('lovers', characters[i], characters[j]) 
-    return result
-
-def createTraits():
-    result = ''
-    for c in characters:
-        r = random.randrange(3)
-        result += print_trait_balance('naive', 'cunning', r, 3 - r, c)
-        r = random.randrange(3)
-        result += print_trait_balance('loyal', 'greedy', r, 3 - r, c)
-
-        r = random.randrange(3)
-        result += print_trait('paranoia', r, c)
-        r = random.randrange(3)
-        result += print_trait('sadness', r, c)
-    return result
-
-def createRelationships():
-    result = ''
-    for i in range(1, len(characters)):
-        for j in range(i + 1, len(characters)):
-            r = random.randrange(3)
-            result += print_relationship('affection', r, characters[i], characters[j])
-            r = random.randrange(3)
-            result += print_relationship('anger', r, characters[i], characters[j])
-    return result
-
-def print_relationship(name, amount, character1, character2):
-    result = ''
-    for i in range(0, amount):
-        result += print_pred_two(name, character1, character2)
-    result += '\n'
-    return result
-
-def print_trait(name, amount, character):
-    result = ''
-    for i in range(0, amount):
-        result += print_pred_one(name, character)
-    result += '\n'
-    return result
-
-def print_trait_balance(a, b, numA, numB, character):
-    result = ''
-    result += print_trait(a, numA, character)
-    result += print_trait(b, numB, character)
-    return result
-
-def print_pred_one(name, character):
-    result = ''
-    result += name
-    result += ' '
-    result += character
-    result += ', '
-    return result
-
-def print_pred_two(name, character1, character2):
-    result = ''
-    result += name
-    result += ' '
-    result += character1
-    result += ' '
-    result += character2
-    result += ', '
-    return result
-
-def print_sym_pred(name, a, b):
-    result = ''
-    result += name
-    result += ' '
-    result += a
-    result += ' '
-    result += b
-    result += ', '
-    result += name
-    result += ' '
-    result += b
-    result += ' '
-    result += a
-    result += ',\n'
-    return result
+        if random.random() < 0.2: character.possess('money')
+    return characters
 
 def generate_init_context(f):
-    f.write('context init = {\n')
-    f.write(createCharacters(5));
-    f.write(createFamilies())
-    f.write(createTraits())
-    f.write(createRelationships())
-    f.seek(f.tell() - 3)
-    f.truncate()
-    f.write('}.')
+    characters = create_characters(6)
+    f.write('\n'.join([c.def_to_string() for c in characters]))
+    f.write('\n\ncontext init = {\n')
+    f.write(',\n'.join([c.init_to_string() for c in characters]))
+    f.write(',\n')
+    f.write(',\n'.join(['existsO weapon' for i in range(random.randrange(1, 5))]))
+    f.write('\n}.\n\n')
 
 if __name__ == '__main__':
     with open('init', 'w') as f:
-        generate_init_context(f)
-    print('init created')
+        write_init_block(f)
+    print('--- init created')

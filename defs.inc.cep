@@ -1,11 +1,5 @@
 character : type.
 
-a : character.
-b : character.
-c : character.
-d : character.
-e : character.
-
 object : type.
 
 money : object.

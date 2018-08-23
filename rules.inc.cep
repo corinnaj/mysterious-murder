@@ -33,15 +33,15 @@ murder_cheating :
 
 murder_money :
 	$has P weapon *
-	wants P money * has P' money
+	$greedy P * $greedy P * has P' money
 	-o !dead P' * has P money.
 
 steal_not_caught :
-	wants C money * has C' money
+	greedy C * has C' money
 	-o has C money.
 
 steal_caught :
-	$wants C money * $has C' money
+	$greedy C * $has C' money
 	-o anger C' C * anger C' C * anger C' C.
 
 get_married_for_love :
