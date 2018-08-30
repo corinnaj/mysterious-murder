@@ -5,9 +5,25 @@ class Simulation:
     def __init__(self, evaluator):
         self.evaluator = evaluator
 
-    def run(self, max_steps=100):
-        for _ in range(max_steps):
-            self.step()
+    def run(self, interactive=False, max_steps=100):
+        if interactive:
+            while True:
+                options = self.evaluator.step()
+                if len(options) < 1:
+                    print('No options, exiting')
+                    break
+
+                print('0: exit')
+                for i in range(len(options)):
+                    print('{}: {}'.format(str(i + 1), str(options[i])))
+                number = int(input('Enter number: '))
+                if number == 0:
+                    break
+                else:
+                    options[number - 1].apply(self.evaluator)
+        else:
+            for _ in range(max_steps):
+                self.step()
 
     def calculate_reward(self):
         pass
@@ -21,6 +37,7 @@ class Simulation:
         for option in options:
             current_prob += option.prob
             if current_prob >= target_prob:
+                print(option)
                 option.apply(self.evaluator)
                 break
 
