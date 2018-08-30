@@ -4,9 +4,10 @@ from unittest.mock import patch
 from src.evaluator import (Evaluator, Predicate, Instance, Rule,
                            PredicateInstance)
 from src.simulation import Simulation
+from . import MyTestCase
 
 
-class SimulationTestCase(unittest.TestCase):
+class SimulationTestCase(MyTestCase):
     @patch('random.randint')
     def test_random_distribution(self, mocked_randint):
         simulation = Simulation(Evaluator(
@@ -17,11 +18,11 @@ class SimulationTestCase(unittest.TestCase):
 
         mocked_randint.return_value = 1
         simulation.step()
-        self.assertIn(PredicateInstance('p1', Instance('a')), simulation.evaluator.state)
-        self.assertNotIn(PredicateInstance('p2', Instance('a')), simulation.evaluator.state)
+        self.assertStateContains(PredicateInstance('p1', Instance('a')), simulation.evaluator)
+        self.assertStateDoesNotContain(PredicateInstance('p2', Instance('a')), simulation.evaluator)
 
         mocked_randint.return_value = 2
         simulation.step()
-        self.assertIn(PredicateInstance('p1', Instance('a')), simulation.evaluator.state)
-        self.assertIn(PredicateInstance('p2', Instance('a')), simulation.evaluator.state)
+        self.assertStateContains(PredicateInstance('p1', Instance('a')), simulation.evaluator)
+        self.assertStateContains(PredicateInstance('p2', Instance('a')), simulation.evaluator)
 

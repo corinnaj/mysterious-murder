@@ -69,7 +69,7 @@ class RuleInstance:
 
 
 class Rule:
-    def __init__(self, name, lhs, rhs, prob=1):
+    def __init__(self, name, lhs, rhs, prob=5):
         self.name = name
         self.lhs = lhs
         self.rhs = rhs
@@ -96,7 +96,7 @@ class Rule:
                     if (instance not in instances and instance.matches(predicate, pairs)):
                         instances.append(instance)
                         found = True
-                        continue
+                        break
                 # if we found one, we can proceed, if we found none, we abort
                 if not found:
                     break

@@ -1,17 +1,9 @@
 import unittest
 from src.evaluator import (Instance, Evaluator, Rule, Predicate, PredicateInstance)
+from . import MyTestCase
 
 
-class EvaluatorTestCase(unittest.TestCase):
-    def assertStateContains(self, search, evaluator):
-        for instance in evaluator.state:
-            if (search.name == instance.name and
-                len(search.actors) == len(instance.actors) and
-                all(search.actors[i] == instance.actors[i]
-                    for i in range(len(search.actors)))):
-                    return True
-        return False
-
+class EvaluatorTestCase(MyTestCase):
     def test_empty_lhs(self):
         eval = Evaluator(
             actors=[Instance('a'), Instance('b')],
