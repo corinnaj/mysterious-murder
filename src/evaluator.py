@@ -103,7 +103,7 @@ class Rule:
                 else:
                     continue
             # if we managed to fill all slots
-            if len(instances) >= len(self.lhs):
+            if len(instances) == len(self.lhs):
                 options.append(self.instance(pairs, instances))
         return options
 

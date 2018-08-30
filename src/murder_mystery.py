@@ -1,5 +1,6 @@
 from evaluator import Predicate as P
-from evaluator import Rule, Evaluator, Instance, PredicateInstance
+from evaluator import Rule, Evaluator
+from state_generator import create_characters
 
 A = 0
 B = 1
@@ -112,10 +113,7 @@ rule('steal_not_caught_N',
     [
          P('anger', B, A)] * 3)
 
-eval = Evaluator(rules=rules, actors=[Instance('a'), Instance('b'), Instance('c'), Instance('d')], state=[
-    PredicateInstance('likes', Instance('a'), Instance('b')),
-    PredicateInstance('likes', Instance('a'), Instance('b')),
-    PredicateInstance('likes', Instance('a'), Instance('b')),
-    PredicateInstance('likes', Instance('a'), Instance('b')),
-])
-print(eval.step())
+if __name__ == '__main__':
+    characters, state = create_characters(4)
+    eval = Evaluator(rules=rules, actors=characters, state=state)
+    print(eval.step())

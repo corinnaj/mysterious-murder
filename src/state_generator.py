@@ -1,6 +1,6 @@
 import names
 import random
-from evaluator import Instance
+from evaluator import Instance, PredicateInstance
 
 
 class StateGenerator:
@@ -9,30 +9,73 @@ class StateGenerator:
 
 class Character(Instance):
     def __init__(self):
-        self.full_name = names.get_full_name(gender=self.gender)
-        super(Instance, self).__init__(self.full_name.replace(' ', '_').lower())
         self.gender = 'male' if random.randrange(2) == 1 else 'female'
+        self.full_name = names.get_full_name(gender=self.gender)
+        # super(Instance, self).__init__(name=self.full_name.replace(' ', '_').lower())
+        self.name = self.full_name.replace(' ', '_').lower()
         self.predicates = []
 
     def random_trait(self, type, opposite_type, max_degree=3):
         r = random.randrange(max_degree)
         for i in range(r):
-            self.predicates.append(type.using(self))
+            self.predicates.append(PredicateInstance(type, self))
         for i in range(max_degree - r):
-            self.predicates.append(opposite_type.using(self))
+            self.predicates.append(PredicateInstance(opposite_type, self))
 
     def add_relative(self, other):
-        self.predicates.append(P_RELATED.using(self, other))
-        self.predicates.append(P_RELATED.using(other, self))
+        self.predicates.append(PredicateInstance('related', self, other))
+        self.predicates.append(PredicateInstance('related', other, self))
 
-    def marry(self, other):
-        self.predicates.append(P_MARRIED.using(self, other))
-        other.predicates.append(P_MARRIED.using(other, self))
+    def mark_not_related(self, other):
+        self.predicates.append(PredicateInstance('not_related', self, other))
+        self.predicates.append(PredicateInstance('not_related', other, self))
 
-    def loves(self, other):
-        self.predicates.append(P_LOVERS.using(self, other))
-        self.predicates.append(P_LOVERS.using(other, self))
+    def married(self, other):
+        self.predicates.append(PredicateInstance('married', self, other))
+        other.predicates.append(PredicateInstance('married', other, self))
 
-    def possess(self, obj):
-        self.predicates.append(P_HAS.using(self, obj))
+    def lovers(self, other):
+        self.predicates.append(PredicateInstance('lovers', self, other))
+        self.predicates.append(PredicateInstance('lovers', other, self))
+
+    def has_money(self):
+        self.predicates.append(PredicateInstance('has_money', self))
+
+    def alignment(self, a):
+        self.predicates.append(PredicateInstance(a, self))
+
+
+def create_characters(count):
+    characters = [create_character() for _ in range(count)]
+    for i in range(count):
+        for j in range(i + 1, count):
+            if random.random() < 0.2:
+                characters[i].add_relative(characters[j])
+            else:
+                characters[i].mark_not_related(characters[j])
+
+            if random.random() < 0.25:
+                characters[i].married(characters[j])
+            elif random.random() < 0.4:
+                characters[i].lovers(characters[j])
+    return (characters, sum([c.predicates for c in characters], []))
+
+
+def create_character():
+    c = Character()
+    c.alignment(['good', 'neutral', 'evil'][random.randrange(3)])
+    c.random_trait('cautious', 'curious')
+    c.random_trait('disciplined', 'spontaneous')
+    c.random_trait('extrovert', 'introvert')
+    c.random_trait('trusting', 'suspicious')
+    c.random_trait('confident', 'insecure')
+    c.random_trait('sadness', 'joy')
+    if random.random() < 0.2:
+        c.has_money()
+    return c
+
+
+if __name__ == '__main__':
+    characters, state = create_characters(4)
+    print(state)
 
