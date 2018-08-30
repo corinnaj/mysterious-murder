@@ -1,6 +1,16 @@
 import random
 
 
+class Node:
+    def __init__(self, data, type):
+        self.data = data
+        self.type = type
+        self.points_to = []
+
+    def points_to(self, obj):
+        self.points_to.append(obj)
+
+
 class Simulation:
     def __init__(self, evaluator):
         self.evaluator = evaluator
@@ -41,7 +51,8 @@ class Simulation:
         for option in options:
             current_prob += option.prob
             if current_prob >= target_prob:
-                print(option)
+                #print(option)
+                print(option.story_print())
                 option.apply(self.evaluator)
                 break
         return True

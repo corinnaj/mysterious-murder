@@ -1,9 +1,13 @@
 import itertools
+import random
+import re
 
 
 class Instance:
-    def __init__(self, name='unnamed'):
+    def __init__(self, name='unnamed', full_name='unnamed', gender='female'):
         self.name = name
+        self.full_name = full_name
+        self.gender = gender
 
     def __repr__(self):
         return '<' + self.name + '>'
@@ -57,6 +61,15 @@ class RuleInstance:
                 all(self.args[i] == value.args[i]
                     for i in range(len(self.args))))
 
+    def story_print(self):
+        template = self.rule.template[random.randrange(len(self.rule.template))]
+        for i in range(self.rule.get_n_actors()):
+            template = template.replace('{' + str(i) + '}', self.args[i].full_name)
+            template = re.sub(r'\[\d+:([^|]+)\|([^]]+)\]',
+                              r'\2' if self.args[i].gender == 'female' else r'\1',
+                              template)
+        return template
+
     def apply(self, evaluator):
         # add new from rhs
         for predicate in self.rule.rhs:
@@ -69,11 +82,12 @@ class RuleInstance:
 
 
 class Rule:
-    def __init__(self, name, lhs, rhs, prob=5):
+    def __init__(self, name, lhs, rhs, prob=5, template=[]):
         self.name = name
         self.lhs = lhs
         self.rhs = rhs
         self.prob = prob
+        self.template = template
 
     def predicate_list_length(self, predicates):
         if len(predicates) < 1:

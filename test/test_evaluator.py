@@ -1,5 +1,6 @@
 import unittest
-from src.evaluator import (Instance, Evaluator, Rule, Predicate, PredicateInstance)
+from src.evaluator import (Instance, Evaluator, Rule, Predicate,
+                           PredicateInstance, RuleInstance)
 from . import MyTestCase
 
 
@@ -119,6 +120,14 @@ class EvaluatorTestCase(MyTestCase):
                         [])])
         eval.step()[0].apply(eval)
         self.assertEqual(len(eval.state), 1)
+
+    def test_rule_story_print(self):
+        c0 = Instance('alice', 'Alice', 'female')
+        c1 = Instance('bob', 'Bob', 'male')
+        r = RuleInstance(
+                Rule('test', [Predicate('steal', 0, 1)], [], template=['{0} tried to steal from {1}, but {1} caught [0:him|her]!. [1:He|She]']),
+                [c0, c1], [])
+        self.assertEqual(r.story_print(), 'Alice tried to steal from Bob, but Bob caught her. He')
 
 
 if __name__ == '__main__':
