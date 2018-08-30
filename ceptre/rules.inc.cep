@@ -9,13 +9,13 @@ get_weapon :
 lie_success :
 	$anger A B * $disgust A B *
 	$trusting C * $trusting C *
-	trust C B
+	$trust C A
 	-o disgust C B.
 
 lie_fail :
 	$anger A B * $disgust A B *
-	$suspicious C * suspicious C *
-	trust C A
+	$suspicious C * $suspicious C *
+	$trust C B
 	-o disgust C A * anger C A.
 
 become_lovers :
