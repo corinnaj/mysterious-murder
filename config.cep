@@ -117,7 +117,7 @@ steal_caught :
 get_married_for_love :
 	$affection C C' * $affection C C' * $affection C C' *
 	$affection C' C * $affection C' C * $affection C' C *
-	$not_related C C' * not_related C' C
+	$not_related C C' * $not_related C' C
 	-o married C C'.
 
 grief :

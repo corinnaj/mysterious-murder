@@ -3,7 +3,7 @@
 import os
 import random
 import names
-from rules_generator import Type, Predicate, T_CHARACTER
+from rules_generator import *
 
 characters = []
 
@@ -13,63 +13,29 @@ class Character(Type):
         self.full_name = names.get_full_name(gender=self.gender)
         self.name = self.full_name.replace(' ', '_').lower()
         self.parent = T_CHARACTER
-        self.related = []
-        self.lovers = []
-        self.possessions = []
-        self.married = None
-        self.traits = {}
-        self.relationships = {}
+        self.predicates = []
 
-    def random_trait(self, name, opposite_name, max_degree=3):
+    def random_trait(self, type, opposite_type, max_degree=3):
         r = random.randrange(max_degree)
-        self.traits[(name, opposite_name)] = (r, max_degree - r)
+        for i in range(r):
+            self.predicates.append(type.using(self))
+        for i in range(max_degree - r):
+            self.predicates.append(opposite_type.using(self))
 
-    def relationship(self, name, towards, degree):
-        self.relationships[name] = (towards, degree)
-
-    def add_relation(self, other):
-        self.related.append(other)
-        other.related.append(self)
+    def add_relative(self, other):
+        self.predicates.append(P_RELATED.using(self, other))
+        self.predicates.append(P_RELATED.using(other, self))
 
     def marry(self, other):
-        self.married = other
-        other.married = self
+        self.predicates.append(P_MARRIED.using(self, other))
+        other.predicates.append(P_MARRIED.using(other, self))
 
     def loves(self, other):
-        self.lovers.append(other)
-        other.lovers.append(self)
+        self.predicates.append(P_LOVERS.using(self, other))
+        self.predicates.append(P_LOVERS.using(other, self))
 
     def possess(self, obj):
-        self.possessions.append(obj)
-
-    def init_to_string(self):
-        rules = ['existsC ' + self.name]
-        if self.married:
-            rules.append('married ' + self.name + ' ' + self.married.name)
-
-        for r in self.related:
-            rules.append('related ' + self.name + ' ' + r.name)
-
-        for l in self.lovers:
-            rules.append('lovers ' + self.name + ' ' + l.name)
-
-        for trait, degree in self.traits.items():
-            for _ in range(degree[0]):
-                rules.append(trait[0] + ' ' + self.name)
-            for _ in range(3 - degree[1]):
-                rules.append(trait[1] + ' ' + self.name)
-
-        for relationship, degree in self.relationships:
-            for _ in range(degree):
-                rules.append(relationship[0] + ' ' + self.name + ' ' + relationship[1])
-
-        for possession in self.possessions:
-            rules.append('has ' + self.name + ' ' + possession)
-
-        return ',\n'.join(rules)
-
-    def def_to_string(self):
-        return self.name + ' : character.'
+        self.predicates.append(P_HAS.using(self, obj))
 
 def create_characters(count):
     characters = [Character() for _ in range(count)]
@@ -77,30 +43,22 @@ def create_characters(count):
         character = characters[i]
         for j in range(i + 1, count):
             if random.random() <0.2:
-                character.add_relation(characters[j])
+                character.add_relative(characters[j])
             else:
                 rand = random.random()
-                if rand < 0.25 and not character.married:
+                if rand < 0.25:
                     character.marry(characters[j])
                 elif rand < 0.4:
                     character.loves(characters[j])
 
-        character.random_trait('naive', 'cunning')
-        character.random_trait('loyal', 'greedy')
+        character.random_trait(P_NAIVE, P_CUNNING)
+        character.random_trait(P_LOYAL, P_GREEDY)
 
-        if random.random() < 0.2: character.possess('money')
+        if random.random() < 0.2: character.possess(T_MONEY)
     return characters
 
-def generate_init_context(f):
-    characters = create_characters(5)
-    f.write('\n'.join([c.def_to_string() for c in characters]))
-    f.write('\n\ncontext init = {\n')
-    f.write(',\n'.join([c.init_to_string() for c in characters]))
-    f.write(',\n')
-    f.write(',\n'.join(['existsO weapon' for i in range(random.randrange(1, 5))]))
-    f.write('\n}.\n\n')
+state = sum([character.predicates for character in create_characters(5)], [])
+state.append(P_EXISTS_O.using(T_WEAPON))
+state.append(P_EXISTS_O.using(T_WEAPON))
 
-if __name__ == '__main__':
-    with open('init', 'w') as f:
-        write_init_block(f)
-    print('--- init created')
+possible_actions = []

@@ -77,22 +77,22 @@ P_NOT_RELATED = Predicate('not_related', T_CHARACTER, T_CHARACTER)
 P_SAD = Predicate('sad', T_CHARACTER)
 P_MAD = Predicate('mad', T_CHARACTER)
 P_DEAD = Predicate('dead', T_CHARACTER)
+P_LOYAL = Predicate('loyal', T_CHARACTER)
+P_NAIVE = Predicate('naive', T_CHARACTER)
+P_CUNNING = Predicate('cunning', T_CHARACTER)
+P_GREEDY = Predicate('greedy', T_CHARACTER)
 
-Rule('steal_caught',
-    [P_WANTS.keeping(TEMPLATE1, T_MONEY), P_HAS.keeping(TEMPLATE2, T_MONEY)],
-    [P_ANGER.using(TEMPLATE1, TEMPLATE2)] * 3)
-
-Rule('murder_anger',
-    [P_HAS.keeping(TEMPLATE1, T_WEAPON)] + [P_ANGER.using(TEMPLATE1, TEMPLATE2)] * 3,
-    [P_DEAD.permanent(TEMPLATE2)])
-
-Rule('make_up',
-    [P_ANGER.using(TEMPLATE1, TEMPLATE2)] * 2 + [P_AFFECTION.using(TEMPLATE1, TEMPLATE2)],
-    [])
-
-Rule('get_married_for_love',
-    [P_AFFECTION.keeping(TEMPLATE1, TEMPLATE2)] * 3 + [P_AFFECTION.keeping(TEMPLATE2, TEMPLATE1)] * 3 + [P_NOT_RELATED.keeping(TEMPLATE1, TEMPLATE2), P_NOT_RELATED.keeping(TEMPLATE2, TEMPLATE1)],
-    [P_MARRIED.using(TEMPLATE1, TEMPLATE2)])
-
-print(r.to_string())
-
+rules = [
+  Rule('steal_caught',
+      [P_WANTS.keeping(TEMPLATE1, T_MONEY), P_HAS.keeping(TEMPLATE2, T_MONEY)],
+      [P_ANGER.using(TEMPLATE1, TEMPLATE2)] * 3),
+  Rule('murder_anger',
+      [P_HAS.keeping(TEMPLATE1, T_WEAPON)] + [P_ANGER.using(TEMPLATE1, TEMPLATE2)] * 3,
+      [P_DEAD.permanent(TEMPLATE2)]),
+  Rule('make_up',
+      [P_ANGER.using(TEMPLATE1, TEMPLATE2)] * 2 + [P_AFFECTION.using(TEMPLATE1, TEMPLATE2)],
+      []),
+  Rule('get_married_for_love',
+      [P_AFFECTION.keeping(TEMPLATE1, TEMPLATE2)] * 3 + [P_AFFECTION.keeping(TEMPLATE2, TEMPLATE1)] * 3 + [P_NOT_RELATED.keeping(TEMPLATE1, TEMPLATE2), P_NOT_RELATED.keeping(TEMPLATE2, TEMPLATE1)],
+      [P_MARRIED.using(TEMPLATE1, TEMPLATE2)])
+]
