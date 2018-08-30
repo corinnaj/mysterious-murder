@@ -5,19 +5,24 @@ import random
 
 characters = []
 
-def createWeapons(amount):
-    result = ''
-    for _ in range(amount):
-        result += print_pred_one('existsO', 'weapon')
-    result += '\n'
-    return result
-
-
 def createCharacters(number):
     result = ''
     for x in range(97, 97 + number):
         result += print_pred_one('existsC', chr(x))
         characters.append(chr(x))
+        result += '\n'
+    return result
+
+def createAlignment():
+    result = ''
+    for c in characters:
+        r = random.randrange(3)
+        if r == 0:
+            result += print_pred_one('evil', c)
+        elif r == 1:
+            result += print_pred_one('neutral', c)
+        else:
+            result += print_pred_one('good', c)
         result += '\n'
     return result
 
@@ -40,14 +45,18 @@ def createTraits():
     result = ''
     for c in characters:
         r = random.randrange(3)
-        result += print_trait_balance('naive', 'cunning', r, 3 - r, c)
+        result += print_trait_balance('cautious', 'curious', r, 3 - r, c)
         r = random.randrange(3)
-        result += print_trait_balance('loyal', 'greedy', r, 3 - r, c)
+        result += print_trait_balance('disciplined', 'spontaneous', r, 3 - r, c)
+        r = random.randrange(3)
+        result += print_trait_balance('extrovert', 'introvert', r, 3 - r, c)
+        r = random.randrange(3)
+        result += print_trait_balance('trusting', 'suspicious', r, 3 - r, c)
+        r = random.randrange(3)
+        result += print_trait_balance('confident', 'insecure', r, 3 - r, c)
 
         r = random.randrange(3)
-        result += print_trait('paranoia', r, c)
-        r = random.randrange(3)
-        result += print_trait('sadness', r, c)
+        result += print_trait_balance('sadness', 'joy', r, 3 - r, c)
     return result
 
 def createRelationships():
@@ -55,16 +64,18 @@ def createRelationships():
     for i in range(1, len(characters)):
         for j in range(i + 1, len(characters)):
             r = random.randrange(3)
-            result += print_relationship('affection', r, characters[i], characters[j])
+            result += print_relationship('trust', r, characters[i], characters[j])
+            result += print_relationship('disgust', 3 - r, characters[i], characters[j])
             r = random.randrange(3)
             result += print_relationship('anger', r, characters[i], characters[j])
+            result += print_relationship('fear', 3 - r, characters[i], characters[j])
     return result
 
 def createRichPeople():
     result = ''
     for c in characters:
         if random.random() < 0.2:
-            result += print_pred_two('has', c, 'money')
+            result += print_pred_one('has_money', c)
     result += '\n'
     return result
 
@@ -125,8 +136,8 @@ def print_sym_pred(name, a, b):
 
 def generate_init_context(f):
     f.write('context init = {\n')
-    f.write(createWeapons(2))
     f.write(createCharacters(5))
+    f.write(createAlignment())
     f.write(createRichPeople())
     f.write(createFamilies())
     f.write(createTraits())

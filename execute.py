@@ -78,7 +78,7 @@ if __name__ == '__main__':
   with open('script.cep', 'w+') as f:
     with open('defs.inc.cep', 'r') as df:
       f.write(df.read())
-    with open('init.inc.cep', 'w+') as init_f:
+    with open('init.inc.cep', 'w') as init_f:
       generate_init_context(StreamMultiplex([f, init_f]))
     with open('rules.inc.cep', 'r') as rf:
       f.write(rf.read())
