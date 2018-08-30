@@ -112,7 +112,8 @@ rule('steal_caught_N',
     [
         neutral(A),
         *greed(A),
-        P('has_money', B)],
+        P('has_money', B),
+        P('disgust', A, B, keep=True)],
     [
          P('anger', B, A)] * 3)
 
