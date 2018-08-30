@@ -1,9 +1,9 @@
-trace.dot
 log.txt
 ceptre.json
 
-trace.ps
-trace.svg
+ceptre/trace.dot
+ceptre/trace.ps
+ceptre/trace.svg
 
 init
 init.inc.cep
