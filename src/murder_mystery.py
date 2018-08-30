@@ -8,8 +8,8 @@ B = 1
 C = 2
 
 rules = []
-def rule(name, lhs, rhs, keep=False):
-    rules.append(Rule(name, lhs, rhs, keep))
+def rule(name, lhs, rhs):
+    rules.append(Rule(name, lhs, rhs))
 
 def suspicious(a):
     return P('suspicious', a, keep=True)
