@@ -56,6 +56,16 @@ rule('lie_success',
             P('anger', C, A)
         ])
 
+rule('fight',
+        [P('anger', A, B, keep=True)],
+        [P('anger', B, A)])
+
+rule('make_up',
+        [
+            P('anger', A, B),
+            P('anger', B, A),
+            P('trust', A, B, keep=True)],
+        [])
 
 
 rule('seduce',
@@ -68,10 +78,11 @@ rule('seduce',
             P('lovers', A, B),
             P('lovers', B, A)])
 
+#TODO check if they are already married
 rule('get_married',
         [
-            *[P('trust', A, B, keep=True)] * 3,
-            *[P('trust', B, A, keep=True)] * 3,
+            *[P('trust', A, B, keep=True)] * 2,
+            *[P('trust', B, A, keep=True)] * 2,
             P('not_related', A, B, keep=True),
             P('not_related', B, A, keep=True)],
         [
@@ -106,7 +117,7 @@ rule('steal_caught_E',
         evil(A),
         P('has_money', B)],
     [
-        P('anger', B, A)] * 3)
+        P('anger', B, A)] * 2)
 
 rule('steal_caught_N',
     [
@@ -115,9 +126,10 @@ rule('steal_caught_N',
         P('has_money', B),
         P('disgust', A, B, keep=True)],
     [
-         P('anger', B, A)] * 3)
+         P('anger', B, A)] * 2)
 
 if __name__ == '__main__':
     characters, state = create_characters(4)
     s = Simulation(Evaluator(rules=rules, actors=characters, state=state))
+    print(state)
     s.run(interactive=True, max_steps=100)

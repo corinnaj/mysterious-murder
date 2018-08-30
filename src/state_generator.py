@@ -44,6 +44,10 @@ class Character(Instance):
     def alignment(self, a):
         self.predicates.append(PredicateInstance(a, self))
 
+    def add_relationsship_trait(self, other, trait, amount):
+        for i in range(amount):
+            self.predicates.append(PredicateInstance(trait, self, other))
+
 
 def create_characters(count):
     characters = [create_character() for _ in range(count)]
@@ -53,11 +57,25 @@ def create_characters(count):
                 characters[i].add_relative(characters[j])
             else:
                 characters[i].mark_not_related(characters[j])
+                if random.random() < 0.25:
+                    characters[i].married(characters[j])
+                elif random.random() < 0.4:
+                    characters[i].lovers(characters[j])
 
-            if random.random() < 0.25:
-                characters[i].married(characters[j])
-            elif random.random() < 0.4:
-                characters[i].lovers(characters[j])
+            r = random.randrange(3) 
+            characters[i].add_relationsship_trait(characters[j], 'trust', r)
+            characters[i].add_relationsship_trait(characters[j], 'disgust', 2 - r)
+            r = random.randrange(3) 
+            characters[i].add_relationsship_trait(characters[j], 'anger', r)
+            characters[i].add_relationsship_trait(characters[j], 'fear', 2 - r)
+
+            r = random.randrange(3) 
+            characters[j].add_relationsship_trait(characters[i], 'trust', r)
+            characters[j].add_relationsship_trait(characters[i], 'disgust', 2 - r)
+            r = random.randrange(3) 
+            characters[j].add_relationsship_trait(characters[i], 'anger', r)
+            characters[j].add_relationsship_trait(characters[i], 'fear', 2 - r)
+
     return (characters, sum([c.predicates for c in characters], []))
 
 
