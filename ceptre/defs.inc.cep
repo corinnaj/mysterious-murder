@@ -1,0 +1,47 @@
+character : type.
+
+a : character.
+b : character.
+c : character.
+d : character.
+e : character.
+
+existsC character : pred.
+
+married character character : pred.
+lovers character character : pred.
+related character character : pred.
+not_related character character : pred.
+
+%% Big 5 Personality Traits 
+curious character : pred.
+cautious character : pred.
+disciplined character : pred.
+spontaneous character : pred.
+extrovert character : pred.
+introvert character : pred.
+trusting character : pred.
+suspicious character : pred.
+confident character : pred.
+insecure character : pred.
+
+%% Plutchicks Wheel of Emotions
+sadness	character : pred.
+joy character : pred.
+
+good character : pred.
+evil character : pred.
+neutral character : pred.
+
+disgust character character : pred.
+trust character character : pred.
+fear character character : pred.
+anger character character : pred.
+
+attraction character character : pred.
+paranoia character : pred.
+dead character : pred.
+
+has_money character : pred.
+has_weapon character : pred.
+

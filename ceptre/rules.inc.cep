@@ -1,0 +1,88 @@
+
+stage play = {
+
+get_weapon :
+	$existsC C
+	-o has_weapon C.
+
+%% A spreads rumor about B to C
+lie_success :
+	$anger A B * $disgust A B *
+	$trusting C * $trusting C *
+	trust C B
+	-o disgust C B.
+
+lie_fail :
+	$anger A B * $disgust A B *
+	$suspicious C * suspicious C *
+	trust C A
+	-o disgust C A * anger C A.
+
+become_lovers :
+	$attraction P P' * $attraction P' P * $not_related P P' * $not_related P' P
+	-o lovers P P' * lovers P P'.
+
+spend_time :
+	$trust C' C * $trust C C'
+	-o trust C' C * trust C C'.
+
+fight :
+	$anger C C'
+	-o anger C' C * anger C C'.
+
+make_up :
+	anger C C' * anger C' C * $trust C C'
+	-o .
+
+murder_anger :
+	$has_weapon P *
+	anger P P' * anger P P' * anger P P'
+	-o !dead P'.
+
+murder_cheating :
+	$has_weapon P *
+	$married P P'' * lovers P' P''
+	-o !dead P'.
+
+%% murder_money :
+%% 	$has_weapon P *
+%% 	$greedy P * $greedy P * has_money P'
+%% 	-o !dead P' * has_money P.
+
+steal_not_caught_E :
+	$evil C * has_money C'
+	-o has_money C.
+
+steal_not_caught_N :
+	$neutral C * $spontaneous C * $confident C *
+	has_money C' * $disgust C C'
+	-o has_money C.
+
+steal_caught_E :
+	$evil C * $has_money C'
+	-o anger C' C * anger C' C * anger C' C.
+
+steal_caught_N :
+	$neutral C * $spontaneous C * $confident C *
+	$has_money C'
+	-o anger C' C * anger C' C * anger C' C.
+	
+get_married_for_love :
+	$trust C C' * $trust C C' * $trust C C' *
+	$trust C' C * $trust C' C * $trust C' C *
+	$not_related C C' * not_related C' C
+	-o married C C'.
+
+grief :
+	trust C C' * dead C'
+	-o sadness C.
+
+suicide :
+	sadness C * sadness C * sadness C * sadness C * has_weapon C
+	-o !dead C.
+
+} #interactive play.
+
+%% theoretically you should be able to replace _ with a number to limit the steps taken
+#trace _ play init. 
+
