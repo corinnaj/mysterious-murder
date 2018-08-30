@@ -55,6 +55,8 @@ rule('lie_success',
             P('anger', C, A)
         ])
 
+
+
 rule('seduce',
         [
             P('attraction', A, B, keep=True),
@@ -105,7 +107,7 @@ rule('steal_caught_E',
     [
         P('anger', B, A)] * 3)
 
-rule('steal_not_caught_N',
+rule('steal_caught_N',
     [
         neutral(A),
         *greed(A),
