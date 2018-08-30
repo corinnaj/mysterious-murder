@@ -1,6 +1,7 @@
 from evaluator import Predicate as P
 from evaluator import Rule, Evaluator
 from state_generator import create_characters
+from simulation import Simulation
 
 A = 0
 B = 1
@@ -117,5 +118,5 @@ rule('steal_caught_N',
 
 if __name__ == '__main__':
     characters, state = create_characters(4)
-    eval = Evaluator(rules=rules, actors=characters, state=state)
-    print(eval.step())
+    s = Simulation(Evaluator(rules=rules, actors=characters, state=state))
+    s.run(interactive=True, max_steps=100)
