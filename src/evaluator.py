@@ -2,15 +2,16 @@ import itertools
 import random
 import re
 from graphviz import Digraph
+from state import State, StateAccess
 
 
-id = 0
+gid = 0
 
 
 def assign_id():
-    global id
-    id += 1
-    return str(id)
+    global gid
+    gid += 1
+    return str(gid)
 
 
 class Instance:
@@ -138,23 +139,31 @@ class Rule:
     def get_options(self, state, actors):
         options = []
         # try all permutations of actors
+        state_access = StateAccess(state)
         for pairs in itertools.permutations(actors, self.get_n_actors()):
             instances = []
+            state_access.reset()
             # now for every element on the left hand side...
             for predicate in self.lhs:
-                found = False
-                # ...look through the state to find a matching instance
-                for instance in state:
-                    if (instance not in instances and
-                            instance.matches(predicate, pairs)):
-                        instances.append(instance)
-                        found = True
-                        break
-                # if we found one, we can proceed, if we found none, we abort
-                if not found:
-                    break
+                actors = [pairs[index] for index in predicate.actors]
+                instance = state_access.fetch(predicate.name, actors)
+                if instance:
+                    instances.append(instance)
                 else:
-                    continue
+                    break
+                # found = False
+                # ...look through the state to find a matching instance
+                # for instance in state:
+                #     if (not self.contains_id(instances, instance) and
+                #             instance.matches(predicate, pairs)):
+                #         instances.append(instance)
+                #         found = True
+                #         break
+                # # if we found one, we can proceed, if we found none, we abort
+                # if not found:
+                #     break
+                # else:
+                #     continue
             # if we managed to fill all slots
             if len(instances) == len(self.lhs):
                 options.append(self.instance(pairs, instances))
@@ -167,8 +176,8 @@ class Rule:
 class Evaluator:
     def __init__(self, rules=[], state=[], actors=[]):
         self.rules = rules
-        self.state = state
-        self.init_state = state[:]
+        self.state = State(state) if isinstance(state, list) else state
+        self.init_state = state[:] if isinstance(state, list) else state.flatten()
         self.actors = actors
 
     def step(self):

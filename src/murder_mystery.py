@@ -11,6 +11,19 @@ rules = []
 def rule(name, lhs, rhs, prob=5, template=[]):
     rules.append(Rule(name, lhs, rhs, prob=prob, template=template))
 
+
+def p(name, *args):
+    return P(name, *args)
+
+
+def pK(name, *args):
+    return P(name, *args, keep=True)
+
+
+def pP(name, *args):
+    return P(name, *args, permanent=True)
+
+
 def suspicious(a):
     return P('suspicious', a, keep=True)
 def trusting(a):
@@ -134,8 +147,28 @@ rule('steal_caught_N',
     [P('anger', B, A)] * 2,
     template=['{0} tried to steal from {1}, but {1} caught [0:him|her]!'])
 
+rule('murder_anger',
+     [P('has_weapon', A, keep=True), *[P('anger', A, B)] * 3],
+     [P('dead', B, permanent=True)],
+     template=['In a fit of anger, {0} killed {1}.'])
+
+rule('murder_cheating',
+     [pK('has_weapon', A),
+      pK('married', A, C),
+      pK('lovers', B, C)],
+     [pP('dead', B)],
+     template=['Shocked by the revelation that [0:his|her] [2:husband|wife] '
+               'was cheating, {0} murdered [2:his|her] lover {1}'])
+
+rule('murder_money',
+     [pK('has_weapon', A), *greed(A), p('has_money', B)],
+     [pP('dead', B), p('has_money', A)],
+     template=['Down to [0:his|her] last shirt, {0} saw how much money {1} '
+               'had. So [0:he|she] took [0:his|her] weapon and decided to '
+               'make it all [0:his|hers]!'])
+
 if __name__ == '__main__':
     characters, state = create_characters(4)
     s = Simulation(Evaluator(rules=rules, actors=characters, state=state))
-    s.run(interactive=False, max_steps=100)
-    s.print_graph(view=True, show_all=False)
+    s.run(interactive=False, max_steps=1000)
+    # s.print_graph(view=False, show_all=False)

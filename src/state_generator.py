@@ -10,8 +10,8 @@ class StateGenerator:
 class Character(Instance):
     def __init__(self):
         self.gender = 'male' if random.randrange(2) == 1 else 'female'
-        self.full_name = names.get_full_name(gender=self.gender)
-        # super(Instance, self).__init__(name=self.full_name.replace(' ', '_').lower())
+        # self.full_name = names.get_full_name(gender=self.gender)
+        self.full_name = names.get_first_name(gender=self.gender)
         self.name = self.full_name.replace(' ', '_').lower()
         self.predicates = []
 

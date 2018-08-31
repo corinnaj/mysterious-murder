@@ -39,6 +39,10 @@ class Simulation:
     def calculate_reward(self):
         pass
 
+    def check_stop(self, option):
+        return False
+        # return 'murder' in option.rule.name
+
     def step(self):
         options = self.evaluator.step()
         if len(options) < 1:
@@ -51,8 +55,10 @@ class Simulation:
         for option in options:
             current_prob += option.prob
             if current_prob >= target_prob:
-                print(option.story_print())
+                # print(option.story_print())
                 option.apply(self.evaluator)
+                if self.check_stop(option):
+                    return False
                 break
         return True
 

@@ -9,11 +9,12 @@ class MyTestCase(unittest.TestCase):
         self.assertFalse(self.stateContains(search, evaluator))
 
     def stateContains(self, search, evaluator):
-        for instance in evaluator.state:
-            if (search.name == instance.name and
-                len(search.actors) == len(instance.actors) and
-                all(search.actors[i] == instance.actors[i]
-                    for i in range(len(search.actors)))):
-                return True
-        return False
+        return len(evaluator.state.fetch(search.name, search.actors)) >= 1
+        # for instance in evaluator.state:
+        #    if (search.name == instance.name and
+        #        len(search.actors) == len(instance.actors) and
+        #        all(search.actors[i] == instance.actors[i]
+        #            for i in range(len(search.actors)))):
+        #        return True
+        # return False
 
