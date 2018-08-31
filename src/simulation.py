@@ -56,3 +56,6 @@ class Simulation:
                 break
         return True
 
+    def print_graph(self, view=True, show_all=False):
+        return self.evaluator.print_graph(view=view, show_all=show_all)
+

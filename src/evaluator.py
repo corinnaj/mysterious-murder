@@ -1,6 +1,16 @@
 import itertools
 import random
 import re
+from graphviz import Digraph
+
+
+id = 0
+
+
+def assign_id():
+    global id
+    id += 1
+    return str(id)
 
 
 class Instance:
@@ -15,6 +25,9 @@ class Instance:
     def __eq__(self, value):
         return isinstance(value, Instance) and self.name == value.name
 
+    def __hash__(self):
+        return hash(self.name)
+
 
 class Predicate:
     def __init__(self, name, *args, keep=False):
@@ -28,6 +41,7 @@ class PredicateInstance:
         self.name = name
         self.actors = args
         self.consumed_by = None
+        self.id = assign_id()
 
     def __repr__(self):
         return self.name + '(' + ','.join(str(a) for a in self.actors) + ')'
@@ -48,6 +62,7 @@ class RuleInstance:
         self.predicateInstances = predicateInstances
         self.prob = prob
         self.produced = []
+        self.id = assign_id()
 
     def __repr__(self):
         args = ','.join([str(a) for a in self.args])
@@ -60,10 +75,14 @@ class RuleInstance:
                     for i in range(len(self.args))))
 
     def random_template(self):
+        if len(self.rule.template) < 1:
+            return None
         return self.rule.template[random.randrange(len(self.rule.template))]
 
     def story_print(self):
         template = self.random_template()
+        if not template:
+            return str(self)
         for i in range(self.rule.get_n_actors()):
             actor = self.args[i]
             template = template.replace('{' + str(i) + '}', actor.full_name)
@@ -85,7 +104,9 @@ class RuleInstance:
             instance.consumed_by = self
             evaluator.state.remove(instance)
             if self.rule.lhs[i].keep:
-                evaluator.state.append(instance.copy())
+                copy = instance.copy()
+                evaluator.state.append(copy)
+                self.produced.append(copy)
 
 
 class Rule:
@@ -138,9 +159,52 @@ class Evaluator:
     def __init__(self, rules=[], state=[], actors=[]):
         self.rules = rules
         self.state = state
+        self.init_state = state[:]
         self.actors = actors
 
     def step(self):
         nested = [rule.get_options(self.state, self.actors)
                   for rule in self.rules]
         return [y for x in nested for y in x]
+
+    def print_graph(self, view=True, show_all=False):
+        GraphPrinter(self, view=view, show_all=show_all)
+
+
+class GraphPrinter:
+    def __init__(self, evaluator, view=False, show_all=False):
+        color_inc = 1 / len(evaluator.actors)
+        self.actor_colors = {evaluator.actors[i]:
+                             '{} 0.2 1.0'.format(str(color_inc * i))
+                             for i in range(len(evaluator.actors))}
+
+        self.dot = Digraph(format='svg')
+        self.existing_rules = set()
+        self.print_instances(evaluator.init_state, show_all=show_all)
+        self.dot.render('output', view=view)
+
+    def print_instances(self, instances, parent=None, show_all=False):
+        for instance in instances:
+            if instance.consumed_by or show_all:
+                self.dot.attr('node',
+                              style='filled',
+                              fillcolor=self.actor_colors[instance.actors[0]],
+                              shape='ellipse')
+                self.dot.node(instance.id, str(instance))
+                if parent:
+                    self.dot.edge(parent.id, instance.id)
+
+        for instance in instances:
+            if instance.consumed_by:
+                if instance.consumed_by.id not in self.existing_rules:
+                    self.print_rule(instance.consumed_by, show_all=show_all)
+                self.dot.edge(instance.id, instance.consumed_by.id)
+
+    def print_rule(self, rule, show_all=False):
+        self.existing_rules.add(rule.id)
+        self.dot.attr('node',
+                style='filled',
+                shape='box',
+                fillcolor=self.actor_colors[rule.args[0]])
+        self.dot.node(rule.id, str(rule))
+        self.print_instances(rule.produced, rule, show_all=show_all)
