@@ -27,16 +27,13 @@ class PredicateInstance:
     def __init__(self, name, *args):
         self.name = name
         self.actors = args
+        self.consumed_by = None
 
     def __repr__(self):
         return self.name + '(' + ','.join(str(a) for a in self.actors) + ')'
 
-    # def __eq__(self, value):
-    #     return (isinstance(value, PredicateInstance) and
-    #             self.name == value.name and
-    #             len(self.actors) == len(value.actors) and
-    #             all(self.actors[i] == value.actors[i]
-    #                 for i in range(len(self.actors))))
+    def copy(self):
+        return PredicateInstance(self.name, *self.actors)
 
     def matches(self, predicate, permutation):
         return (self.name == predicate.name and
@@ -50,6 +47,7 @@ class RuleInstance:
         self.args = args
         self.predicateInstances = predicateInstances
         self.prob = prob
+        self.produced = []
 
     def __repr__(self):
         args = ','.join([str(a) for a in self.args])
@@ -61,12 +59,16 @@ class RuleInstance:
                 all(self.args[i] == value.args[i]
                     for i in range(len(self.args))))
 
+    def random_template(self):
+        return self.rule.template[random.randrange(len(self.rule.template))]
+
     def story_print(self):
-        template = self.rule.template[random.randrange(len(self.rule.template))]
+        template = self.random_template()
         for i in range(self.rule.get_n_actors()):
-            template = template.replace('{' + str(i) + '}', self.args[i].full_name)
+            actor = self.args[i]
+            template = template.replace('{' + str(i) + '}', actor.full_name)
             template = re.sub(r'\[\d+:([^|]+)\|([^]]+)\]',
-                              r'\2' if self.args[i].gender == 'female' else r'\1',
+                              r'\2' if actor.gender == 'female' else r'\1',
                               template)
         return template
 
@@ -74,11 +76,16 @@ class RuleInstance:
         # add new from rhs
         for predicate in self.rule.rhs:
             args = [self.args[i] for i in predicate.actors]
-            evaluator.state.append(PredicateInstance(predicate.name, *args))
+            instance = PredicateInstance(predicate.name, *args)
+            evaluator.state.append(instance)
+            self.produced.append(instance)
         # consume from lhs
         for i in range(len(self.predicateInstances)):
-            if not self.rule.lhs[i].keep:
-                evaluator.state.remove(self.predicateInstances[i])
+            instance = self.predicateInstances[i]
+            instance.consumed_by = self
+            evaluator.state.remove(instance)
+            if self.rule.lhs[i].keep:
+                evaluator.state.append(instance.copy())
 
 
 class Rule:
@@ -95,7 +102,8 @@ class Rule:
         return max(index for p in predicates for index in p.actors) + 1
 
     def get_n_actors(self):
-        return max(self.predicate_list_length(self.lhs), self.predicate_list_length(self.rhs))
+        return max(self.predicate_list_length(self.lhs),
+                   self.predicate_list_length(self.rhs))
 
     def get_options(self, state, actors):
         options = []
@@ -107,7 +115,8 @@ class Rule:
                 found = False
                 # ...look through the state to find a matching instance
                 for instance in state:
-                    if (instance not in instances and instance.matches(predicate, pairs)):
+                    if (instance not in instances and
+                            instance.matches(predicate, pairs)):
                         instances.append(instance)
                         found = True
                         break
@@ -132,24 +141,6 @@ class Evaluator:
         self.actors = actors
 
     def step(self):
-        nested = [rule.get_options(self.state, self.actors) for rule in self.rules]
+        nested = [rule.get_options(self.state, self.actors)
+                  for rule in self.rules]
         return [y for x in nested for y in x]
-
-
-# a = Instance()
-# b = Instance()
-# c = Instance()
-# actors = [a, b, c]
-#
-# state = [PredicateInstance('anger', a, b)]
-#
-# rules = [
-#    Rule('make_up',
-#         [Predicate('anger', 1, 2), Predicate('anger', 2, 1),
-#          Predicate('affection', 1, 2)],
-#         [Predicate('affection', 1, 2)]),
-#    Rule('fight',
-#         [Predicate('anger', 1, 2)],
-#         [Predicate('anger', 1, 2), Predicate('anger', 1, 2), Predicate('anger', 2, 1)])
-# ]
-#

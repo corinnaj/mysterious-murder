@@ -51,7 +51,6 @@ class Simulation:
         for option in options:
             current_prob += option.prob
             if current_prob >= target_prob:
-                #print(option)
                 print(option.story_print())
                 option.apply(self.evaluator)
                 break
