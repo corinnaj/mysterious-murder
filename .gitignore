@@ -4,6 +4,7 @@ ceptre.json
 ceptre/trace.dot
 ceptre/trace.ps
 ceptre/trace.svg
+output.svg
 
 init
 init.inc.cep

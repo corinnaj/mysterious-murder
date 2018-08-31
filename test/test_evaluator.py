@@ -121,15 +121,37 @@ class EvaluatorTestCase(MyTestCase):
         eval.step()[0].apply(eval)
         self.assertEqual(len(eval.state), 1)
 
+    def test_permanent_predicate_not_consumed(self):
+        eval = Evaluator(
+            actors=[Instance('a')],
+            state=[PredicateInstance('confident', Instance('a'), permanent=True)],
+            rules=[Rule('incidence',
+                        [Predicate('confident', 0)],
+                        [])])
+        eval.step()[0].apply(eval)
+        self.assertEqual(len(eval.state), 1)
+
+    def test_permanent_predicate_generated(self):
+        eval = Evaluator(
+            actors=[Instance('a')],
+            state=[PredicateInstance('start', Instance('a'))],
+            rules=[
+                Rule('start',
+                     [Predicate('start', 0)],
+                     [Predicate('confident', 0, permanent=True)]),
+                Rule('use', [Predicate('confident', 0)], [])])
+        eval.step()[0].apply(eval)
+        eval.step()[0].apply(eval)
+        self.assertEqual(len(eval.state), 1)
+
     def test_rule_story_print(self):
         c0 = Instance('alice', 'Alice', 'female')
         c1 = Instance('bob', 'Bob', 'male')
         r = RuleInstance(
-                Rule('test', [Predicate('steal', 0, 1)], [], template=['{0} tried to steal from {1}, but {1} caught [0:him|her]!. [1:He|She]']),
+                Rule('test', [Predicate('steal', 0, 1)], [], template=['{0} tried to steal from {1}, but {1} caught [0:him|her]. [1:He|She]']),
                 [c0, c1], [])
         self.assertEqual(r.story_print(), 'Alice tried to steal from Bob, but Bob caught her. He')
 
 
 if __name__ == '__main__':
     unittest.main()
-

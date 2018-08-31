@@ -30,23 +30,28 @@ class Instance:
 
 
 class Predicate:
-    def __init__(self, name, *args, keep=False):
+    def __init__(self, name, *args, keep=False, permanent=False):
+        assert not keep and not permanent or keep ^ permanent
         self.name = name
         self.actors = args
         self.keep = keep
+        self.permanent = permanent
 
 
 class PredicateInstance:
-    def __init__(self, name, *args):
+    def __init__(self, name, *args, permanent=False):
         self.name = name
         self.actors = args
         self.consumed_by = None
+        self.produced_by = None
+        self.permanent = permanent
         self.id = assign_id()
 
     def __repr__(self):
         return self.name + '(' + ','.join(str(a) for a in self.actors) + ')'
 
     def copy(self):
+        assert not self.permanent
         return PredicateInstance(self.name, *self.actors)
 
     def matches(self, predicate, permutation):
@@ -86,7 +91,7 @@ class RuleInstance:
         for i in range(self.rule.get_n_actors()):
             actor = self.args[i]
             template = template.replace('{' + str(i) + '}', actor.full_name)
-            template = re.sub(r'\[\d+:([^|]+)\|([^]]+)\]',
+            template = re.sub(r'\[' + str(i) + r'+:([^|]+)\|([^]]+)\]',
                               r'\2' if actor.gender == 'female' else r'\1',
                               template)
         return template
@@ -95,18 +100,22 @@ class RuleInstance:
         # add new from rhs
         for predicate in self.rule.rhs:
             args = [self.args[i] for i in predicate.actors]
-            instance = PredicateInstance(predicate.name, *args)
+            instance = PredicateInstance(predicate.name, *args,
+                                         permanent=predicate.permanent)
+            instance.produced_by = self
             evaluator.state.append(instance)
             self.produced.append(instance)
         # consume from lhs
         for i in range(len(self.predicateInstances)):
             instance = self.predicateInstances[i]
-            instance.consumed_by = self
-            evaluator.state.remove(instance)
-            if self.rule.lhs[i].keep:
-                copy = instance.copy()
-                evaluator.state.append(copy)
-                self.produced.append(copy)
+            if not instance.permanent:
+                instance.consumed_by = self
+                evaluator.state.remove(instance)
+                if self.rule.lhs[i].keep:
+                    copy = instance.copy()
+                    copy.produced_by = self
+                    evaluator.state.append(copy)
+                    self.produced.append(copy)
 
 
 class Rule:
@@ -178,7 +187,7 @@ class GraphPrinter:
                              '{} s 1.0'.format(str(color_inc * i))
                              for i in range(len(evaluator.actors))}
 
-        self.dot = Digraph(format='svg')
+        self.dot = Digraph(format='svg', engine='dot')
         self.existing_rules = set()
         self.print_instances(evaluator.init_state, show_all=show_all)
         self.dot.render('output', view=view)
