@@ -14,6 +14,7 @@ class Character(Instance):
         self.full_name = names.get_first_name(gender=self.gender)
         self.name = self.full_name.replace(' ', '_').lower()
         self.predicates = []
+        self.predicates.append(PredicateInstance('alive', self))
 
     def random_trait(self, type, opposite_type, max_degree=3):
         r = random.randrange(max_degree)

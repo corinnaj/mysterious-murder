@@ -38,19 +38,26 @@ class Simulation:
                 if not self.step():
                     return
 
+    def count_alive_actors(self):
+        count = 0
+        for a in self.evaluator.actors:
+            if self.evaluator.state.contains('alive', [a]):
+                count += 1
+        return count
+
+
+
     def check_stop(self, option):
+        if self.count_alive_actors() < 3:
+            print('Too few actors remaining')
+            return True
         return False
         # return 'murder' in option.rule.name
 
     def get_actions_for_actor(self, actor):
         options = self.evaluator.step()
-        if len(options) < 1:
-            print('No options, exiting')
-            return False
-
         options = [option for option in options
                    if option.actors[0] == actor]
-        assert len(options) > 0
         return options
 
     def whose_turn(self):
@@ -59,9 +66,12 @@ class Simulation:
     def step(self):
         next_actor = self.whose_turn()
         options = self.get_actions_for_actor(next_actor)
+        if len(options) < 1:
+            return True
         option = RandomAgent().choose_action(options, self)
         option.apply(self.evaluator)
-        return True
+        print(option.story_print())
+        return not self.check_stop(option)
 
     def print_graph(self, view=True, show_all=False):
         return self.evaluator.print_graph(view=view, show_all=show_all)

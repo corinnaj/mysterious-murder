@@ -23,6 +23,8 @@ def pK(name, *args):
 def pP(name, *args):
     return P(name, *args, permanent=True)
 
+def alive(*args):
+    return [pK('alive', a) for a in args]
 
 def suspicious(a):
     return P('suspicious', a, keep=True)
@@ -43,11 +45,12 @@ def greed(a):
     return [P('spontaneous', a, keep=True), P('confident', a, keep=True)]
 
 
-rule('get_weapon', [], [P('has_weapon', 0)], template=['{0} acquired a weapon.'])
+rule('get_weapon', [*alive(A)], [P('has_weapon', 0)], template=['{0} acquired a weapon.'])
 
 # A spreads rumor about B to C
 rule('lie_success',
         [
+            *alive(A, B, C),
             P('anger', A, B, keep=True),
             P('disgust', A, B, keep=True),
             trusting(C),
@@ -59,6 +62,7 @@ rule('lie_success',
 
 rule('lie_fail',
         [
+            *alive(A, B, C),
             P('anger', A, B, keep=True),
             P('disgust', A, B, keep=True),
             suspicious(C),
@@ -71,12 +75,15 @@ rule('lie_fail',
         ], template=['{0} tried to tell {1} lies about {2}, but got caught redhanded!'])
 
 rule('fight',
-        [P('anger', A, B, keep=True)],
+        [
+            *alive(A, B),
+            pK('anger', A, B)],
         [P('anger', B, A)],
         template=['{0} and {1} ended up fighting.'])
 
 rule('make_up',
         [
+            *alive(A, B),
             P('anger', A, B),
             P('anger', B, A),
             P('trust', A, B, keep=True)],
@@ -85,6 +92,7 @@ rule('make_up',
 
 rule('seduce',
         [
+            *alive(A, B),
             P('attraction', A, B, keep=True),
             P('attraction', B, A, keep=True),
             P('not_related', A, B, keep=True),
@@ -97,6 +105,7 @@ rule('seduce',
 #TODO check if they are already married
 rule('get_married',
         [
+            *alive(A, B),
             *[P('trust', A, B, keep=True)] * 2,
             *[P('trust', B, A, keep=True)] * 2,
             P('not_related', A, B, keep=True),
@@ -108,6 +117,7 @@ rule('get_married',
 
 rule('get_divorced',
         [
+            *alive(A, B),
             *[P('disgust', B, A, keep=True)] * 3,
             P('married', A, B),
             P('married', B, A)],
@@ -116,6 +126,7 @@ rule('get_divorced',
 
 rule('steal_not_caught_E',
     [
+        *alive(A, B),
         evil(A),
         P('has_money', B)],
     [
@@ -124,6 +135,7 @@ rule('steal_not_caught_E',
 
 rule('steal_not_caught_N',
     [
+        *alive(A, B),
         neutral(A),
         *greed(A),
         P('has_money', B),
@@ -133,6 +145,7 @@ rule('steal_not_caught_N',
 
 rule('steal_caught_E',
     [
+        *alive(A, B),
         evil(A),
         P('has_money', B)],
     [P('anger', B, A)] * 2,
@@ -140,20 +153,27 @@ rule('steal_caught_E',
 
 rule('steal_caught_N',
     [
+        *alive(A, B),
         neutral(A),
         *greed(A),
         P('has_money', B),
-        P('disgust', A, B, keep=True)],
+        pK('disgust', A, B)],
     [P('anger', B, A)] * 2,
     template=['{0} tried to steal from {1}, but {1} caught [0:him|her]!'])
 
 rule('murder_anger',
-     [P('has_weapon', A, keep=True), *[P('anger', A, B)] * 3],
+     [
+         pK('has_weapon', A),
+         *[p('anger', A, B)] * 3,
+         *alive(A),
+         p('alive', B)],
      [P('dead', B, permanent=True)],
      template=['In a fit of anger, {0} killed {1}.'])
 
 rule('murder_cheating',
-     [pK('has_weapon', A),
+     [*alive(A, C),
+      p('alive', B),
+      pK('has_weapon', A),
       pK('married', A, C),
       pK('lovers', B, C)],
      [pP('dead', B)],
@@ -161,16 +181,37 @@ rule('murder_cheating',
                'was cheating, {0} murdered [2:his|her] lover {1}'])
 
 rule('murder_money',
-     [pK('has_weapon', A), *greed(A), p('has_money', B)],
+     [
+         *alive(A),
+         p('alive', B),
+         pK('has_weapon', A),
+         *greed(A),
+         p('has_money', B)],
      [pP('dead', B), p('has_money', A)],
      template=['Down to [0:his|her] last shirt, {0} saw how much money {1} '
                'had. So [0:he|she] took [0:his|her] weapon and decided to '
                'make it all [0:his|hers]!'])
+
+rule('suicide',
+        [
+            p('alive', A),
+            pK('has_weapon', A),
+            *[pK('sadness', A)] * 3],
+        [pP('dead', A)],
+        template=['Depressed by the events, {0} took the final out and commited suicide.'])
+
+rule('grief',
+        [
+            *alive(A),
+            p('dead', B),
+            pK('trust', A, B)],
+        [p('sadness', A)],
+        template=['{0} was sad about the loss of {1}.'])
 
 if __name__ == '__main__':
     characters, state = create_characters(4)
     s = Simulation(Evaluator(rules=rules, actors=characters, state=state))
     s.evaluator.verify_integrity()
     s.run(interactive=False, max_steps=100)
-    # s.print_graph(view=True, show_all=False)
+    s.print_graph(view=True, show_all=False)
 

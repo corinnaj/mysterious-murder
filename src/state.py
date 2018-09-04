@@ -43,7 +43,11 @@ class State:
         return list
 
     def contains(self, name, actors):
-        return self.fetch(name, actors) is not None
+        l = self.fetch(name, actors)
+        return l is not None and len(l) > 0
+
+    def count(self, name, actors):
+        return len(self.dict.get(self.hash(name, actors)))
 
     def __len__(self):
         return sum(len(list) for key, list in self.dict.items())
