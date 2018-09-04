@@ -1,4 +1,6 @@
 import random
+from .agent import RandomAgent
+from .evaluator import Evaluator
 
 
 class Node:
@@ -12,7 +14,7 @@ class Node:
 
 
 class Simulation:
-    def __init__(self, evaluator):
+    def __init__(self, evaluator: Evaluator):
         self.evaluator = evaluator
 
     def run(self, interactive=False, max_steps=100):
@@ -36,30 +38,29 @@ class Simulation:
                 if not self.step():
                     return
 
-    def calculate_reward(self):
-        pass
-
     def check_stop(self, option):
         return False
         # return 'murder' in option.rule.name
 
-    def step(self):
+    def get_actions_for_actor(self, actor):
         options = self.evaluator.step()
         if len(options) < 1:
             print('No options, exiting')
             return False
 
-        total_prob = sum(option.prob for option in options)
-        target_prob = random.randint(0, total_prob - 1)
-        current_prob = 0
-        for option in options:
-            current_prob += option.prob
-            if current_prob >= target_prob:
-                # print(option.story_print())
-                option.apply(self.evaluator)
-                if self.check_stop(option):
-                    return False
-                break
+        options = [option for option in options
+                   if option.actors[0] == actor]
+        assert len(options) > 0
+        return options
+
+    def whose_turn(self):
+        return random.sample(self.evaluator.actors, 1)[0]
+
+    def step(self):
+        next_actor = self.whose_turn()
+        options = self.get_actions_for_actor(next_actor)
+        option = RandomAgent().choose_action(options, self)
+        option.apply(self.evaluator)
         return True
 
     def print_graph(self, view=True, show_all=False):

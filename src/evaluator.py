@@ -1,8 +1,9 @@
+from typing import List, Dict
 import itertools
 import random
 import re
-from graphviz import Digraph
-from state import State, StateAccess
+from .state import State, StateAccess
+from .graph import GraphPrinter
 
 
 gid = 0
@@ -31,18 +32,18 @@ class Instance:
 
 
 class Predicate:
-    def __init__(self, name, *args, keep=False, permanent=False):
+    def __init__(self, name, *actors, keep=False, permanent=False):
         assert not keep and not permanent or keep ^ permanent
         self.name = name
-        self.actors = args
+        self.actors = actors
         self.keep = keep
         self.permanent = permanent
 
 
 class PredicateInstance:
-    def __init__(self, name, *args, permanent=False):
+    def __init__(self, name, *actors, permanent=False):
         self.name = name
-        self.actors = args
+        self.actors = actors
         self.consumed_by = None
         self.produced_by = None
         self.permanent = permanent
@@ -62,23 +63,23 @@ class PredicateInstance:
 
 
 class RuleInstance:
-    def __init__(self, rule, args, predicateInstances, prob=1):
+    def __init__(self, rule, actors, predicateInstances, prob=1):
         self.rule = rule
-        self.args = args
+        self.actors = actors
         self.predicateInstances = predicateInstances
         self.prob = prob
         self.produced = []
         self.id = assign_id()
 
     def __repr__(self):
-        args = ','.join([str(a) for a in self.args])
-        return self.rule.name + '?(' + args + ')'
+        actors = ','.join([str(a) for a in self.actors])
+        return self.rule.name + '?(' + actors + ')'
 
     def __eq__(self, value):
         return (isinstance(value, RuleInstance) and
                 self.rule == value.rule and
-                all(self.args[i] == value.args[i]
-                    for i in range(len(self.args))))
+                all(self.actors[i] == value.actors[i]
+                    for i in range(len(self.actors))))
 
     def random_template(self):
         if len(self.rule.template) < 1:
@@ -90,7 +91,7 @@ class RuleInstance:
         if not template:
             return str(self)
         for i in range(self.rule.get_n_actors()):
-            actor = self.args[i]
+            actor = self.actors[i]
             template = template.replace('{' + str(i) + '}', actor.full_name)
             template = re.sub(r'\[' + str(i) + r'+:([^|]+)\|([^]]+)\]',
                               r'\2' if actor.gender == 'female' else r'\1',
@@ -100,8 +101,8 @@ class RuleInstance:
     def apply(self, evaluator):
         # add new from rhs
         for predicate in self.rule.rhs:
-            args = [self.args[i] for i in predicate.actors]
-            instance = PredicateInstance(predicate.name, *args,
+            actors = [self.actors[i] for i in predicate.actors]
+            instance = PredicateInstance(predicate.name, *actors,
                                          permanent=predicate.permanent)
             instance.produced_by = self
             evaluator.state.append(instance)
@@ -117,6 +118,12 @@ class RuleInstance:
                     copy.produced_by = self
                     evaluator.state.append(copy)
                     self.produced.append(copy)
+
+    def store_observation(self, character_mapping, rule_mapping, fill, i=0):
+        fill[i] = rule_mapping[self.rule.name]
+        for j in range(len(self.actors)):
+            fill[i + j + 1] = character_mapping[self.actors[j]]
+        return fill
 
 
 class Rule:
@@ -169,8 +176,8 @@ class Rule:
                 options.append(self.instance(pairs, instances))
         return options
 
-    def instance(self, args, predicateInstances=[]):
-        return RuleInstance(self, args, predicateInstances, prob=self.prob)
+    def instance(self, actors, predicateInstances=[]):
+        return RuleInstance(self, actors, predicateInstances, prob=self.prob)
 
 
 class Evaluator:
@@ -185,48 +192,23 @@ class Evaluator:
                   for rule in self.rules]
         return [y for x in nested for y in x]
 
+    def get_predicate_list(self) -> Dict[str, int]:
+        predicates = {}
+        for rule in self.rules:
+            for predicate in itertools.chain(rule.lhs, rule.rhs):
+                known_number = predicates.get(predicate.name)
+                if known_number:
+                    assert known_number == len(predicate.actors)
+                else:
+                    predicates[predicate.name] = len(predicate.actors)
+        return predicates
+
+    def get_rule_names(self) -> List[str]:
+        return [rule.name for rule in self.rules]
+
+    def verify_integrity(self):
+        # produces failed assertions on rules with non-matching wrong actor counts
+        self.get_predicate_list()
+
     def print_graph(self, view=True, show_all=False):
         GraphPrinter(self, view=view, show_all=show_all)
-
-
-class GraphPrinter:
-    def __init__(self, evaluator, view=False, show_all=False):
-        color_inc = 1 / len(evaluator.actors)
-        self.actor_colors = {evaluator.actors[i]:
-                             '{} s 1.0'.format(str(color_inc * i))
-                             for i in range(len(evaluator.actors))}
-
-        self.dot = Digraph(format='svg', engine='dot')
-        self.existing_rules = set()
-        self.print_instances(evaluator.init_state, show_all=show_all)
-        self.dot.render('output', view=view)
-
-    def color_list(self, list, saturation):
-        return ':'.join([self.actor_colors[actor].replace('s', str(saturation))
-                         for actor in list])
-
-    def print_instances(self, instances, parent=None, show_all=False):
-        for instance in instances:
-            if instance.consumed_by or show_all:
-                self.dot.attr('node',
-                              style='striped',
-                              fillcolor=self.color_list(instance.actors, 0.1),
-                              shape='box')
-                self.dot.node(instance.id, str(instance))
-                if parent:
-                    self.dot.edge(parent.id, instance.id)
-
-        for instance in instances:
-            if instance.consumed_by:
-                if instance.consumed_by.id not in self.existing_rules:
-                    self.print_rule(instance.consumed_by, show_all=show_all)
-                self.dot.edge(instance.id, instance.consumed_by.id)
-
-    def print_rule(self, rule, show_all=False):
-        self.existing_rules.add(rule.id)
-        self.dot.attr('node',
-                      style='striped',
-                      shape='box',
-                      fillcolor=self.color_list(rule.args, 0.4))
-        self.dot.node(rule.id, str(rule))
-        self.print_instances(rule.produced, rule, show_all=show_all)

@@ -8,7 +8,7 @@ from . import MyTestCase
 
 
 class SimulationTestCase(MyTestCase):
-    @patch('random.randint')
+    @patch('random.randrange')
     def test_random_distribution(self, mocked_randint):
         simulation = Simulation(Evaluator(
             actors=[Instance('a')],

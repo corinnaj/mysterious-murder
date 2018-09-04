@@ -1,7 +1,7 @@
-from evaluator import Predicate as P
-from evaluator import Rule, Evaluator
-from state_generator import create_characters
-from simulation import Simulation
+from .evaluator import Predicate as P
+from .evaluator import Rule, Evaluator
+from .state_generator import create_characters
+from .simulation import Simulation
 
 A = 0
 B = 1
@@ -170,5 +170,7 @@ rule('murder_money',
 if __name__ == '__main__':
     characters, state = create_characters(4)
     s = Simulation(Evaluator(rules=rules, actors=characters, state=state))
-    s.run(interactive=False, max_steps=1000)
-    # s.print_graph(view=False, show_all=False)
+    s.evaluator.verify_integrity()
+    s.run(interactive=False, max_steps=100)
+    # s.print_graph(view=True, show_all=False)
+

@@ -1,6 +1,6 @@
 import names
 import random
-from evaluator import Instance, PredicateInstance
+from .evaluator import Instance, PredicateInstance
 
 
 class StateGenerator:
