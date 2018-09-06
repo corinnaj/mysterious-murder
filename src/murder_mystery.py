@@ -8,7 +8,7 @@ B = 1
 C = 2
 
 rules = []
-def rule(name, lhs, rhs, prob=5, template=[]):
+def rule(name, lhs, rhs, prob=5, template=[], hunger=0, tiredness=0, sanity=0, fulfilment=0, social=0):
     rules.append(Rule(name, lhs, rhs, prob=prob, template=template))
 
 
@@ -47,6 +47,11 @@ def greed(a):
 
 rule('get_weapon', [*alive(A)], [P('has_weapon', 0)], template=['{0} acquired a weapon.'])
 
+rule('eat', [*alive(A)], [], hunger=10)
+rule('sleep', [*alive(A)], [], tiredness=10)
+rule('talk', [*alive(A, B)], [], social=5)
+rule('work', [*alive(A)], [], sanity=5, fulfilment=10)
+
 # A spreads rumor about B to C
 rule('lie_success',
         [
@@ -79,7 +84,7 @@ rule('fight',
             *alive(A, B),
             pK('anger', A, B)],
         [P('anger', B, A)],
-        template=['{0} and {1} ended up fighting.'])
+        template=['{0} and {1} ended up fighting.'], social=-10)
 
 rule('make_up',
         [
@@ -87,7 +92,7 @@ rule('make_up',
             P('anger', A, B),
             P('anger', B, A),
             P('trust', A, B, keep=True)],
-        [], template=['{0} and {1} made up.'])
+        [], template=['{0} and {1} made up.'], social=10)
 
 
 rule('seduce',
@@ -113,7 +118,9 @@ rule('get_married',
         [
             P('married', A, B),
             P('married', B, A)],
-        template=['{0} and {1} got married!'])
+        template=['{0} and {1} got married!'],
+        social=30,
+        sanity=10)
 
 rule('get_divorced',
         [
@@ -122,7 +129,9 @@ rule('get_divorced',
             P('married', A, B),
             P('married', B, A)],
         [],
-        template=['{0} and {1} got divorced.'])
+        template=['{0} and {1} got divorced.'],
+        social=-10,
+        sanity=-10)
 
 rule('steal_not_caught_E',
     [
