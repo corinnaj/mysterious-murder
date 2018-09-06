@@ -133,12 +133,27 @@ class RuleInstance:
 
 
 class Rule:
-    def __init__(self, name, lhs, rhs, prob=5, template=[]):
+    def __init__(self,
+                 name,
+                 lhs,
+                 rhs,
+                 prob=5,
+                 template=[],
+                 hunger=0,
+                 tiredness=0,
+                 social=0,
+                 sanity=0,
+                 fulfilment=0):
         self.name = name
         self.lhs = lhs
         self.rhs = rhs
         self.prob = prob
         self.template = template
+        self.hunger = hunger
+        self.tiredness = tiredness
+        self.fulfilment = fulfilment
+        self.social = social
+        self.sanity = sanity
 
     def predicate_list_length(self, predicates):
         if len(predicates) < 1:

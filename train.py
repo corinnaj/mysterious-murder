@@ -16,7 +16,7 @@ def main():
         SimulationGym(),
         lr=1e-6,
         q_func=model,
-        max_timesteps=100000,
+        max_timesteps=6000000,
         print_freq=10,
         param_noise=True,
         # callback=callback,
