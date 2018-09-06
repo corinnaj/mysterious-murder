@@ -14,6 +14,7 @@ class SimulationGym(gym.Env):
     NUM_ACTORS = 4
     MAX_ACTORS_PER_RULE = 3
     MAX_ACTIONS = 20
+    MAX_STEPS = 100
 
     def __init__(self):
         self.build_simulation()
@@ -24,7 +25,6 @@ class SimulationGym(gym.Env):
             [self.NUM_ACTORS + 1] * self.MAX_ACTORS_PER_RULE) * self.MAX_ACTIONS)
 
         self.observation_space = spaces.Box(low=low, high=high, dtype=np.uint32)
-        print(self.observation_space)
 
     def build_simulation(self):
         actors, state = create_characters(self.NUM_ACTORS)
@@ -39,17 +39,19 @@ class SimulationGym(gym.Env):
         self.rule_mapping = {rules_names[i]: i + 1 for i in range(len(rules))}
 
     def step(self, action):
+        self.n_steps += 1
         reward = 0
         if action < len(self.options):
-            reward = -1000
-            print('Failed pick ' + str(action))
+            # print('Success pick '+ str(action) + ' of ' + str(len(self.options)))
             self.options[action].apply(self.simulation.evaluator)
         else:
-            print('Success pick '+ str(action))
+            # if the agent didn't have options, don't punish it
+            reward = -1000 if len(self.options) > 0 else 0
+            # print('Failed pick ' + str(action))
         self.advance_until_my_turn()
         observation = self.build_observation()
 
-        done = False
+        done = self.n_steps > self.MAX_STEPS
         return observation, reward, done, {}
 
     def build_observation(self):
@@ -68,6 +70,7 @@ class SimulationGym(gym.Env):
         return np.array(actions, dtype=np.uint32)
 
     def reset(self):
+        self.n_steps = 0
         self.build_simulation()
         self.advance_until_my_turn()
         return self.build_observation()

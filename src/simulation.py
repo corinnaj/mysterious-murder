@@ -45,14 +45,12 @@ class Simulation:
                 count += 1
         return count
 
-
-
     def check_stop(self, option):
-        if self.count_alive_actors() < 3:
-            print('Too few actors remaining')
-            return True
-        return False
-        # return 'murder' in option.rule.name
+        # if self.count_alive_actors() < 3:
+        #     print('Too few actors remaining')
+        #     return True
+        # return False
+        return 'murder' in option.rule.name
 
     def get_actions_for_actor(self, actor):
         options = self.evaluator.step()
@@ -70,9 +68,16 @@ class Simulation:
             return True
         option = RandomAgent().choose_action(options, self)
         option.apply(self.evaluator)
-        print(option.story_print())
-        return not self.check_stop(option)
+        # print(option.story_print())
+        if self.check_stop(option):
+            self.print_causality(option)
+            return False
+        else:
+            return True
 
     def print_graph(self, view=True, show_all=False):
         return self.evaluator.print_graph(view=view, show_all=show_all)
 
+    def print_causality(self, root):
+        self.evaluator.traverse_tree(root,
+                                     lambda rule: print(rule.story_print()))

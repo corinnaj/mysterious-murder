@@ -63,10 +63,10 @@ class PredicateInstance:
 
 
 class RuleInstance:
-    def __init__(self, rule, actors, predicateInstances, prob=1):
+    def __init__(self, rule, actors, predicate_instances, prob=1):
         self.rule = rule
         self.actors = actors
-        self.predicateInstances = predicateInstances
+        self.predicate_instances = predicate_instances
         self.prob = prob
         self.produced = []
         self.id = assign_id()
@@ -80,6 +80,12 @@ class RuleInstance:
                 self.rule == value.rule and
                 all(self.actors[i] == value.actors[i]
                     for i in range(len(self.actors))))
+
+    def __hash__(self):
+        s = hash(self.rule)
+        for a in self.actors:
+            s ^= hash(a)
+        return s
 
     def random_template(self):
         if len(self.rule.template) < 1:
@@ -108,8 +114,8 @@ class RuleInstance:
             evaluator.state.append(instance)
             self.produced.append(instance)
         # consume from lhs
-        for i in range(len(self.predicateInstances)):
-            instance = self.predicateInstances[i]
+        for i in range(len(self.predicate_instances)):
+            instance = self.predicate_instances[i]
             if not instance.permanent:
                 instance.consumed_by = self
                 evaluator.state.remove(instance)
@@ -176,8 +182,8 @@ class Rule:
                 options.append(self.instance(pairs, instances))
         return options
 
-    def instance(self, actors, predicateInstances=[]):
-        return RuleInstance(self, actors, predicateInstances, prob=self.prob)
+    def instance(self, actors, predicate_instances=[]):
+        return RuleInstance(self, actors, predicate_instances, prob=self.prob)
 
 
 class Evaluator:
@@ -212,3 +218,12 @@ class Evaluator:
 
     def print_graph(self, view=True, show_all=False):
         GraphPrinter(self, view=view, show_all=show_all)
+
+    def traverse_tree(self, root: PredicateInstance, func):
+        func(root)
+        print(root.predicate_instances)
+        for rule in set(p.produced_by
+                        for p in root.predicate_instances
+                        if p.produced_by):
+            self.traverse_tree(rule, func)
+
