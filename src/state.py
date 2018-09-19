@@ -43,11 +43,26 @@ class State:
         return list
 
     def contains(self, name, actors):
-        l = self.fetch(name, actors)
-        return l is not None and len(l) > 0
+        list = self.fetch(name, actors)
+        return list is not None and len(list) > 0
 
     def count(self, name, actors):
         return len(self.dict.get(self.hash(name, actors)))
+
+    def all_predicates_from(self, actor):
+        return self.all_predicates_matching(lambda pred: pred.actors[0] == actor)
+
+    def all_predicates_from_to(self, actor, other):
+        return self.all_predicates_matching(lambda pred:
+                len(pred.actors) == 2 and pred.actors[0] == actor and pred.actors[1] == other)
+
+    def all_predicates_matching(self, test):
+        list = []
+        for hash, preds in self.dict.items():
+            for pred in preds:
+                if test(pred):
+                    list.append(pred)
+        return list
 
     def __len__(self):
         return sum(len(list) for key, list in self.dict.items())

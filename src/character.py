@@ -3,6 +3,17 @@ from random import randrange
 from .evaluator import Instance, PredicateInstance
 
 
+RELATIONSHIP_DISPLAY_MAPPING = {
+    'fear': '\N{grimacing face}',
+    'trust': '\N{relieved face}',
+    'disgust': '\N{pouting face}',
+    'anger': '\N{angry face}',
+    'lovers': '\N{smiling face with heart-shaped eyes}',
+    'related': None,
+    'not_related': None,
+}
+
+
 class Character(Instance):
     def __init__(self):
         self.gender = 'male' if randrange(2) == 1 else 'female'
@@ -60,3 +71,7 @@ class Character(Instance):
         self.fulfilment -= 10
         self.social -= 10
         self.sanity -= 10
+
+    def relationship_to(self, other, state):
+        predicates = state.all_predicates_from_to(self, other)
+        return [RELATIONSHIP_DISPLAY_MAPPING[pred.name] for pred in predicates]

@@ -67,10 +67,12 @@ class Simulation:
         if len(options) < 1:
             return True
         option = RandomAgent().choose_action(options, self)
+        next_actor.update_scales(option.rule)
         option.apply(self.evaluator)
         # print(option.story_print())
         if self.check_stop(option):
-            self.print_causality(option)
+            # self.print_causality(option)
+            print(option.actors[0].relationship_to(option.actors[1], self.evaluator.state))
             return False
         else:
             return True
