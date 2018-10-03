@@ -1,28 +1,30 @@
 from math import log, sqrt
-from .state import Simulation, RuleInstance, Actor
 import random
 
 
 class Node:
 
-    def __init__(self,
-                 rule_instance: RuleInstance = None,
-                 parent: 'Node' = None,
-                 actor: Actor = None,
-                 state: Simulation = None):
+    def __init__(self, rule_instance=None, parent=None, actor=None,
+                 simulation=None):
         self.children = []
         self.actor = actor
         self.rule_instance = rule_instance
         self.parent = parent
-        self.state = state
+        self.simulation = simulation
         self.visits = 0
         self.accum_score = 0
-        self.untried_rules = state.get_actions_for_actor(actor)
+        self.untried_rules = simulation.get_actions_for_actor(actor)
 
     def uct_select_child(self):
         log_visits = log(self.visits)
-        return sorted(self.children, key=lambda c:
+        return sorted([c for c in self.children],
+                      key=lambda c:
                       c.accum_score/c.visits + sqrt(2*log_visits/c.visits))[-1]
+
+    def uct_select_next(self):
+        if self.has_untried_rules():
+            return self
+        return self.uct_select_child().uct_select_next()
 
     def has_untried_rules(self):
         return len(self.untried_rules) > 0
@@ -30,51 +32,51 @@ class Node:
     def has_children(self):
         return len(self.children) > 0
 
-    def get_random_child_state(self):
-        rule_instance = random.choice(self.children)
-        state = self.state.copy()
-        rule_instance.apply(state)
+    def create_random_child_state(self):
+        rule_instance = random.choice(self.untried_rules)
+        simulation = self.simulation.copy()
+        rule_instance.apply(simulation.evaluator)
+
         self.untried_rules.remove(rule_instance)
-        return Node(rule_instance=rule_instance,
-                    parent=self,
-                    state=state,
-                    actor=self.actor)
+        n = Node(rule_instance=rule_instance,
+                 parent=self,
+                 simulation=simulation,
+                 actor=self.actor)
+        self.children.append(n)
+        return n
 
     def do_rollout(self, rollout_steps):
+        simulation = self.simulation.copy()
         for _ in range(rollout_steps):
-            rule_instances = self.state.get_actions_for_actor(self.actor)
-            random.choice(rule_instances).apply(self.state)
+            rule_instances = simulation.get_actions_for_actor(self.actor)
+            if len(rule_instances) < 1:
+                break
+            random.choice(rule_instances).apply(simulation.evaluator)
 
     def update(self, score):
         self.accum_score += score
+        self.visits += 1
 
-    def get_state_score(self):
-        return 0
+    def get_score(self):
+        return self.simulation.get_score_for_actor(self.actor)
 
 
 def uct_find_best_rule(simulation,
                        actor,
                        max_iterations=1000,
                        rollout_steps=30):
-    root = Node(state=simulation, actor=actor)
+    root = Node(simulation=simulation, actor=actor)
 
     for _ in range(max_iterations):
-        node = root
-
-        # select
-        while not node.has_untried_rules() and node.has_children():
-            node = node.uct_select_child()
-
-        # expand
-        node = node.get_random_child_state()
-
-        # simulate
+        node = root.uct_select_next().create_random_child_state()
         node.do_rollout(rollout_steps)
 
-        # backpropagate
         score = node.get_score()
-        while node:
-            node = node.parent
+        while True:
             node.update(score)
+            if node.parent:
+                node = node.parent
+            else:
+                break
 
     return max(root.children, key=lambda n: n.visits).rule_instance

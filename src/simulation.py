@@ -1,16 +1,6 @@
 import random
-from .agent import RandomAgent
+from .agent import RandomAgent, MCTSAgent
 from .evaluator import Evaluator
-
-
-class Node:
-    def __init__(self, data, type):
-        self.data = data
-        self.type = type
-        self.points_to = []
-
-    def points_to(self, obj):
-        self.points_to.append(obj)
 
 
 class Simulation:
@@ -41,6 +31,12 @@ class Simulation:
                 if not self.step():
                     return
 
+    def get_score_for_actor(self, actor):
+        # better look up the proper actor instance again, we might have
+        # diverged during copying
+        a = next(a for a in self.evaluator.actors if a == actor)
+        return a.calculate_score()
+
     def count_alive_actors(self):
         count = 0
         for a in self.evaluator.actors:
@@ -65,10 +61,10 @@ class Simulation:
     def step(self):
         next_actor = self.whose_turn()
 
-        option = RandomAgent().choose_action(next_actor, self)
+        option = MCTSAgent().choose_action(next_actor, self)
         next_actor.update_scales(option.rule)
         option.apply(self.evaluator)
-        # print(option.story_print())
+        print(option.story_print())
         # self.print_causality(option)
         # print(option.actors[0].relationship_to(option.actors[1],
         #                                       self.evaluator.state))

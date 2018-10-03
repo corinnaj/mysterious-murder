@@ -1,5 +1,5 @@
 import random
-from .mcts import utc_find_best_rule
+from .mcts import uct_find_best_rule
 
 
 class Agent:
@@ -22,5 +22,5 @@ class RandomAgent:
 
 class MCTSAgent:
     def choose_action(self, actor, simulation):
-        return utc_find_best_rule(simulation, actor)
+        return uct_find_best_rule(simulation, actor, max_iterations=5)
 

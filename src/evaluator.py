@@ -212,10 +212,9 @@ class Evaluator:
         self.actors = actors
 
     def copy(self):
-        # all other properties are immutable
         return Evaluator(rules=self.rules,
                          state=self.state.copy(),
-                         actors=self.actors)
+                         actors=[a.copy() for a in self.actors])
 
     def step(self) -> List[RuleInstance]:
         nested = [rule.get_options(self.state, self.actors)

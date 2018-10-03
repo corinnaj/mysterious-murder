@@ -93,3 +93,13 @@ class Character(Instance):
     def relationship_to(self, other, state):
         predicates = state.all_predicates_from_to(self, other)
         return [RELATIONSHIP_DISPLAY_MAPPING[pred.name] for pred in predicates]
+
+    def calculate_score(self):
+        hunger = -abs(self.hunger)
+        tiredness = -abs(self.tiredness)
+        social = self.social
+        fulfilment = self.fulfilment
+        sanity = self.sanity
+
+        return hunger + tiredness + social + fulfilment + sanity
+
