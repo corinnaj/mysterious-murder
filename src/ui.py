@@ -7,11 +7,25 @@ from kivy.uix.button import Button
 from kivy.uix.togglebutton import ToggleButton
 
 import random
+import os
+import glob
 from .murder_mystery import rules, Simulation, Evaluator, create_characters
 
 selected = []
 colors = [[0, 0, 1, 1], [0, 0.25, 0.75, 1], [0, 0.5, 0.5, 1], [0.5, 0.5, 0, 1]]
-label = Label(text="", bold=True, font_size=24)
+images = BoxLayout(orientation='horizontal')
+
+
+def get_filename_for(emoji):
+    image = hex(ord(emoji))
+    image = 'assets/emoji_u' + str(image)[2:] + '*.png'
+    files = [f for f in glob.glob(image) if os.path.isfile(f)]
+    return random.choice(files)
+
+
+def get_char_images():
+    return random.choice(os.listdir('assets/portraits'))
+
 
 class ProfileWidget(BoxLayout):
 
@@ -35,7 +49,7 @@ class ProfileWidget(BoxLayout):
         layout.add_widget(Label(text="Name", bold=True))
         layout.add_widget(Label(text=c.full_name))
 
-        img = "assets/" + str(random.randrange(1, 6)) + ".jpg"
+        img = 'assets/portraits/' + get_char_images()
         self.add_widget(Image(source=img))
         self.add_widget(layout)
         self.add_widget(btn)
@@ -47,13 +61,15 @@ class SingleCharWidget(BoxLayout):
         super(SingleCharWidget, self).__init__(**kwargs)
 
         def ask_char(instance):
-            label.text = selected[0].full_name + ": Char"
+            pass
 
         def ask_weapon(instance):
-            label.text = selected[0].full_name + ": Weapon"
+            image = get_filename_for(selected[0].has_weapon(s.evaluator.state))
+            images.clear_widgets()
+            images.add_widget(Image(source=image))
 
         def ask_mood(instance):
-            label.text = selected[0].full_name + ": Mood"
+            pass
 
         char_button = Button(text="Character Traits")
         char_button.bind(on_press=ask_char)
@@ -74,21 +90,30 @@ class DoubleCharWidget(BoxLayout):
         super(DoubleCharWidget, self).__init__(**kwargs)
 
         def ask_rel(instance):
-            # emotions = selected[0].relationship_to(selected[1], s.evaluator.state)
-            # text = (' ').join(str(x) for x in emotions)
-            text = ''
-            label.text = selected[0].full_name + ": " + text
+            emotions = selected[0].relationship_to(selected[1], s.evaluator.state)
+            images.clear_widgets()
+            for e in emotions:
+                if not e:
+                    continue
+                file = get_filename_for(e)
+                images.add_widget(Image(source=file))
 
         def ask_feels(instance):
-            label.text = selected[0].full_name + ": Feelings towards " + selected[1].full_name
+            emotions = selected[0].feelings_towards(selected[1], s.evaluator.state)
+            images.clear_widgets()
+            for e in emotions:
+                if not e:
+                    continue
+                file = get_filename_for(e)
+                images.add_widget(Image(source=file))
 
         char_button = Button(text="Relationship")
         char_button.bind(on_press=ask_rel)
         self.add_widget(char_button)
 
-        weapon_button = Button(text="Feelings")
-        weapon_button.bind(on_press=ask_feels)
-        self.add_widget(weapon_button)
+        feelings_button = Button(text="Feelings")
+        feelings_button.bind(on_press=ask_feels)
+        self.add_widget(feelings_button)
 
 
 class MurderMysteryApp(App):
@@ -108,7 +133,7 @@ class MurderMysteryApp(App):
         self.main_layout.add_widget(Label(text="Ask about: ", bold=True, font_size=30))
         self.main_layout.add_widget(self.singleWidget)
         self.main_layout.add_widget(self.doubleWidget)
-        self.main_layout.add_widget(label)
+        self.main_layout.add_widget(images)
 
         return self.main_layout
 

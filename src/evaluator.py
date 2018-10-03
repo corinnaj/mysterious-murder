@@ -155,6 +155,12 @@ class Rule:
         self.social = social
         self.sanity = sanity
 
+    def __eq__(self, other):
+        return isinstance(other, Rule) and self.name == other.name
+
+    def __hash__(self):
+        return hash(self.name)
+
     def predicate_list_length(self, predicates):
         if len(predicates) < 1:
             return 0

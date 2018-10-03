@@ -9,9 +9,13 @@ RELATIONSHIP_DISPLAY_MAPPING = {
     'disgust': '\N{pouting face}',
     'anger': '\N{angry face}',
     'lovers': '\N{smiling face with heart-shaped eyes}',
-    'related': None,
-    'not_related': None,
-    'married': None
+    'related': '\N{family}',
+    'married': '\N{couple with heart}'
+}
+
+WEAPON_MAPPING = {
+    'yes': '\N{hocho}',
+    'no': '\N{FACE WITH NO GOOD GESTURE}'
 }
 
 
@@ -91,8 +95,27 @@ class Character(Instance):
         self.sanity -= 10
 
     def relationship_to(self, other, state):
+        res = []
         predicates = state.all_predicates_from_to(self, other)
-        return [RELATIONSHIP_DISPLAY_MAPPING[pred.name] for pred in predicates]
+        for pred in predicates:
+            if pred.name in ['lovers', 'married', 'related']:
+                res += RELATIONSHIP_DISPLAY_MAPPING[pred.name]
+        return res
+
+    def has_weapon(self, state):
+        predicates = state.all_predicates_from(self)
+        for pred in predicates:
+            if pred.name == 'has_weapon':
+                return WEAPON_MAPPING['yes']
+        return WEAPON_MAPPING['no']
+
+    def feelings_towards(self, other, state):
+        res = []
+        predicates = state.all_predicates_from_to(self, other)
+        for pred in predicates:
+            if pred.name in ['anger', 'fear', 'trust', 'distrust']:
+                res += RELATIONSHIP_DISPLAY_MAPPING[pred.name]
+        return res
 
     def calculate_score(self):
         hunger = -abs(self.hunger)
@@ -102,4 +125,3 @@ class Character(Instance):
         sanity = self.sanity
 
         return hunger + tiredness + social + fulfilment + sanity
-
