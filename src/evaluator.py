@@ -204,11 +204,20 @@ class Rule:
 class Evaluator:
     def __init__(self, rules=[], state=[], actors=[]):
         self.rules = rules
-        self.state = State(state) if isinstance(state, list) else state
-        self.init_state = state[:] if isinstance(state, list) else state.flatten()
+
+        is_list = isinstance(state, list)
+        self.state = State(state) if is_list else state
+        self.init_state = state[:] if is_list else state.flatten()
+
         self.actors = actors
 
-    def step(self):
+    def copy(self):
+        # all other properties are immutable
+        return Evaluator(rules=self.rules,
+                         state=self.state.copy(),
+                         actors=self.actors)
+
+    def step(self) -> List[RuleInstance]:
         nested = [rule.get_options(self.state, self.actors)
                   for rule in self.rules]
         return [y for x in nested for y in x]
@@ -228,7 +237,7 @@ class Evaluator:
         return [rule.name for rule in self.rules]
 
     def verify_integrity(self):
-        # produces failed assertions on rules with non-matching wrong actor counts
+        # produces failed assertions on rules with non-matching actor counts
         self.get_predicate_list()
 
     def print_graph(self, view=True, show_all=False):

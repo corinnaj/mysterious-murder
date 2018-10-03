@@ -74,8 +74,9 @@ class DoubleCharWidget(BoxLayout):
         super(DoubleCharWidget, self).__init__(**kwargs)
 
         def ask_rel(instance):
-            emotions = selected[0].relationship_to(selected[1], s.evaluator.state)
-            text = (' ').join(str(x) for x in emotions)
+            # emotions = selected[0].relationship_to(selected[1], s.evaluator.state)
+            # text = (' ').join(str(x) for x in emotions)
+            text = ''
             label.text = selected[0].full_name + ": " + text
 
         def ask_feels(instance):
@@ -104,7 +105,7 @@ class MurderMysteryApp(App):
             profile_layout.add_widget(profile)
 
         self.main_layout.add_widget(profile_layout)
-        self.main_layout.add_widget(Label(text="Ask about:", bold=True, font_size=30))
+        self.main_layout.add_widget(Label(text="Ask about: ", bold=True, font_size=30))
         self.main_layout.add_widget(self.singleWidget)
         self.main_layout.add_widget(self.doubleWidget)
         self.main_layout.add_widget(label)

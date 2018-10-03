@@ -11,6 +11,7 @@ RELATIONSHIP_DISPLAY_MAPPING = {
     'lovers': '\N{smiling face with heart-shaped eyes}',
     'related': None,
     'not_related': None,
+    'married': None
 }
 
 
@@ -24,6 +25,23 @@ class Character(Instance):
         self.predicates.append(PredicateInstance('alive', self))
         self.hunger = self.tiredness = -10
         self.social = self.sanity = self.fulfilment = 0
+
+    def copy(self):
+        # immutable
+        c = Character()
+        c.gender = self.gender
+        c.full_name = self.full_name
+        c.name = self.name
+        c.predicates = self.predicates
+
+        # actual state
+        c.hunger = self.hunger
+        c.tiredness = self.tiredness
+        c.social = self.social
+        c.sanity = self.sanity
+        c.fulfilment = self.fulfilment
+
+        return c
 
     def random_trait(self, type, opposite_type, max_degree=3):
         r = randrange(max_degree)

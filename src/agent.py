@@ -1,13 +1,15 @@
 import random
+from .mcts import utc_find_best_rule
 
 
 class Agent:
-    def choose_action(self, options, simulation):
+    def choose_action(self, actor, simulation):
         raise NotImplementedError
 
 
 class RandomAgent:
-    def choose_action(self, options, simulation):
+    def choose_action(self, actor, simulation):
+        options = simulation.get_actions_for_actor(actor)
         total_prob = sum(option.prob for option in options)
         target_prob = random.randrange(total_prob)
         current_prob = 0
@@ -16,4 +18,9 @@ class RandomAgent:
             if current_prob >= target_prob:
                 return option
         return options[len(options) - 1]
+
+
+class MCTSAgent:
+    def choose_action(self, actor, simulation):
+        return utc_find_best_rule(simulation, actor)
 
