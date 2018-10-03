@@ -6,6 +6,8 @@ ceptre/trace.ps
 ceptre/trace.svg
 output.svg
 
+assets/
+
 init
 init.inc.cep
 script.cep
