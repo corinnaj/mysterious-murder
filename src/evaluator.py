@@ -104,15 +104,16 @@ class RuleInstance:
                               template)
         return template
 
-    def apply(self, evaluator):
+    def apply(self, evaluator, record=True):
         # add new from rhs
         for predicate in self.rule.rhs:
             actors = [self.actors[i] for i in predicate.actors]
             instance = PredicateInstance(predicate.name, *actors,
                                          permanent=predicate.permanent)
-            instance.produced_by = self
+            if record:
+                instance.produced_by = self
+                self.produced.append(instance)
             evaluator.state.append(instance)
-            self.produced.append(instance)
         # consume from lhs
         for i in range(len(self.predicate_instances)):
             instance = self.predicate_instances[i]
@@ -121,9 +122,10 @@ class RuleInstance:
                 evaluator.state.remove(instance)
                 if self.rule.lhs[i].keep:
                     copy = instance.copy()
-                    copy.produced_by = self
                     evaluator.state.append(copy)
-                    self.produced.append(copy)
+                    if record:
+                        copy.produced_by = self
+                        self.produced.append(copy)
 
     def store_observation(self, character_mapping, rule_mapping, fill, i=0):
         fill[i] = rule_mapping[self.rule.name]

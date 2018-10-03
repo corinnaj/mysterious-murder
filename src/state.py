@@ -9,8 +9,7 @@ class State:
 
     def copy(self):
         s = State()
-        # s.dict = {key: copy.copy(l) for key, l in self.dict.items()}
-        s.dict = copy.deepcopy(self.dict)
+        s.dict = {key: copy.copy(l) for key, l in self.dict.items()}
         return s
 
     def hash_predicate(self, predicate):

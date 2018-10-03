@@ -35,7 +35,7 @@ class Node:
     def create_random_child_state(self):
         rule_instance = random.choice(self.untried_rules)
         simulation = self.simulation.copy()
-        rule_instance.apply(simulation.evaluator)
+        rule_instance.apply(simulation.evaluator, record=False)
 
         self.untried_rules.remove(rule_instance)
         n = Node(rule_instance=rule_instance,
@@ -51,7 +51,8 @@ class Node:
             rule_instances = simulation.get_actions_for_actor(self.actor)
             if len(rule_instances) < 1:
                 break
-            random.choice(rule_instances).apply(simulation.evaluator)
+            random.choice(rule_instances).apply(simulation.evaluator,
+                                                record=False)
 
     def update(self, score):
         self.accum_score += score
