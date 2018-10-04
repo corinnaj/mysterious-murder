@@ -1,9 +1,9 @@
 from typing import List, Dict
 import itertools
 import random
-import re
 from .state import State, StateAccess
 from .graph import GraphPrinter
+from .text_templating import apply as template_apply
 
 
 gid = 0
@@ -96,13 +96,14 @@ class RuleInstance:
         template = self.random_template()
         if not template:
             return str(self)
-        for i in range(self.rule.get_n_actors()):
-            actor = self.actors[i]
-            template = template.replace('{' + str(i) + '}', actor.full_name)
-            template = re.sub(r'\[' + str(i) + r'+:([^|]+)\|([^]]+)\]',
-                              r'\2' if actor.gender == 'female' else r'\1',
-                              template)
-        return template
+        return template_apply(template, self.actors)
+        #for i in range(self.rule.get_n_actors()):
+        #    actor = self.actors[i]
+        #    template = template.replace('{' + str(i) + '}', actor.full_name)
+        #    template = re.sub(r'\[' + str(i) + r'+:([^|]+)\|([^]]+)\]',
+        #                      r'\2' if actor.gender == 'female' else r'\1',
+        #                      template)
+        #return template
 
     def apply(self, evaluator, record=True, rewards=False):
         # add new from rhs
