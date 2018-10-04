@@ -13,11 +13,16 @@ RELATIONSHIP_DISPLAY_MAPPING = {
     'married': '\N{couple with heart}'
 }
 
-WEAPON_MAPPING = {
-    'yes': '\N{hocho}',
-    'no': '\N{FACE WITH NO GOOD GESTURE}'
+POSSESSIONS_DISPLAY_MAPPING = {
+    'weapon': '\N{hocho}',
+    'nothing': '\N{FACE WITH NO GOOD GESTURE}',
+    'money': '\N{MONEY BAG}'
 }
 
+MOOD_DISPLAY_MAPPING = {
+        'joy':  '\N{GRINNING FACE WITH SMILING EYES}',
+        'sadness': '\N{LOUDLY CRYING FACE}'
+        }
 
 class Character(Instance):
     def __init__(self):
@@ -109,11 +114,16 @@ class Character(Instance):
         return res
 
     def has_weapon(self, state):
+        res = []
         predicates = state.all_predicates_from(self)
         for pred in predicates:
             if pred.name == 'has_weapon':
-                return WEAPON_MAPPING['yes']
-        return WEAPON_MAPPING['no']
+                res += POSSESSIONS_DISPLAY_MAPPING['weapon']
+            elif pred.name == 'has_money':
+                res += POSSESSIONS_DISPLAY_MAPPING['money']
+        if len(res) > 0:
+            return res
+        return POSSESSIONS_DISPLAY_MAPPING['nothing']
 
     def feelings_towards(self, other, state):
         res = []
@@ -122,6 +132,17 @@ class Character(Instance):
             if pred.name in ['anger', 'fear', 'trust', 'distrust']:
                 res += RELATIONSHIP_DISPLAY_MAPPING[pred.name]
         return res
+
+    def mood(self, state):
+        predicates = state.all_predicates_from(self)
+        res = []
+        for pred in predicates:
+            if pred.name in ['joy', 'sadness']:
+                res += MOOD_DISPLAY_MAPPING[pred.name]
+        return res
+
+    def dead(self, state):
+        return state.contains('dead', [self])
 
     def calculate_score(self):
         hunger = -abs(self.hunger)

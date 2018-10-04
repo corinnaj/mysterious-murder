@@ -210,6 +210,14 @@ rule('murder_anger',
      fulfilment=300,
      sanity=-80)
 
+rule('murder_very_anger',
+     [
+         *[p('anger', A, B)] * 5,
+         *alive(A),
+         p('alive', B)],
+     [P('dead', B, permanent=True)],
+     template=['{0} got so angry, [0:he|she] murdered {1} with [0:his|her] bare hands!'])
+
 rule('murder_cheating',
      [*alive(A, C),
       p('alive', B),
