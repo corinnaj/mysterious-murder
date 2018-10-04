@@ -29,8 +29,8 @@ class Character(Instance):
     def __init__(self):
         self.gender = 'male' if randrange(2) == 1 else 'female'
         self.portrait = get_random_portrait(self.gender)
-        # self.full_name = names.get_full_name(gender=self.gender)
-        self.full_name = names.get_first_name(gender=self.gender)
+        self.full_name = names.get_full_name(gender=self.gender)
+        # self.full_name = names.get_first_name(gender=self.gender)
         self.name = self.full_name.replace(' ', '_').lower()
         self.predicates = []
         self.predicates.append(PredicateInstance('alive', self))

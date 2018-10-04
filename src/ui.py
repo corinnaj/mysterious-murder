@@ -2,17 +2,15 @@ from kivy.app import App
 from kivy.uix.label import Label
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.image import Image
 from kivy.uix.button import Button
 from kivy.uix.togglebutton import ToggleButton
 
-import random
-import os
-import glob
 from .murder_mystery import rules, Simulation, Evaluator, create_characters
-from .emoji import get_random_portrait_filename, get_filename_for
+from .text_templating import apply as template_apply
+from .emoji import get_filename_for
 
-selected = []
 colors = [[0, 0, 1, 1], [0, 0.25, 0.75, 1], [0, 0.5, 0.5, 1], [0.5, 0.5, 0, 1]]
 images = BoxLayout(orientation='horizontal')
 
@@ -34,48 +32,52 @@ class ProfileWidget(BoxLayout):
         def callback(instance, value):
             if value == "down":
                 instance.text = "Selected"
-                selected.append(c)
-                instance.background_color = colors[selected.index(c)]
+                app.selected.append(c)
+                instance.background_color = colors[app.selected.index(c)]
             else:
                 instance.background_color = [0.8, 0.8, 0.8, 1]
                 instance.text = "Select"
-                selected.remove(c)
+                app.selected.remove(c)
             app.update()
 
         btn = ToggleButton(text="Select")
         btn.bind(state=callback)
-        layout = GridLayout(cols=2)
-        layout.add_widget(Label(text="Name", bold=True))
-        layout.add_widget(Label(text=c.full_name))
+        # layout = GridLayout(cols=2)
+        # layout.add_widget(Label(text="Name", bold=True))
+        # layout.add_widget(Label(text=c.full_name))
+
+        PORTRAIT_SIZE = 100
 
         img = get_filename_for(c.portrait, c.gender)
-        if c.dead(s.evaluator.state):
-            print('dead')
-            self.add_widget(Image(source='assets/emoji_u274c.png'))
-        self.add_widget(Image(source=img))
-        self.add_widget(layout)
+        if c.dead(app.simulation.evaluator.state):
+            stack = RelativeLayout(height=PORTRAIT_SIZE, size_hint=(1, None))
+            stack.add_widget(Image(source=img))
+            stack.add_widget(Image(source='assets/emoji_u274c.png'))
+            self.add_widget(stack)
+        else:
+            self.add_widget(Image(source=img, height=PORTRAIT_SIZE, size_hint=(1, None)))
+        self.add_widget(Label(text=c.full_name, bold=True))
         self.add_widget(btn)
 
 
 class SingleCharWidget(BoxLayout):
 
-    def __init__(self, **kwargs):
+    def __init__(self, app, **kwargs):
         super(SingleCharWidget, self).__init__(**kwargs)
 
         def ask_char(instance):
             pass
 
         def ask_weapon(instance):
-            emojis = selected[0].has_weapon(s.evaluator.state)
+            emojis = app.selected[0].has_weapon(app.simulation.evaluator.state)
             display(emojis)
 
         def ask_mood(instance):
-            emojis = selected[0].mood(s.evaluator.state)
+            emojis = app.selected[0].mood(app.simulation.evaluator.state)
             display(emojis)
 
         def accuse(instance):
-            print(s.check_is_murderer(selected[0]))
-            pass
+            app.accuse(app.selected[0])
 
         char_button = Button(text="Character Traits")
         char_button.bind(on_press=ask_char)
@@ -96,15 +98,15 @@ class SingleCharWidget(BoxLayout):
 
 class DoubleCharWidget(BoxLayout):
 
-    def __init__(self, **kwargs):
+    def __init__(self, app, **kwargs):
         super(DoubleCharWidget, self).__init__(**kwargs)
 
         def ask_rel(instance):
-            emojis = selected[0].relationship_to(selected[1], s.evaluator.state)
+            emojis = app.selected[0].relationship_to(app.selected[1], app.simulation.evaluator.state)
             display(emojis)
 
         def ask_feels(instance):
-            emojis = selected[0].feelings_towards(selected[1], s.evaluator.state)
+            emojis = app.selected[0].feelings_towards(app.selected[1], app.simulation.evaluator.state)
             display(emojis)
 
         char_button = Button(text="Relationship")
@@ -118,41 +120,63 @@ class DoubleCharWidget(BoxLayout):
 
 class MurderMysteryApp(App):
 
-    main_layout = BoxLayout(orientation="vertical")
-    singleWidget = SingleCharWidget(orientation="vertical", opacity=0)
-    doubleWidget = DoubleCharWidget(orientation="vertical", opacity=0)
-    lastNum = 0
+    def __init__(self, **kwargs):
+        super(MurderMysteryApp, self).__init__(**kwargs)
+        self.main_layout = BoxLayout(orientation="vertical")
+        self.redo()
 
     def build(self):
+        return self.main_layout
+
+    def update(self):
+        if self.lastNum == len(self.selected):
+            pass
+        self.lastNum = len(self.selected)
+        self.main_layout.remove_widget(self.singleWidget)
+        self.main_layout.remove_widget(self.doubleWidget)
+        if self.lastNum == 1:
+            self.main_layout.add_widget(self.singleWidget, index=1)
+        elif self.lastNum == 2:
+            self.main_layout.add_widget(self.doubleWidget, index=1)
+
+    def accuse(self, character):
+        self.main_layout.remove_widget(self.singleWidget)
+        self.main_layout.remove_widget(self.doubleWidget)
+        self.main_layout.remove_widget(images)
+        self.main_layout.add_widget(Label(text="You confront " + character.full_name, font_size=30))
+        if self.simulation.check_is_murderer(character):
+            self.main_layout.add_widget(Label(text=template_apply('[0:He|She] confesses immediatly!', [character]), font_size=30))
+        else:
+            self.main_layout.add_widget(Label(text="You got the wrong person!\nIt was actually " + self.simulation.get_murderers()[0].full_name + '!', font_size=30))
+
+        def do_redo(instance):
+            self.redo()
+        redo_button = Button(text="Play again")
+        redo_button.bind(on_press=do_redo)
+        self.main_layout.add_widget(redo_button)
+
+    def redo(self):
+        self.selected = []
+        self.main_layout.clear_widgets()
+
+        characters, state = create_characters(4)
+        self.simulation = Simulation(Evaluator(rules=rules, actors=characters, state=state))
+        self.simulation.evaluator.verify_integrity()
+        self.simulation.run(interactive=False, max_steps=100)
+
+        self.lastNum = 0
+        self.singleWidget = SingleCharWidget(self, orientation="vertical")
+        self.doubleWidget = DoubleCharWidget(self, orientation="vertical")
+
         profile_layout = BoxLayout()
-        for c in characters:
+        for c in self.simulation.evaluator.actors:
             profile = ProfileWidget(c, self, orientation="vertical")
             profile_layout.add_widget(profile)
 
         self.main_layout.add_widget(profile_layout)
         self.main_layout.add_widget(Label(text="Ask about: ", bold=True, font_size=30))
-        self.main_layout.add_widget(self.singleWidget)
-        self.main_layout.add_widget(self.doubleWidget)
         self.main_layout.add_widget(images)
-
-        return self.main_layout
-
-    def update(self):
-        if self.lastNum == len(selected):
-            pass
-        self.lastNum = len(selected)
-        self.singleWidget.opacity = 0
-        self.doubleWidget.opacity = 0
-        if self.lastNum == 1:
-            self.singleWidget.opacity = 1
-        elif self.lastNum == 2:
-            self.doubleWidget.opacity = 1
 
 
 if __name__ == '__main__':
-    characters, state = create_characters(4)
-    s = Simulation(Evaluator(rules=rules, actors=characters, state=state))
-    s.evaluator.verify_integrity()
-    s.run(interactive=False, max_steps=100)
-
     MurderMysteryApp().run()

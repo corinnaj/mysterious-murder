@@ -11,7 +11,9 @@ class Simulation:
         self.murderers = []
 
     def copy(self):
-        return Simulation(self.evaluator.copy())
+        s = Simulation(self.evaluator.copy())
+        s.murderers = self.murderers[:]
+        return s
 
     def run(self, interactive=False, max_steps=100):
         if interactive:
@@ -49,6 +51,9 @@ class Simulation:
 
     def check_is_murderer(self, actor):
         return actor in self.murderers
+
+    def get_murderers(self):
+        return self.murderers
 
     def check_stop(self, option):
         # if self.count_alive_actors() < 3:
