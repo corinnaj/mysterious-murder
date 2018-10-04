@@ -42,19 +42,21 @@ class ProfileWidget(BoxLayout):
 
         btn = ToggleButton(text="Select")
         btn.bind(state=callback)
-        layout = GridLayout(cols=2)
-        layout.add_widget(Label(text="Name", bold=True))
-        layout.add_widget(Label(text=c.full_name))
+        # layout = GridLayout(cols=2)
+        # layout.add_widget(Label(text="Name", bold=True))
+        # layout.add_widget(Label(text=c.full_name))
+
+        PORTRAIT_SIZE = 100
 
         img = get_filename_for(c.portrait, c.gender)
         if c.dead(app.simulation.evaluator.state):
-            stack = RelativeLayout()
+            stack = RelativeLayout(height=PORTRAIT_SIZE, size_hint=(1, None))
             stack.add_widget(Image(source=img))
             stack.add_widget(Image(source='assets/emoji_u274c.png'))
             self.add_widget(stack)
         else:
-            self.add_widget(Image(source=img))
-        self.add_widget(layout)
+            self.add_widget(Image(source=img, height=PORTRAIT_SIZE, size_hint=(1, None)))
+        self.add_widget(Label(text=c.full_name, bold=True))
         self.add_widget(btn)
 
 
@@ -145,7 +147,7 @@ class MurderMysteryApp(App):
         if self.simulation.check_is_murderer(character):
             self.main_layout.add_widget(Label(text=template_apply('[0:He|She] confesses immediatly!', [character]), font_size=30))
         else:
-            self.main_layout.add_widget(Label(text="You got the wrong person!", font_size=30))
+            self.main_layout.add_widget(Label(text="You got the wrong person!\nIt was actually " + self.simulation.get_murderers()[0].full_name + '!', font_size=30))
 
         def do_redo(instance):
             self.redo()
