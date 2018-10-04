@@ -23,8 +23,18 @@ def get_filename_for(emoji):
     return random.choice(files)
 
 
-def get_char_images():
-    return random.choice(os.listdir('assets/portraits'))
+def get_char_images(c):
+    folder = 'assets/portraits/' + c.gender + '/'
+    return random.choice(os.listdir(folder))
+
+
+def display(emojis):
+    images.clear_widgets()
+    for e in emojis:
+        if not e:
+            continue
+        file = get_filename_for(e)
+        images.add_widget(Image(source=file))
 
 
 class ProfileWidget(BoxLayout):
@@ -49,7 +59,10 @@ class ProfileWidget(BoxLayout):
         layout.add_widget(Label(text="Name", bold=True))
         layout.add_widget(Label(text=c.full_name))
 
-        img = 'assets/portraits/' + get_char_images()
+        img = 'assets/portraits/' + c.gender + '/' + get_char_images(c)
+        if c.dead(s.evaluator.state):
+            print('dead')
+            self.add_widget(Image(source='assets/emoji_u274c.png'))
         self.add_widget(Image(source=img))
         self.add_widget(layout)
         self.add_widget(btn)
@@ -64,18 +77,18 @@ class SingleCharWidget(BoxLayout):
             pass
 
         def ask_weapon(instance):
-            image = get_filename_for(selected[0].has_weapon(s.evaluator.state))
-            images.clear_widgets()
-            images.add_widget(Image(source=image))
+            emojis = selected[0].has_weapon(s.evaluator.state)
+            display(emojis)
 
         def ask_mood(instance):
-            pass
+            emojis = selected[0].mood(s.evaluator.state)
+            display(emojis)
 
         char_button = Button(text="Character Traits")
         char_button.bind(on_press=ask_char)
         self.add_widget(char_button)
 
-        weapon_button = Button(text="Weapon Possession")
+        weapon_button = Button(text="Possessions")
         weapon_button.bind(on_press=ask_weapon)
         self.add_widget(weapon_button)
 
@@ -90,22 +103,12 @@ class DoubleCharWidget(BoxLayout):
         super(DoubleCharWidget, self).__init__(**kwargs)
 
         def ask_rel(instance):
-            emotions = selected[0].relationship_to(selected[1], s.evaluator.state)
-            images.clear_widgets()
-            for e in emotions:
-                if not e:
-                    continue
-                file = get_filename_for(e)
-                images.add_widget(Image(source=file))
+            emojis = selected[0].relationship_to(selected[1], s.evaluator.state)
+            display(emojis)
 
         def ask_feels(instance):
-            emotions = selected[0].feelings_towards(selected[1], s.evaluator.state)
-            images.clear_widgets()
-            for e in emotions:
-                if not e:
-                    continue
-                file = get_filename_for(e)
-                images.add_widget(Image(source=file))
+            emojis = selected[0].feelings_towards(selected[1], s.evaluator.state)
+            display(emojis)
 
         char_button = Button(text="Relationship")
         char_button.bind(on_press=ask_rel)
