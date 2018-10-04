@@ -35,6 +35,23 @@ class Character(Instance):
         self.hunger = self.tiredness = -10
         self.social = self.sanity = self.fulfilment = 0
 
+    def copy(self):
+        # immutable
+        c = Character()
+        c.gender = self.gender
+        c.full_name = self.full_name
+        c.name = self.name
+        c.predicates = self.predicates
+
+        # actual state
+        c.hunger = self.hunger
+        c.tiredness = self.tiredness
+        c.social = self.social
+        c.sanity = self.sanity
+        c.fulfilment = self.fulfilment
+
+        return c
+
     def random_trait(self, type, opposite_type, max_degree=3):
         r = randrange(max_degree)
         for i in range(r):
@@ -120,3 +137,12 @@ class Character(Instance):
 
     def dead(self, state):
         return state.contains('dead', [self])
+
+    def calculate_score(self):
+        hunger = -abs(self.hunger)
+        tiredness = -abs(self.tiredness)
+        social = self.social
+        fulfilment = self.fulfilment
+        sanity = self.sanity
+
+        return hunger + tiredness + social + fulfilment + sanity

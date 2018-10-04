@@ -1,9 +1,16 @@
+import copy
+
 
 class State:
     def __init__(self, init_state_list=None):
         self.dict = {}
         if init_state_list:
             self.append_all(init_state_list)
+
+    def copy(self):
+        s = State()
+        s.dict = {key: copy.copy(l) for key, l in self.dict.items()}
+        return s
 
     def hash_predicate(self, predicate):
         return self.hash(predicate.name, predicate.actors)
@@ -50,11 +57,14 @@ class State:
         return len(self.dict.get(self.hash(name, actors)))
 
     def all_predicates_from(self, actor):
-        return self.all_predicates_matching(lambda pred: pred.actors[0] == actor)
+        return self.all_predicates_matching(lambda pred:
+                                            pred.actors[0] == actor)
 
     def all_predicates_from_to(self, actor, other):
         return self.all_predicates_matching(lambda pred:
-                len(pred.actors) == 2 and pred.actors[0] == actor and pred.actors[1] == other)
+                                            len(pred.actors) == 2 and
+                                            pred.actors[0] == actor and
+                                            pred.actors[1] == other)
 
     def all_predicates_matching(self, test):
         list = []
@@ -88,4 +98,3 @@ class StateAccess:
 
     def reset(self):
         self.taken = []
-

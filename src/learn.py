@@ -2,7 +2,6 @@ import numpy as np
 import gym
 from gym import spaces
 import random
-import numpy as np
 
 from .evaluator import Evaluator
 from .state_generator import create_characters
@@ -21,11 +20,15 @@ class SimulationGym(gym.Env):
         self.build_simulation()
         self.action_space = spaces.Discrete(self.MAX_ACTIONS)
 
-        low = np.array(([0] + [0] * self.MAX_ACTORS_PER_RULE) * self.MAX_ACTIONS)
+        low = np.array(([0] + [0] * self.MAX_ACTORS_PER_RULE)
+                       * self.MAX_ACTIONS)
         high = np.array(([len(rules)] +
-            [self.NUM_ACTORS + 1] * self.MAX_ACTORS_PER_RULE) * self.MAX_ACTIONS)
+                         [self.NUM_ACTORS + 1] * self.MAX_ACTORS_PER_RULE)
+                        * self.MAX_ACTIONS)
 
-        self.observation_space = spaces.Box(low=low, high=high, dtype=np.uint32)
+        self.observation_space = spaces.Box(low=low,
+                                            high=high,
+                                            dtype=np.uint32)
 
         self.actions_taken = 0
 
@@ -51,7 +54,6 @@ class SimulationGym(gym.Env):
                 reward = self.calculate_reward()
                 self.my_actor.reset_scales()
             self.my_actor.update_scales(self.options[action].rule)
-            # print('Success pick '+ str(action) + ' of ' + str(len(self.options)))
             self.options[action].apply(self.simulation.evaluator)
         else:
             # if the agent didn't have options, don't punish it
@@ -85,10 +87,11 @@ class SimulationGym(gym.Env):
         # k options, n slots --> k option randomly on n slots
         perm = np.random.permutation(self.MAX_ACTIONS)
         for i in range(min(len(self.options), self.MAX_ACTIONS)):
+            dest = perm[i] * (self.MAX_ACTORS_PER_RULE + 1)
             self.options[i].store_observation(self.character_mapping,
                                               self.rule_mapping,
                                               actions,
-                                              perm[i] * (self.MAX_ACTORS_PER_RULE + 1))
+                                              dest)
         return np.array(actions, dtype=np.uint32)
 
     def reset(self):

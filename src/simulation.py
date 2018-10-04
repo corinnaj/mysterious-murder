@@ -1,21 +1,14 @@
 import random
-from .agent import RandomAgent
+from .agent import RandomAgent, MCTSAgent
 from .evaluator import Evaluator
-
-
-class Node:
-    def __init__(self, data, type):
-        self.data = data
-        self.type = type
-        self.points_to = []
-
-    def points_to(self, obj):
-        self.points_to.append(obj)
 
 
 class Simulation:
     def __init__(self, evaluator: Evaluator):
         self.evaluator = evaluator
+
+    def copy(self):
+        return Simulation(self.evaluator.copy())
 
     def run(self, interactive=False, max_steps=100):
         if interactive:
@@ -38,6 +31,12 @@ class Simulation:
                 if not self.step():
                     return
 
+    def get_score_for_actor(self, actor):
+        # better look up the proper actor instance again, we might have
+        # diverged during copying
+        a = next(a for a in self.evaluator.actors if a == actor)
+        return a.calculate_score()
+
     def count_alive_actors(self):
         count = 0
         for a in self.evaluator.actors:
@@ -53,29 +52,23 @@ class Simulation:
         return 'murder' in option.rule.name
 
     def get_actions_for_actor(self, actor):
-        options = self.evaluator.step()
-        options = [option for option in options
-                   if option.actors[0] == actor]
-        return options
+        return [option for option in self.evaluator.step()
+                if option.actors[0] == actor]
 
     def whose_turn(self):
-        return random.sample(self.evaluator.actors, 1)[0]
+        return random.choice(self.evaluator.actors)
 
     def step(self):
         next_actor = self.whose_turn()
-        options = self.get_actions_for_actor(next_actor)
-        if len(options) < 1:
-            return True
-        option = RandomAgent().choose_action(options, self)
+
+        option = MCTSAgent().choose_action(next_actor, self)
         next_actor.update_scales(option.rule)
         option.apply(self.evaluator)
-        # print(option.story_print())
-        if self.check_stop(option):
-            # self.print_causality(option)
-            print(option.actors[0].relationship_to(option.actors[1], self.evaluator.state))
-            return False
-        else:
-            return True
+        print(option.story_print())
+        # self.print_causality(option)
+        # print(option.actors[0].relationship_to(option.actors[1],
+        #                                       self.evaluator.state))
+        return not self.check_stop(option)
 
     def print_graph(self, view=True, show_all=False):
         return self.evaluator.print_graph(view=view, show_all=show_all)

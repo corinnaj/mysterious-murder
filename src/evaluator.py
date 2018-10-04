@@ -104,15 +104,16 @@ class RuleInstance:
                               template)
         return template
 
-    def apply(self, evaluator):
+    def apply(self, evaluator, record=True):
         # add new from rhs
         for predicate in self.rule.rhs:
             actors = [self.actors[i] for i in predicate.actors]
             instance = PredicateInstance(predicate.name, *actors,
                                          permanent=predicate.permanent)
-            instance.produced_by = self
+            if record:
+                instance.produced_by = self
+                self.produced.append(instance)
             evaluator.state.append(instance)
-            self.produced.append(instance)
         # consume from lhs
         for i in range(len(self.predicate_instances)):
             instance = self.predicate_instances[i]
@@ -121,9 +122,10 @@ class RuleInstance:
                 evaluator.state.remove(instance)
                 if self.rule.lhs[i].keep:
                     copy = instance.copy()
-                    copy.produced_by = self
                     evaluator.state.append(copy)
-                    self.produced.append(copy)
+                    if record:
+                        copy.produced_by = self
+                        self.produced.append(copy)
 
     def store_observation(self, character_mapping, rule_mapping, fill, i=0):
         fill[i] = rule_mapping[self.rule.name]
@@ -154,6 +156,12 @@ class Rule:
         self.fulfilment = fulfilment
         self.social = social
         self.sanity = sanity
+
+    def __eq__(self, other):
+        return isinstance(other, Rule) and self.name == other.name
+
+    def __hash__(self):
+        return hash(self.name)
 
     def predicate_list_length(self, predicates):
         if len(predicates) < 1:
@@ -204,11 +212,19 @@ class Rule:
 class Evaluator:
     def __init__(self, rules=[], state=[], actors=[]):
         self.rules = rules
-        self.state = State(state) if isinstance(state, list) else state
-        self.init_state = state[:] if isinstance(state, list) else state.flatten()
+
+        is_list = isinstance(state, list)
+        self.state = State(state) if is_list else state
+        self.init_state = state[:] if is_list else state.flatten()
+
         self.actors = actors
 
-    def step(self):
+    def copy(self):
+        return Evaluator(rules=self.rules,
+                         state=self.state.copy(),
+                         actors=[a.copy() for a in self.actors])
+
+    def step(self) -> List[RuleInstance]:
         nested = [rule.get_options(self.state, self.actors)
                   for rule in self.rules]
         return [y for x in nested for y in x]
@@ -228,7 +244,7 @@ class Evaluator:
         return [rule.name for rule in self.rules]
 
     def verify_integrity(self):
-        # produces failed assertions on rules with non-matching wrong actor counts
+        # produces failed assertions on rules with non-matching actor counts
         self.get_predicate_list()
 
     def print_graph(self, view=True, show_all=False):

@@ -133,7 +133,7 @@ class MurderMysteryApp(App):
             profile_layout.add_widget(profile)
 
         self.main_layout.add_widget(profile_layout)
-        self.main_layout.add_widget(Label(text="Ask about:", bold=True, font_size=30))
+        self.main_layout.add_widget(Label(text="Ask about: ", bold=True, font_size=30))
         self.main_layout.add_widget(self.singleWidget)
         self.main_layout.add_widget(self.doubleWidget)
         self.main_layout.add_widget(images)
