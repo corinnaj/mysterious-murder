@@ -265,7 +265,9 @@ rule('grief',
 
 if __name__ == '__main__':
     characters, state = create_characters(4)
-    s = Simulation(Evaluator(rules=rules, actors=characters, state=state), agent=MCTSAgent())
+    s = Simulation(Evaluator(rules=rules, actors=characters, state=state),
+                   agent=MCTSAgent(),
+                   log=True)
     s.evaluator.verify_integrity()
     s.run(interactive=False, max_steps=100)
     s.print_graph(view=True, show_all=False)

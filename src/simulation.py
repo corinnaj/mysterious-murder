@@ -4,9 +4,10 @@ from .evaluator import Evaluator
 
 
 class Simulation:
-    def __init__(self, evaluator: Evaluator, agent=RandomAgent()):
+    def __init__(self, evaluator: Evaluator, agent=RandomAgent(), log=False):
         self.evaluator = evaluator
         self.agent = agent
+        self.log = log
 
     def copy(self):
         return Simulation(self.evaluator.copy())
@@ -73,8 +74,9 @@ class Simulation:
         option = self.agent.choose_action(next_actor, self)
         next_actor.update_scales(option.rule)
         option.apply(self.evaluator)
-        print(option.story_print())
-        self.print_reward_state()
+        if self.log:
+            print(option.story_print())
+            self.print_reward_state()
         # self.print_causality(option)
         # print(option.actors[0].relationship_to(option.actors[1],
         #                                       self.evaluator.state))
