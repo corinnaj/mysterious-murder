@@ -1,6 +1,7 @@
 import names
 from random import randrange
 from .evaluator import Instance, PredicateInstance
+from  .emoji import get_random_portrait
 
 
 RELATIONSHIP_DISPLAY_MAPPING = {
@@ -27,6 +28,7 @@ MOOD_DISPLAY_MAPPING = {
 class Character(Instance):
     def __init__(self):
         self.gender = 'male' if randrange(2) == 1 else 'female'
+        self.portrait = get_random_portrait(self.gender)
         # self.full_name = names.get_full_name(gender=self.gender)
         self.full_name = names.get_first_name(gender=self.gender)
         self.name = self.full_name.replace(' ', '_').lower()
@@ -39,6 +41,7 @@ class Character(Instance):
         # immutable
         c = Character()
         c.gender = self.gender
+        c.portrait = self.portrait
         c.full_name = self.full_name
         c.name = self.name
         c.predicates = self.predicates
