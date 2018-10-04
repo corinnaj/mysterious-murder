@@ -44,6 +44,11 @@ class Simulation:
                 count += 1
         return count
 
+    def check_is_murderer(self, actor):
+        self.evaluator.all_predicates_matching(lambda pred:
+                                               pred.actors[0] == actor and
+                                               'murder' in pred.rule.name)
+
     def check_stop(self, option):
         # if self.count_alive_actors() < 3:
         #     print('Too few actors remaining')
@@ -87,4 +92,3 @@ class Simulation:
             c.print_reward_state()
         print('--------------------')
         print()
-
