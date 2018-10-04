@@ -58,6 +58,9 @@ class Simulation:
     def whose_turn(self):
         return random.choice(self.evaluator.actors)
 
+    def take_action(self, actor, rule_instance):
+        rule_instance.apply(self.evaluator, record=False, rewards=True)
+
     def step(self):
         next_actor = self.whose_turn()
 
@@ -65,6 +68,7 @@ class Simulation:
         next_actor.update_scales(option.rule)
         option.apply(self.evaluator)
         print(option.story_print())
+        self.print_reward_state()
         # self.print_causality(option)
         # print(option.actors[0].relationship_to(option.actors[1],
         #                                       self.evaluator.state))
@@ -76,3 +80,11 @@ class Simulation:
     def print_causality(self, root):
         self.evaluator.traverse_tree(root,
                                      lambda rule: print(rule.story_print()))
+
+    def print_reward_state(self):
+        print('--------------------')
+        for c in self.evaluator.actors:
+            c.print_reward_state()
+        print('--------------------')
+        print()
+

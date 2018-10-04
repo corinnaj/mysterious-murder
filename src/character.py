@@ -81,6 +81,12 @@ class Character(Instance):
             self.predicates.append(PredicateInstance(trait, self, other))
 
     def update_scales(self, rule):
+        if rule.reset_rewards:
+            self.hunger = 0
+            self.social = 0
+            self.tiredness = 0
+            self.fulfilment = 0
+            self.sanity = 0
         self.hunger += rule.hunger
         self.social += rule.social
         self.tiredness += rule.tiredness
@@ -124,4 +130,9 @@ class Character(Instance):
         fulfilment = self.fulfilment
         sanity = self.sanity
 
-        return hunger + tiredness + social + fulfilment + sanity
+        return social + fulfilment + sanity
+
+    def print_reward_state(self):
+        print('\t%s\t%s\t%s\t%s\t%s' %
+              (self.hunger, self.tiredness, self.social, self.fulfilment,
+               self.sanity))

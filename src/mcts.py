@@ -4,6 +4,8 @@ import random
 
 class Node:
 
+    EPSILON = 30
+
     def __init__(self, rule_instance=None, parent=None, actor=None,
                  simulation=None):
         self.children = []
@@ -17,9 +19,9 @@ class Node:
 
     def uct_select_child(self):
         log_visits = log(self.visits)
-        return sorted([c for c in self.children],
-                      key=lambda c:
-                      c.accum_score/c.visits + sqrt(2*log_visits/c.visits))[-1]
+        return sorted(self.children, key=lambda c:
+                      c.accum_score/c.visits +
+                      self.EPSILON * sqrt(2*log_visits/c.visits))[-1]
 
     def uct_select_next(self):
         if self.has_untried_rules():
@@ -35,7 +37,7 @@ class Node:
     def create_random_child_state(self):
         rule_instance = random.choice(self.untried_rules)
         simulation = self.simulation.copy()
-        rule_instance.apply(simulation.evaluator, record=False)
+        simulation.take_action(self.actor, rule_instance)
 
         self.untried_rules.remove(rule_instance)
         n = Node(rule_instance=rule_instance,
@@ -51,8 +53,7 @@ class Node:
             rule_instances = simulation.get_actions_for_actor(self.actor)
             if len(rule_instances) < 1:
                 break
-            random.choice(rule_instances).apply(simulation.evaluator,
-                                                record=False)
+            simulation.take_action(self.actor, random.choice(rule_instances))
 
     def update(self, score):
         self.accum_score += score
@@ -60,6 +61,9 @@ class Node:
 
     def get_score(self):
         return self.simulation.get_score_for_actor(self.actor)
+
+    def print_score(self):
+        return str(self.accum_score) + '/'  + str(self.visits)
 
 
 def uct_find_best_rule(simulation,
@@ -80,4 +84,5 @@ def uct_find_best_rule(simulation,
             else:
                 break
 
+    print([c.print_score() for c in root.children])
     return max(root.children, key=lambda n: n.visits).rule_instance

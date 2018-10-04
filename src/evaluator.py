@@ -104,7 +104,7 @@ class RuleInstance:
                               template)
         return template
 
-    def apply(self, evaluator, record=True):
+    def apply(self, evaluator, record=True, rewards=False):
         # add new from rhs
         for predicate in self.rule.rhs:
             actors = [self.actors[i] for i in predicate.actors]
@@ -126,6 +126,8 @@ class RuleInstance:
                     if record:
                         copy.produced_by = self
                         self.produced.append(copy)
+        if rewards:
+            self.actors[0].update_scales(self.rule)
 
     def store_observation(self, character_mapping, rule_mapping, fill, i=0):
         fill[i] = rule_mapping[self.rule.name]
@@ -145,7 +147,8 @@ class Rule:
                  tiredness=0,
                  social=0,
                  sanity=0,
-                 fulfilment=0):
+                 fulfilment=0,
+                 reset_rewards=False):
         self.name = name
         self.lhs = lhs
         self.rhs = rhs
@@ -156,6 +159,7 @@ class Rule:
         self.fulfilment = fulfilment
         self.social = social
         self.sanity = sanity
+        self.reset_rewards = reset_rewards
 
     def __eq__(self, other):
         return isinstance(other, Rule) and self.name == other.name

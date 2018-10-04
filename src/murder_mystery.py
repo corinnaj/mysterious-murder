@@ -11,8 +11,16 @@ rules = []
 
 
 def rule(name, lhs, rhs, prob=5, template=[], hunger=0, tiredness=0, sanity=0,
-         fulfilment=0, social=0):
-    rules.append(Rule(name, lhs, rhs, prob=prob, template=template))
+         fulfilment=0, social=0, reset_rewards=False):
+    rules.append(Rule(name, lhs, rhs,
+                      prob=prob,
+                      template=template,
+                      hunger=hunger,
+                      tiredness=tiredness,
+                      sanity=sanity,
+                      fulfilment=fulfilment,
+                      social=social,
+                      reset_rewards=reset_rewards))
 
 
 def p(name, *args):
@@ -198,7 +206,9 @@ rule('murder_anger',
          *alive(A),
          p('alive', B)],
      [P('dead', B, permanent=True)],
-     template=['In a fit of anger, {0} killed {1}.'])
+     template=['In a fit of anger, {0} killed {1}.'],
+     fulfilment=300,
+     sanity=-80)
 
 rule('murder_cheating',
      [*alive(A, C),
@@ -208,7 +218,9 @@ rule('murder_cheating',
       pK('lovers', B, C)],
      [pP('dead', B)],
      template=['Shocked by the revelation that [0:his|her] [2:husband|wife] '
-               'was cheating, {0} murdered [2:his|her] lover {1}'])
+               'was cheating, {0} murdered [2:his|her] lover {1}'],
+     fulfilment=300,
+     sanity=-120)
 
 rule('murder_money',
      [
@@ -220,7 +232,9 @@ rule('murder_money',
      [pP('dead', B), p('has_money', A)],
      template=['Down to [0:his|her] last shirt, {0} saw how much money {1} '
                'had. So [0:he|she] took [0:his|her] weapon and decided to '
-               'make it all [0:his|hers]!'])
+               'make it all [0:his|hers]!'],
+     fulfilment=100,
+     sanity=-60)
 
 rule('suicide',
      [
@@ -228,7 +242,8 @@ rule('suicide',
          pK('has_weapon', A),
          *[pK('sadness', A)] * 3],
      [pP('dead', A)],
-     template=['Depressed by the events, {0} took the final out and commited suicide.'])
+     template=['Depressed by the events, {0} took the final out and commited suicide.'],
+     reset_rewards=True)
 
 rule('grief',
      [
@@ -236,7 +251,8 @@ rule('grief',
          p('dead', B),
          pK('trust', A, B)],
      [p('sadness', A)],
-     template=['{0} was sad about the loss of {1}.'])
+     template=['{0} was sad about the loss of {1}.'],
+     sanity=20)
 
 if __name__ == '__main__':
     characters, state = create_characters(4)
@@ -244,4 +260,3 @@ if __name__ == '__main__':
     s.evaluator.verify_integrity()
     s.run(interactive=False, max_steps=100)
     s.print_graph(view=True, show_all=False)
-
