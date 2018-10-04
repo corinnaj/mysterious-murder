@@ -1,11 +1,12 @@
 import random
-from .agent import RandomAgent, MCTSAgent
+from .agent import RandomAgent
 from .evaluator import Evaluator
 
 
 class Simulation:
-    def __init__(self, evaluator: Evaluator):
+    def __init__(self, evaluator: Evaluator, agent=RandomAgent()):
         self.evaluator = evaluator
+        self.agent = agent
 
     def copy(self):
         return Simulation(self.evaluator.copy())
@@ -69,7 +70,7 @@ class Simulation:
     def step(self):
         next_actor = self.whose_turn()
 
-        option = MCTSAgent().choose_action(next_actor, self)
+        option = self.agent.choose_action(next_actor, self)
         next_actor.update_scales(option.rule)
         option.apply(self.evaluator)
         print(option.story_print())
