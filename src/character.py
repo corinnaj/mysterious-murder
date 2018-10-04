@@ -157,6 +157,6 @@ class Character(Instance):
         return social + fulfilment + sanity
 
     def print_reward_state(self):
-        print('\t%s\t%s\t%s\t%s\t%s' %
-              (self.hunger, self.tiredness, self.social, self.fulfilment,
-               self.sanity))
+        print('%s\t%s\t%s\t%s\t%s\t%s' %
+              (self.portrait, self.hunger, self.tiredness, self.social,
+               self.fulfilment, self.sanity))
