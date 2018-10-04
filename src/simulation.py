@@ -8,6 +8,7 @@ class Simulation:
         self.evaluator = evaluator
         self.agent = agent
         self.log = log
+        self.murderers = []
 
     def copy(self):
         return Simulation(self.evaluator.copy())
@@ -47,16 +48,17 @@ class Simulation:
         return count
 
     def check_is_murderer(self, actor):
-        self.evaluator.all_predicates_matching(lambda pred:
-                                               pred.actors[0] == actor and
-                                               'murder' in pred.rule.name)
+        return actor in self.murderers
 
     def check_stop(self, option):
         # if self.count_alive_actors() < 3:
         #     print('Too few actors remaining')
         #     return True
         # return False
-        return 'murder' in option.rule.name
+        if 'murder' in option.rule.name:
+            self.murderers.append(option.actors[0])
+            return True
+        return False
 
     def get_actions_for_actor(self, actor):
         return [option for option in self.evaluator.step()
