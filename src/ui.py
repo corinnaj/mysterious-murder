@@ -84,6 +84,10 @@ class SingleCharWidget(BoxLayout):
             emojis = selected[0].mood(s.evaluator.state)
             display(emojis)
 
+        def accuse(instance):
+            print(s.check_is_murderer(selected[0]))
+            pass
+
         char_button = Button(text="Character Traits")
         char_button.bind(on_press=ask_char)
         self.add_widget(char_button)
@@ -95,6 +99,10 @@ class SingleCharWidget(BoxLayout):
         mood_button = Button(text="Current Mood")
         mood_button.bind(on_press=ask_mood)
         self.add_widget(mood_button)
+
+        accuse_button = Button(text="Accuse", background_color=[0.55, 0.15, 0, 1])
+        accuse_button.bind(on_press=accuse)
+        self.add_widget(accuse_button)
 
 
 class DoubleCharWidget(BoxLayout):
@@ -156,6 +164,6 @@ if __name__ == '__main__':
     characters, state = create_characters(4)
     s = Simulation(Evaluator(rules=rules, actors=characters, state=state))
     s.evaluator.verify_integrity()
-    s.run(interactive=False, max_steps=10)
+    s.run(interactive=False, max_steps=100)
 
     MurderMysteryApp().run()
