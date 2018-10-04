@@ -10,22 +10,11 @@ import random
 import os
 import glob
 from .murder_mystery import rules, Simulation, Evaluator, create_characters
+from .emoji import get_random_portrait_filename, get_filename_for
 
 selected = []
 colors = [[0, 0, 1, 1], [0, 0.25, 0.75, 1], [0, 0.5, 0.5, 1], [0.5, 0.5, 0, 1]]
 images = BoxLayout(orientation='horizontal')
-
-
-def get_filename_for(emoji):
-    image = hex(ord(emoji))
-    image = 'assets/emoji_u' + str(image)[2:] + '*.png'
-    files = [f for f in glob.glob(image) if os.path.isfile(f)]
-    return random.choice(files)
-
-
-def get_char_images(c):
-    folder = 'assets/portraits/' + c.gender + '/'
-    return random.choice(os.listdir(folder))
 
 
 def display(emojis):
@@ -59,7 +48,7 @@ class ProfileWidget(BoxLayout):
         layout.add_widget(Label(text="Name", bold=True))
         layout.add_widget(Label(text=c.full_name))
 
-        img = 'assets/portraits/' + c.gender + '/' + get_char_images(c)
+        img = get_filename_for(c.portrait, c.gender)
         if c.dead(s.evaluator.state):
             print('dead')
             self.add_widget(Image(source='assets/emoji_u274c.png'))
