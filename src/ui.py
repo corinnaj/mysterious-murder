@@ -1,7 +1,6 @@
 from kivy.app import App
 from kivy.uix.label import Label
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.gridlayout import GridLayout
 from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.image import Image
 from kivy.uix.button import Button
@@ -79,9 +78,9 @@ class SingleCharWidget(BoxLayout):
         def accuse(instance):
             app.accuse(app.selected[0])
 
-        char_button = Button(text="Character Traits")
-        char_button.bind(on_press=ask_char)
-        self.add_widget(char_button)
+#        char_button = Button(text="Character Traits")
+#        char_button.bind(on_press=ask_char)
+#        self.add_widget(char_button)
 
         weapon_button = Button(text="Possessions")
         weapon_button.bind(on_press=ask_weapon)
@@ -91,7 +90,7 @@ class SingleCharWidget(BoxLayout):
         mood_button.bind(on_press=ask_mood)
         self.add_widget(mood_button)
 
-        accuse_button = Button(text="Accuse", background_color=[0.55, 0.15, 0, 1])
+        accuse_button = Button(text="Accuse", background_color=[1, 0, 0, 1])
         accuse_button.bind(on_press=accuse)
         self.add_widget(accuse_button)
 
@@ -123,6 +122,7 @@ class MurderMysteryApp(App):
     def __init__(self, **kwargs):
         super(MurderMysteryApp, self).__init__(**kwargs)
         self.main_layout = BoxLayout(orientation="vertical")
+        self.ask_label = Label(text="", bold=True, font_size=30)
         self.redo()
 
     def build(self):
@@ -134,15 +134,21 @@ class MurderMysteryApp(App):
         self.lastNum = len(self.selected)
         self.main_layout.remove_widget(self.singleWidget)
         self.main_layout.remove_widget(self.doubleWidget)
-        if self.lastNum == 1:
+
+        if self.lastNum == 0:
+            self.ask_label.text = "Select a character to ask them questions"
+        elif self.lastNum == 1:
             self.main_layout.add_widget(self.singleWidget, index=1)
+            self.ask_label.text = "Ask " + self.selected[0].first_name + ":"
         elif self.lastNum == 2:
             self.main_layout.add_widget(self.doubleWidget, index=1)
+            self.ask_label.text = "Ask " + self.selected[0].first_name + " about " + self.selected[1].first_name + ":"
 
     def accuse(self, character):
         self.main_layout.remove_widget(self.singleWidget)
         self.main_layout.remove_widget(self.doubleWidget)
         self.main_layout.remove_widget(images)
+        self.ask_label.text = ""
         self.main_layout.add_widget(Label(text="You confront " + character.full_name + '.', font_size=30))
         if self.simulation.check_is_murderer(character):
             self.main_layout.add_widget(Label(text=template_apply('[0:He|She] confesses immediatly!', [character]), font_size=30))
@@ -160,6 +166,7 @@ class MurderMysteryApp(App):
     def redo(self):
         self.selected = []
         self.main_layout.clear_widgets()
+        self.ask_label.text = "Select a character to start asking them questions"
 
         characters, state = create_characters(4)
         self.simulation = Simulation(Evaluator(rules=rules, actors=characters, state=state))
@@ -176,7 +183,7 @@ class MurderMysteryApp(App):
             profile_layout.add_widget(profile)
 
         self.main_layout.add_widget(profile_layout)
-        self.main_layout.add_widget(Label(text="Ask about: ", bold=True, font_size=30))
+        self.main_layout.add_widget(self.ask_label)
         self.main_layout.add_widget(images)
 
 

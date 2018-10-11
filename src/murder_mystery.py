@@ -75,15 +75,16 @@ def greed(a):
     return [P('spontaneous', a, keep=True), P('confident', a, keep=True)]
 
 
-rule('eat', [*alive(A)], [], hunger=10)
-rule('sleep', [*alive(A)], [], tiredness=10)
-rule('talk', [*alive(A, B)], [], social=5)
-rule('work', [*alive(A)], [], sanity=5, fulfilment=10)
+#rule('eat', [*alive(A)], [], hunger=10)
+#rule('sleep', [*alive(A)], [], tiredness=10)
+#rule('talk', [*alive(A, B)], [], social=5)
+#rule('work', [*alive(A)], [], sanity=5, fulfilment=10)
 
 rule('get_weapon',
      [*alive(A)],
      [P('has_weapon', 0)],
      template=['{0} acquired a weapon.'])
+
 # A spreads rumor about B to C
 rule('lie_success',
      [

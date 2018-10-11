@@ -31,7 +31,7 @@ class Character(Instance):
             self.gender = 'male' if randrange(2) == 1 else 'female'
             self.portrait = get_random_portrait(self.gender)
             self.full_name = names.get_full_name(gender=self.gender)
-            # self.full_name = names.get_first_name(gender=self.gender)
+            self.first_name = self.full_name.split(' ')[0]
             self.name = self.full_name.replace(' ', '_').lower()
             self._hash = hash(self.name)
             self.predicates = []
