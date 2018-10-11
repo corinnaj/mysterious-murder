@@ -11,18 +11,20 @@ C = 2
 rules = []
 
 
-def rule(name, lhs, *rhs, prob=5, template=[], hunger=0, tiredness=0, sanity=0,
-         fulfilment=0, social=0, reset_rewards=False, witness_probability=0.5):
+def rule(name, lhs, *rhs, prob=5, template=None, hunger=None, tiredness=None,
+         sanity=None, fulfilment=None, social=None, reset_rewards=False,
+         witness_probability=0.5):
+    num_outcomes = len(rhs)
     rules.append(Rule(name,
                       lhs,
-                      Outcome(only=rhs[0]) if len(rhs) == 1 else Outcome(*rhs),
+                      Outcome(only=rhs[0]) if num_outcomes == 1 else Outcome(*rhs),
                       prob=prob,
                       template=template,
-                      hunger=hunger,
-                      tiredness=tiredness,
-                      sanity=sanity,
-                      fulfilment=fulfilment,
-                      social=social,
+                      hunger=[0] * num_outcomes if hunger is None else hunger,
+                      tiredness=[0] * num_outcomes if hunger is None else tiredness,
+                      sanity=[0] * num_outcomes if hunger is None else sanity,
+                      fulfilment=[0] * num_outcomes if hunger is None else fulfilment,
+                      social=[0] * num_outcomes if hunger is None else social,
                       witness_probability=witness_probability,
                       reset_rewards=reset_rewards))
 
@@ -83,6 +85,7 @@ def greed(a):
 rule('get_weapon',
      [*alive(A)],
      [P('has_weapon', 0)],
+     sanity=[-5],
      template=['{0} acquired a weapon.'])
 
 # A spreads rumor about B to C
@@ -96,6 +99,7 @@ rule('lie_success',
          P('trust', C, A, keep=True)
      ],
      [P('disgust', C, B)],
+     social=[30],
      template=['{0} told some dirty rumors about {2} to {1}.'])
 
 rule('lie_fail',
@@ -111,6 +115,7 @@ rule('lie_fail',
          P('disgust', C, A),
          P('anger', C, A)
      ],
+     social=[-40],
      template=['{0} tried to tell {1} lies about {2}, but {1} called '
                '[0:him|her] out on [0:his|her] lies!'])
 
@@ -119,7 +124,8 @@ rule('fight',
          *alive(A, B),
          pK('anger', A, B)],
      [P('anger', B, A)],
-     template=['{0} and {1} ended up fighting.'], social=-10)
+     social=[-11],
+     template=['{0} and {1} ended up fighting.'])
 
 rule('make_up',
      [
@@ -127,7 +133,9 @@ rule('make_up',
          P('anger', A, B),
          P('anger', B, A),
          P('trust', A, B, keep=True)],
-     [], template=['{0} and {1} made up.'], social=10)
+     [],
+     social=[12],
+     template=['{0} and {1} made up.'])
 
 
 rule('seduce',
@@ -140,6 +148,7 @@ rule('seduce',
      [
          P('lovers', A, B),
          P('lovers', B, A)],
+     social=[70],
      template=['{0} seduced {1}.'])
 
 # TODO check if they are already married
@@ -154,8 +163,8 @@ rule('get_married',
          P('married', A, B),
          P('married', B, A)],
      template=['{0} and {1} got married!'],
-     social=30,
-     sanity=10)
+     social=[40],
+     sanity=[10])
 
 rule('get_divorced',
      [
@@ -165,8 +174,8 @@ rule('get_divorced',
          P('married', B, A)],
      [],
      template=['{0} and {1} got divorced.'],
-     social=-10,
-     sanity=-10)
+     social=[-20],
+     sanity=[40])
 
 rule('steal_N',
      [
@@ -177,6 +186,8 @@ rule('steal_N',
         pK('disgust', A, B)],
      (0.3, [P('anger', B, A)] * 2),
      (0.7, [P('has_money', A)]),
+     fulfilment=[-60, 80],
+     sanity=[-10, -10],
      template=['{0} tried to steal from {1}, but {1} caught [0:him|her]!',
                '{0} managed to steal from {1}, unnoticed.'])
 
@@ -187,6 +198,8 @@ rule('steal_E',
         P('has_money', B)],
      (0.3, [P('anger', B, A)] * 2),
      (0.7, [P('has_money', A)]),
+     fulfilment=[-20, 120],
+     sanity=[-5, -5],
      template=['{0} tried to steal from {1}, but {1} caught [0:him|her]!',
                '{0} managed to steal from {1}, unnoticed.'])
 
@@ -198,8 +211,8 @@ rule('murder_anger',
          p('alive', B)],
      [P('dead', B, permanent=True)],
      template=['In a fit of anger, {0} killed {1}.'],
-     fulfilment=300,
-     sanity=-80)
+     fulfilment=[300],
+     sanity=[-80])
 
 rule('murder_very_anger',
      [
@@ -207,6 +220,8 @@ rule('murder_very_anger',
          *alive(A),
          p('alive', B)],
      [P('dead', B, permanent=True)],
+     fulfilment=[300],
+     sanity=[-180],
      template=['{0} got so angry, [0:he|she] murdered {1} with [0:his|her] bare hands!'])
 
 rule('murder_cheating',
@@ -218,8 +233,8 @@ rule('murder_cheating',
      [pP('dead', B)],
      template=['Shocked by the revelation that [0:his|her] [2:husband|wife] '
                'was cheating, {0} murdered [2:his|her] lover {1}'],
-     fulfilment=300,
-     sanity=-120)
+     fulfilment=[300],
+     sanity=[-120])
 
 rule('murder_money',
      [
@@ -232,8 +247,8 @@ rule('murder_money',
      template=['Down to [0:his|her] last shirt, {0} saw how much money {1} '
                'had. So [0:he|she] took [0:his|her] weapon and decided to '
                'make it all [0:his|hers]!'],
-     fulfilment=100,
-     sanity=-60)
+     fulfilment=[100],
+     sanity=[-60])
 
 rule('suicide',
      [
@@ -251,7 +266,7 @@ rule('grief',
          pK('trust', A, B)],
      [p('sadness', A)],
      template=['{0} was sad about the loss of {1}.'],
-     sanity=20)
+     sanity=[20])
 
 if __name__ == '__main__':
     characters, state = create_characters(4)

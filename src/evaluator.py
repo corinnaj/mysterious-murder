@@ -124,7 +124,7 @@ class RuleInstance:
                         copy.produced_by = self
                         self.produced.append(copy)
         if rewards:
-            self.actors[0].update_scales(self.rule)
+            self.actors[0].update_scales(self.rule, self.chosen_rhs)
 
     def store_observation(self, character_mapping, rule_mapping, fill, i=0):
         fill[i] = rule_mapping[self.rule.name]

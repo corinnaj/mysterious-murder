@@ -95,18 +95,18 @@ class Character(Instance):
         for i in range(amount):
             self.predicates.append(PredicateInstance(trait, self, other))
 
-    def update_scales(self, rule):
+    def update_scales(self, rule, index):
         if rule.reset_rewards:
             self.hunger = 0
             self.social = 0
             self.tiredness = 0
             self.fulfilment = 0
             self.sanity = 0
-        self.hunger += rule.hunger
-        self.social += rule.social
-        self.tiredness += rule.tiredness
-        self.fulfilment += rule.fulfilment
-        self.sanity += rule.sanity
+        self.hunger += rule.hunger[index]
+        self.social += rule.social[index]
+        self.tiredness += rule.tiredness[index]
+        self.fulfilment += rule.fulfilment[index]
+        self.sanity += rule.sanity[index]
 
     def reset_scales(self):
         self.hunger = -10
@@ -164,6 +164,9 @@ class Character(Instance):
         return social + fulfilment + sanity
 
     def print_reward_state(self):
-        print('%s\t%s\t%s\t%s\t%s\t%s' %
-              (self.portrait, self.hunger, self.tiredness, self.social,
-               self.fulfilment, self.sanity))
+        if True:
+            print('%s\t%s\t%s\t%s\t%s' % (self.portrait, self.social,
+                                          self.fulfilment, self.sanity,
+                                          self.calculate_score()))
+        else:
+            print('%s\t%s' % (self.portrait, self.calculate_score()))
