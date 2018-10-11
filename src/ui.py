@@ -47,7 +47,7 @@ class ProfileWidget(BoxLayout):
 
         PORTRAIT_SIZE = 100
 
-        img = get_filename_for(c.portrait, c.gender)
+        img = get_filename_for(c.portrait)
         if c.dead(app.simulation.evaluator.state):
             stack = RelativeLayout(height=PORTRAIT_SIZE, size_hint=(1, None))
             stack.add_widget(Image(source=img))
@@ -108,6 +108,10 @@ class DoubleCharWidget(BoxLayout):
             emojis = app.selected[0].feelings_towards(app.selected[1], app.simulation.evaluator.state)
             display(emojis)
 
+        def ask_facts(instance):
+            emojis = app.selected[0].witnessed_for_character(app.selected[1])
+            display(emojis)
+
         char_button = Button(text="Relationship")
         char_button.bind(on_press=ask_rel)
         self.add_widget(char_button)
@@ -115,6 +119,10 @@ class DoubleCharWidget(BoxLayout):
         feelings_button = Button(text="Feelings")
         feelings_button.bind(on_press=ask_feels)
         self.add_widget(feelings_button)
+
+        facts_button = Button(text="Facts")
+        facts_button.bind(on_press=ask_facts)
+        self.add_widget(facts_button)
 
 
 class MurderMysteryApp(App):

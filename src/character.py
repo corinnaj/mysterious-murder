@@ -1,5 +1,5 @@
 import names
-from random import randrange
+from random import randrange, choice
 from .evaluator import Instance, PredicateInstance
 from .emoji import get_random_portrait
 
@@ -21,9 +21,16 @@ POSSESSIONS_DISPLAY_MAPPING = {
 }
 
 MOOD_DISPLAY_MAPPING = {
-        'joy':  '\N{GRINNING FACE WITH SMILING EYES}',
-        'sadness': '\N{LOUDLY CRYING FACE}'
-        }
+    'joy':  '\N{GRINNING FACE WITH SMILING EYES}',
+    'sadness': '\N{LOUDLY CRYING FACE}'
+}
+
+RULE_DISPLAY_MAPPING = {
+    'stealing': '\N{money bag}',
+    'murder': '\N{hocho}',
+    'lie': '\U0001f92b',
+    'nothing': '\N{shrug}'
+}
 
 class Character(Instance):
     def __init__(self, empty=False):
@@ -61,6 +68,23 @@ class Character(Instance):
 
     def witness(self, rule_instance):
         self.witnessed.append(rule_instance)
+
+    def witnessed_for_character(self, character):
+        rules = [rule for rule in self.witnessed if character in rule.actors]
+        if not rules:
+            return RULE_DISPLAY_MAPPING['nothing']
+        rule = choice(rules)
+        print(rule)
+        res = []
+        res += [rule.actors[0].portrait]
+        if 'lie' in rule.rule.name:
+            res += RULE_DISPLAY_MAPPING['lie']
+        elif 'murder' in rule.rule.name:
+            res += RULE_DISPLAY_MAPPING['murder']
+        elif 'steal' in rule.rule.name:
+            res += RULE_DISPLAY_MAPPING['steal']
+        res += [rule.actors[1].portrait]
+        return res
 
     def random_trait(self, type, opposite_type, max_degree=3):
         r = randrange(max_degree)

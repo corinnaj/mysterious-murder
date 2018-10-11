@@ -1,5 +1,5 @@
-import random
-import glob
+from random import choice
+from glob import glob
 
 FEMALE_PORTRAITS = [
     '\U0001f467\U0001f3fb',
@@ -392,26 +392,19 @@ MALE_PORTRAITS = [
 ]
 
 
-def get_filename_for(emoji, gender=None):
-    #return ('assets' +
-    #        ('/portraits/' + gender if gender else '') +
-    #        '/emoji_u' + '_'.join(str(hex(ord(c)))[2:] for c in emoji) +
-    #        '.png')
-    print('assets' +
-        ('/portraits/' + gender if gender else '') +
-        '/emoji_u' + '_'.join(str(hex(ord(c)))[2:] for c in emoji) + '*' +
-        '.png')
-    return random.choice(glob.glob('assets' +
-        ('/portraits/' + gender if gender else '') +
-        '/emoji_u' + '_'.join(str(hex(ord(c)))[2:] for c in emoji) + '*' +
-        '.png'))
+def get_filename_for(emoji):
+#    print('assets' +
+#          '/emoji_u' +
+#          '_'.join(str(hex(ord(c)))[2:] for c in emoji) +
+#          '*' +
+#          '.png')
+    return choice(glob('assets' +
+                       '/emoji_u' +
+                       '_'.join(str(hex(ord(c)))[2:] for c in emoji) +
+                       '*' +
+                       '.png'))
 
 
 def get_random_portrait(gender):
     portraits = FEMALE_PORTRAITS if gender == 'female' else MALE_PORTRAITS
-    return random.choice(portraits)
-
-
-def get_random_portrait_filename(gender):
-    return get_filename_for(get_random_portrait(gender), gender)
-
+    return choice(portraits)
