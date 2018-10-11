@@ -1,5 +1,5 @@
 from .evaluator import Predicate as P
-from .evaluator import Rule, Evaluator
+from .evaluator import Rule, Evaluator, Outcome
 from .state_generator import create_characters
 from .simulation import Simulation
 from .agent import MCTSAgent
@@ -11,9 +11,11 @@ C = 2
 rules = []
 
 
-def rule(name, lhs, rhs, prob=5, template=[], hunger=0, tiredness=0, sanity=0,
+def rule(name, lhs, *rhs, prob=5, template=[], hunger=0, tiredness=0, sanity=0,
          fulfilment=0, social=0, reset_rewards=False, witness_probability=0.5):
-    rules.append(Rule(name, lhs, rhs,
+    rules.append(Rule(name,
+                      lhs,
+                      Outcome(only=rhs[0]) if len(rhs) == 1 else Outcome(*rhs),
                       prob=prob,
                       template=template,
                       hunger=hunger,
@@ -108,7 +110,8 @@ rule('lie_fail',
          P('disgust', C, A),
          P('anger', C, A)
      ],
-     template=['{0} tried to tell {1} lies about {2}, but got caught redhanded!'])
+     template=['{0} tried to tell {1} lies about {2}, but {1} called '
+               '[0:him|her] out on [0:his|her] lies!'])
 
 rule('fight',
      [
@@ -164,42 +167,27 @@ rule('get_divorced',
      social=-10,
      sanity=-10)
 
-rule('steal_not_caught_E',
-     [
-        *alive(A, B),
-        evil(A),
-        P('has_money', B)],
-     [
-        P('has_money', A)],
-     template=['{0} managed to steal from {1}, unnoticed.'])
-
-rule('steal_not_caught_N',
-     [
-        *alive(A, B),
-        neutral(A),
-        *greed(A),
-        P('has_money', B),
-        P('disgust', A, B, keep=True)],
-     [P('has_money', A)],
-     template=['{0} managed to steal from {1}, unnoticed.'])
-
-rule('steal_caught_E',
-     [
-        *alive(A, B),
-        evil(A),
-        P('has_money', B)],
-     [P('anger', B, A)] * 2,
-     template=['{0} tried to steal from {1}, but {1} caught [0:him|her]!'])
-
-rule('steal_caught_N',
+rule('steal_N',
      [
         *alive(A, B),
         neutral(A),
         *greed(A),
         P('has_money', B),
         pK('disgust', A, B)],
-     [P('anger', B, A)] * 2,
-     template=['{0} tried to steal from {1}, but {1} caught [0:him|her]!'])
+     (0.3, [P('anger', B, A)] * 2),
+     (0.7, [P('has_money', A)]),
+     template=['{0} tried to steal from {1}, but {1} caught [0:him|her]!',
+               '{0} managed to steal from {1}, unnoticed.'])
+
+rule('steal_E',
+     [
+        *alive(A, B),
+        evil(A),
+        P('has_money', B)],
+     (0.3, [P('anger', B, A)] * 2),
+     (0.7, [P('has_money', A)]),
+     template=['{0} tried to steal from {1}, but {1} caught [0:him|her]!',
+               '{0} managed to steal from {1}, unnoticed.'])
 
 rule('murder_anger',
      [
@@ -252,7 +240,7 @@ rule('suicide',
          pK('has_weapon', A),
          *[pK('sadness', A)] * 3],
      [pP('dead', A)],
-     template=['Depressed by the events, {0} took the final out and commited suicide.'],
+     template=['Endlessly depressed by the events, {0} commited suicide.'],
      reset_rewards=True)
 
 rule('grief',

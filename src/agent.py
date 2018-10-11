@@ -17,7 +17,7 @@ class RandomAgent:
             current_prob += option.prob
             if current_prob >= target_prob:
                 return option
-        return options[len(options) - 1]
+        return options[-1]
 
 
 class MCTSAgent:

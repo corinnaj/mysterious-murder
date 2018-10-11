@@ -2,7 +2,6 @@ from math import log, sqrt
 import random
 
 class Node:
-
     EPSILON = 30
 
     def __init__(self, rule_instance=None, parent=None, actor=None,
