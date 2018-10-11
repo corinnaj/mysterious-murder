@@ -170,10 +170,7 @@ class Rule:
         self.witness_probability = witness_probability
         self.n_actors = self.get_n_actors()
 
-    def __eq__(self, other):
-        return isinstance(other, Rule) and self.name == other.name
-
-    def hash(self, name, actors):
+    def hash_predicate(self, name, actors):
         h = hash(name)
         for actor in actors:
             h ^= hash(actor)
@@ -185,13 +182,11 @@ class Rule:
             hashes = []
             for predicate in self.lhs:
                 actors = [pairs[index] for index in predicate.actors]
-                hashes.append(self.hash(predicate.name, actors))
+                hashes.append(self.hash_predicate(predicate.name, actors))
             self.permutations.append((hashes, pairs))
 
-            # now for every element on the left hand side...
-            # for predicate in self.lhs:
-            #     actors = 
-            #     self.permutations.append((self.hash(self.name, actors), pairs))
+    def __eq__(self, other):
+        return isinstance(other, Rule) and self.name == other.name
 
     def __hash__(self):
         return hash(self.name)
