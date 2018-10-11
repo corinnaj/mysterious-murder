@@ -112,6 +112,7 @@ class Simulation:
 
     def print_reward_state(self):
         print('--------------------')
+        print(' \tsocial\tfulfilm\tsanity\tSCORE')
         for c in self.evaluator.actors:
             c.print_reward_state()
         print('--------------------')
