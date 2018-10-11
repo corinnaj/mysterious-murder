@@ -85,8 +85,8 @@ class Simulation:
         next_actor = self.whose_turn()
 
         option = self.agent.choose_action(next_actor, self)
-        next_actor.update_scales(option.rule)
-        option.apply(self.evaluator, record=True)
+        # next_actor.update_scales(option.rule)
+        option.apply(self.evaluator, record=True, rewards=True)
         self.random_witness(option)
         if self.log:
             print(option.story_print())

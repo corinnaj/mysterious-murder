@@ -92,27 +92,18 @@ class RuleInstance:
             s ^= hash(a)
         return s
 
-    def random_template(self):
-        if len(self.rule.template) < 1:
-            return None
-        return self.rule.template[random.randrange(len(self.rule.template))]
-
     def story_print(self):
-        template = self.random_template()
+        assert(self.chosen_rhs is not None)
+
+        template = self.rule.template_for_choice(self.chosen_rhs)
         if not template:
             return str(self)
         return template_apply(template, self.actors)
-        #for i in range(self.rule.get_n_actors()):
-        #    actor = self.actors[i]
-        #    template = template.replace('{' + str(i) + '}', actor.full_name)
-        #    template = re.sub(r'\[' + str(i) + r'+:([^|]+)\|([^]]+)\]',
-        #                      r'\2' if actor.gender == 'female' else r'\1',
-        #                      template)
-        #return template
 
     def apply(self, evaluator, record=True, rewards=False):
         # add new from rhs
-        for predicate in self.rule.rhs:
+        self.chosen_rhs = self.rule.rhs.pick()
+        for predicate in self.rule.rhs.options[self.chosen_rhs][1]:
             actors = [self.actors[i] for i in predicate.actors]
             instance = PredicateInstance(predicate.name, *actors,
                                          permanent=predicate.permanent)
@@ -133,13 +124,42 @@ class RuleInstance:
                         copy.produced_by = self
                         self.produced.append(copy)
         if rewards:
-            self.actors[0].update_scales(self.rule)
+            evaluator.find_actor(self.actors[0]).update_scales(self.rule, self.chosen_rhs)
 
     def store_observation(self, character_mapping, rule_mapping, fill, i=0):
         fill[i] = rule_mapping[self.rule.name]
         for j in range(len(self.actors)):
             fill[i + j + 1] = character_mapping[self.actors[j]]
         return fill
+
+
+class Outcome:
+    def __init__(self, *options, only=None):
+        if only is not None:
+            self.options = [(1, only)]
+        else:
+            self.options = options
+        assert(sum(o[0] for o in self.options) == 1.0)
+
+    def pick(self):
+        if len(self.options) < 2:
+            return 0
+
+        pick = random.random()
+        current = 0
+        i = 0
+        for option in self.options:
+            current += option[0]
+            if current >= pick:
+                return i
+            i += 1
+        return i - 1
+
+    def predicate_list_length(self):
+        if len(self.options) == 1 and len(self.options[0][1]) == 0:
+            return 0
+        return max(max(index for p in option[1] for index in p.actors) + 1
+                   for option in self.options)
 
 
 class Rule:
@@ -185,6 +205,11 @@ class Rule:
                 hashes.append(self.hash_predicate(predicate.name, actors))
             self.permutations.append((hashes, pairs))
 
+    def template_for_choice(self, choice):
+        if len(self.template) < 1:
+            return None
+        return self.template[choice]
+
     def __eq__(self, other):
         return isinstance(other, Rule) and self.name == other.name
 
@@ -198,7 +223,7 @@ class Rule:
 
     def get_n_actors(self):
         return max(self.predicate_list_length(self.lhs),
-                   self.predicate_list_length(self.rhs))
+                   self.rhs.predicate_list_length())
 
     def get_options(self, state, actors):
         options = []
@@ -221,7 +246,7 @@ class Rule:
             # if len(set(id(i) for i in instances)) == len(instances):
             #     options.append(self.instance(perm[1], instances))
             #     continue
-            # slow pick with duplicate evasion
+            # slow check with duplicate evasion
             state_access = StateAccess(state)
             instances = []
             for h in perm[0]:
@@ -274,6 +299,11 @@ class Evaluator:
                          actors=[a.copy() for a in self.actors],
                          is_copy=True)
 
+    def find_actor(self, actor):
+        for a in self.actors:
+            if a == actor:
+                return a
+
     def step(self) -> List[RuleInstance]:
         nested = [rule.get_options(self.state, self.actors)
                   for rule in self.rules]
@@ -282,7 +312,10 @@ class Evaluator:
     def get_predicate_list(self) -> Dict[str, int]:
         predicates = {}
         for rule in self.rules:
-            for predicate in itertools.chain(rule.lhs, rule.rhs):
+            expanded_rhs = [o[1] for o in rule.rhs.options]
+            assert (len(rule.template) == 0 or
+                    len(rule.rhs.options) == len(rule.template))
+            for predicate in itertools.chain(rule.lhs, *expanded_rhs):
                 known_number = predicates.get(predicate.name)
                 if known_number:
                     assert known_number == len(predicate.actors)
@@ -307,4 +340,3 @@ class Evaluator:
                         for p in root.predicate_instances
                         if p.produced_by):
             self.traverse_tree(rule, func)
-
