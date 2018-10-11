@@ -71,7 +71,8 @@ class Simulation:
         self.print_causality(self.murder)
 
     def get_actions_for_actor(self, actor):
-        return [option for option in self.evaluator.step()
+        options = self.evaluator.step()
+        return [option for option in options
                 if option.actors[0] == actor]
 
     def whose_turn(self):

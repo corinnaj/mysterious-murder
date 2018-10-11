@@ -20,6 +20,7 @@ class Instance:
         self.name = name
         self.full_name = full_name
         self.gender = gender
+        self._hash = hash(self.name)
 
     def __repr__(self):
         return '<' + self.name + '>'
@@ -28,7 +29,7 @@ class Instance:
         return isinstance(value, Instance) and self.name == value.name
 
     def __hash__(self):
-        return hash(self.name)
+        return self._hash
 
 
 class Predicate:
@@ -48,6 +49,10 @@ class PredicateInstance:
         self.produced_by = None
         self.permanent = permanent
         self.id = assign_id()
+
+        self._hash = hash(name)
+        for actor in actors:
+            self._hash ^= hash(actor)
 
     def __repr__(self):
         return self.name + '(' + ','.join(str(a) for a in self.actors) + ')'
@@ -161,9 +166,30 @@ class Rule:
         self.social = social
         self.sanity = sanity
         self.reset_rewards = reset_rewards
+        self.n_actors  = self.get_n_actors()
 
     def __eq__(self, other):
         return isinstance(other, Rule) and self.name == other.name
+
+    def hash(self, name, actors):
+        h = hash(name)
+        for actor in actors:
+            h ^= hash(actor)
+        return h
+
+    def precomp_permutations(self, actors):
+        self.permutations = []
+        for pairs in itertools.permutations(actors, self.n_actors):
+            hashes = []
+            for predicate in self.lhs:
+                actors = [pairs[index] for index in predicate.actors]
+                hashes.append(self.hash(predicate.name, actors))
+            self.permutations.append((hashes, pairs))
+
+            # now for every element on the left hand side...
+            # for predicate in self.lhs:
+            #     actors = 
+            #     self.permutations.append((self.hash(self.name, actors), pairs))
 
     def __hash__(self):
         return hash(self.name)
@@ -180,42 +206,60 @@ class Rule:
     def get_options(self, state, actors):
         options = []
         # try all permutations of actors
-        state_access = StateAccess(state)
-        for pairs in itertools.permutations(actors, self.get_n_actors()):
+        for perm in self.permutations:
+            # instances = []
+            missing = False
+            # fast check
+            for h in perm[0]:
+                instance = state.fetch_hash(h)
+                if len(instance) > 0:
+                    # instances.append(instance[0])
+                    pass
+                else:
+                    missing = True
+                    break
+            if missing:
+                continue
+            # already found only good options
+            # if len(set(id(i) for i in instances)) == len(instances):
+            #     options.append(self.instance(perm[1], instances))
+            #     continue
+            # slow pick with duplicate evasion
+            state_access = StateAccess(state)
             instances = []
-            state_access.reset()
-            # now for every element on the left hand side...
-            for predicate in self.lhs:
-                actors = [pairs[index] for index in predicate.actors]
-                instance = state_access.fetch(predicate.name, actors)
+            for h in perm[0]:
+                instance = state_access.fetch_hash(h)
                 if instance:
                     instances.append(instance)
                 else:
+                    missing = True
                     break
-                # found = False
-                # ...look through the state to find a matching instance
-                # for instance in state:
-                #     if (not self.contains_id(instances, instance) and
-                #             instance.matches(predicate, pairs)):
-                #         instances.append(instance)
-                #         found = True
-                #         break
-                # # if we found one, we can proceed, if we found none, we abort
-                # if not found:
-                #     break
-                # else:
-                #     continue
-            # if we managed to fill all slots
-            if len(instances) == len(self.lhs):
-                options.append(self.instance(pairs, instances))
+            if not missing:
+                options.append(self.instance(perm[1], instances))
         return options
+
+        # for pairs in itertools.permutations(actors, self.n_actors):
+        #     instances = []
+        #     state_access.reset()
+        #     # now for every element on the left hand side...
+        #     for predicate in self.lhs:
+        #         actors = [pairs[index] for index in predicate.actors]
+        #         instance = state_access.fetch(predicate.name, actors)
+        #         if instance:
+        #             instances.append(instance)
+        #         else:
+        #             break
+        #     # if we managed to fill all slots
+        #     if len(instances) == len(self.lhs):
+        #         options.append(self.instance(pairs, instances))
+        # return options
 
     def instance(self, actors, predicate_instances=[]):
         return RuleInstance(self, actors, predicate_instances, prob=self.prob)
 
 
 class Evaluator:
-    def __init__(self, rules=[], state=[], actors=[]):
+    def __init__(self, rules=[], state=[], actors=[], is_copy=False):
         self.rules = rules
 
         is_list = isinstance(state, list)
@@ -223,11 +267,15 @@ class Evaluator:
         self.init_state = state[:] if is_list else state.flatten()
 
         self.actors = actors
+        if not is_copy:
+            for rule in rules:
+                rule.precomp_permutations(actors)
 
     def copy(self):
         return Evaluator(rules=self.rules,
                          state=self.state.copy(),
-                         actors=[a.copy() for a in self.actors])
+                         actors=[a.copy() for a in self.actors],
+                         is_copy=True)
 
     def step(self) -> List[RuleInstance]:
         nested = [rule.get_options(self.state, self.actors)

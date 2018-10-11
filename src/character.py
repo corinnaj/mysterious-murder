@@ -1,7 +1,7 @@
 import names
 from random import randrange
 from .evaluator import Instance, PredicateInstance
-from  .emoji import get_random_portrait
+from .emoji import get_random_portrait
 
 
 RELATIONSHIP_DISPLAY_MAPPING = {
@@ -26,25 +26,28 @@ MOOD_DISPLAY_MAPPING = {
         }
 
 class Character(Instance):
-    def __init__(self):
-        self.gender = 'male' if randrange(2) == 1 else 'female'
-        self.portrait = get_random_portrait(self.gender)
-        self.full_name = names.get_full_name(gender=self.gender)
-        # self.full_name = names.get_first_name(gender=self.gender)
-        self.name = self.full_name.replace(' ', '_').lower()
-        self.predicates = []
-        self.predicates.append(PredicateInstance('alive', self))
-        self.hunger = self.tiredness = -10
-        self.social = self.sanity = self.fulfilment = 0
+    def __init__(self, empty=False):
+        if not empty:
+            self.gender = 'male' if randrange(2) == 1 else 'female'
+            self.portrait = get_random_portrait(self.gender)
+            self.full_name = names.get_full_name(gender=self.gender)
+            # self.full_name = names.get_first_name(gender=self.gender)
+            self.name = self.full_name.replace(' ', '_').lower()
+            self._hash = hash(self.name)
+            self.predicates = []
+            self.predicates.append(PredicateInstance('alive', self))
+            self.hunger = self.tiredness = -10
+            self.social = self.sanity = self.fulfilment = 0
 
     def copy(self):
         # immutable
-        c = Character()
+        c = Character(empty=True)
         c.gender = self.gender
         c.portrait = self.portrait
         c.full_name = self.full_name
         c.name = self.name
         c.predicates = self.predicates
+        c._hash = self._hash
 
         # actual state
         c.hunger = self.hunger
@@ -157,6 +160,6 @@ class Character(Instance):
         return social + fulfilment + sanity
 
     def print_reward_state(self):
-        print('\t%s\t%s\t%s\t%s\t%s' %
-              (self.hunger, self.tiredness, self.social, self.fulfilment,
-               self.sanity))
+        print('%s\t%s\t%s\t%s\t%s\t%s' %
+              (self.portrait, self.hunger, self.tiredness, self.social,
+               self.fulfilment, self.sanity))
