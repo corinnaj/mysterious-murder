@@ -8,6 +8,7 @@ class Simulation:
         self.evaluator = evaluator
         self.agent = agent
         self.log = log
+        self.murder = None
         self.murderers = []
 
     def copy(self):
@@ -62,8 +63,12 @@ class Simulation:
         # return False
         if 'murder' in option.rule.name:
             self.murderers.append(option.actors[0])
+            self.murder = option
             return True
         return False
+
+    def print_murder_causality(self):
+        self.print_causality(self.murder)
 
     def get_actions_for_actor(self, actor):
         return [option for option in self.evaluator.step()

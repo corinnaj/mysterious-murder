@@ -143,11 +143,13 @@ class MurderMysteryApp(App):
         self.main_layout.remove_widget(self.singleWidget)
         self.main_layout.remove_widget(self.doubleWidget)
         self.main_layout.remove_widget(images)
-        self.main_layout.add_widget(Label(text="You confront " + character.full_name, font_size=30))
+        self.main_layout.add_widget(Label(text="You confront " + character.full_name + '.', font_size=30))
         if self.simulation.check_is_murderer(character):
             self.main_layout.add_widget(Label(text=template_apply('[0:He|She] confesses immediatly!', [character]), font_size=30))
         else:
             self.main_layout.add_widget(Label(text="You got the wrong person!\nIt was actually " + self.simulation.get_murderers()[0].full_name + '!', font_size=30))
+
+        # self.simulation.print_murder_causality()
 
         def do_redo(instance):
             self.redo()
