@@ -1,7 +1,6 @@
 from math import log, sqrt
 import random
 
-
 class Node:
 
     EPSILON = 30
@@ -63,7 +62,7 @@ class Node:
         return self.simulation.get_score_for_actor(self.actor)
 
     def print_score(self):
-        return str(self.accum_score) + '/'  + str(self.visits)
+        return str(self.accum_score) + '/' + str(self.visits)
 
 
 def uct_find_best_rule(simulation,

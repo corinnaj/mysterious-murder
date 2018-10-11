@@ -26,7 +26,8 @@ class State:
             self.append(predicate)
 
     def append(self, predicate):
-        h = self.hash_predicate(predicate)
+        # h = self.hash_predicate(predicate)
+        h = predicate._hash
         list = self.dict.get(h)
         if not list:
             list = self.dict[h] = []
@@ -44,10 +45,10 @@ class State:
 
     def fetch(self, name, actors):
         """returns the list of resources matching the given description"""
-        list = self.dict.get(self.hash(name, actors))
-        if not list:
-            return []
-        return list
+        return self.fetch_hash(self.hash(name, actors))
+
+    def fetch_hash(self, hash):
+        return self.dict.get(hash, [])
 
     def contains(self, name, actors):
         list = self.fetch(name, actors)
@@ -85,16 +86,22 @@ class StateAccess:
     """
 
     def __init__(self, state):
-        self.taken = []
+        self.taken = set()
         self.state = state
 
+    def fetch_hash(self, h):
+        return self.unused_from_list(self.state.fetch_hash(h))
+
     def fetch(self, name, actors):
-        list = self.state.fetch(name, actors)
+        return self.unused_from_list(self.state.fetch(name, actors))
+
+    def unused_from_list(self, list):
         for instance in list:
-            if id(instance) not in self.taken:
-                self.taken.append(id(instance))
+            i = id(instance)
+            if i not in self.taken:
+                self.taken.add(i)
                 return instance
         return None
 
     def reset(self):
-        self.taken = []
+        self.taken.clear()
