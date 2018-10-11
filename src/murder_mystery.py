@@ -12,7 +12,7 @@ rules = []
 
 
 def rule(name, lhs, rhs, prob=5, template=[], hunger=0, tiredness=0, sanity=0,
-         fulfilment=0, social=0, reset_rewards=False):
+         fulfilment=0, social=0, reset_rewards=False, witness_probability=0.5):
     rules.append(Rule(name, lhs, rhs,
                       prob=prob,
                       template=template,
@@ -21,6 +21,7 @@ def rule(name, lhs, rhs, prob=5, template=[], hunger=0, tiredness=0, sanity=0,
                       sanity=sanity,
                       fulfilment=fulfilment,
                       social=social,
+                      witness_probability=witness_probability,
                       reset_rewards=reset_rewards))
 
 

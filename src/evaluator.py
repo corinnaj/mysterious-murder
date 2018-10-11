@@ -154,6 +154,7 @@ class Rule:
                  social=0,
                  sanity=0,
                  fulfilment=0,
+                 witness_probability=0,
                  reset_rewards=False):
         self.name = name
         self.lhs = lhs
@@ -166,7 +167,8 @@ class Rule:
         self.social = social
         self.sanity = sanity
         self.reset_rewards = reset_rewards
-        self.n_actors  = self.get_n_actors()
+        self.witness_probability = witness_probability
+        self.n_actors = self.get_n_actors()
 
     def __eq__(self, other):
         return isinstance(other, Rule) and self.name == other.name

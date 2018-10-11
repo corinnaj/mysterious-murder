@@ -81,7 +81,8 @@ class Simulation:
 
         option = self.agent.choose_action(next_actor, self)
         next_actor.update_scales(option.rule)
-        option.apply(self.evaluator)
+        option.apply(self.evaluator, record=True)
+        self.random_witness(option)
         if self.log:
             print(option.story_print())
             self.print_reward_state()
@@ -89,6 +90,13 @@ class Simulation:
         # print(option.actors[0].relationship_to(option.actors[1],
         #                                       self.evaluator.state))
         return not self.check_stop(option)
+
+    def random_witness(self, rule_instance):
+        if random.random() <= rule_instance.rule.witness_probability:
+            witness = random.choice([a for a in self.evaluator.actors
+                                     if a not in rule_instance.actors])
+            print("Witness! " + str(rule_instance) + " " + str(witness))
+            witness.witness(rule_instance)
 
     def print_graph(self, view=True, show_all=False):
         return self.evaluator.print_graph(view=view, show_all=show_all)

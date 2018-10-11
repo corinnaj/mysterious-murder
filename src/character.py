@@ -38,6 +38,7 @@ class Character(Instance):
             self.predicates.append(PredicateInstance('alive', self))
             self.hunger = self.tiredness = -10
             self.social = self.sanity = self.fulfilment = 0
+            self.witnessed = []
 
     def copy(self):
         # immutable
@@ -57,6 +58,9 @@ class Character(Instance):
         c.fulfilment = self.fulfilment
 
         return c
+
+    def witness(self, rule_instance):
+        self.witnessed.append(rule_instance)
 
     def random_trait(self, type, opposite_type, max_degree=3):
         r = randrange(max_degree)
