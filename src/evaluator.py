@@ -124,7 +124,7 @@ class RuleInstance:
                         copy.produced_by = self
                         self.produced.append(copy)
         if rewards:
-            self.actors[0].update_scales(self.rule, self.chosen_rhs)
+            evaluator.find_actor(self.actors[0]).update_scales(self.rule, self.chosen_rhs)
 
     def store_observation(self, character_mapping, rule_mapping, fill, i=0):
         fill[i] = rule_mapping[self.rule.name]
@@ -298,6 +298,11 @@ class Evaluator:
                          state=self.state.copy(),
                          actors=[a.copy() for a in self.actors],
                          is_copy=True)
+
+    def find_actor(self, actor):
+        for a in self.actors:
+            if a == actor:
+                return a
 
     def step(self) -> List[RuleInstance]:
         nested = [rule.get_options(self.state, self.actors)
