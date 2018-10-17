@@ -23,7 +23,7 @@ class Instance:
         self._hash = hash(self.name)
 
     def __repr__(self):
-        return '<' + self.name + '>'
+        return '<' + self.portrait + '>'
 
     def __eq__(self, value):
         return isinstance(value, Instance) and self.name == value.name
@@ -92,13 +92,13 @@ class RuleInstance:
             s ^= hash(a)
         return s
 
-    def story_print(self):
+    def story_print(self, short=False):
         assert(self.chosen_rhs is not None)
 
-        template = self.rule.template_for_choice(self.chosen_rhs)
+        template = self.rule.template_for_choice(self.chosen_rhs, short=short)
         if not template:
             return str(self)
-        return template_apply(template, self.actors)
+        return template_apply(template, self.actors, short=short)
 
     def apply(self, evaluator, record=True, rewards=False):
         # add new from rhs
@@ -159,6 +159,7 @@ class Outcome:
         if len(self.options) == 1 and len(self.options[0][1]) == 0:
             return 0
         return max(max(index for p in option[1] for index in p.actors) + 1
+                   if len(option[1]) > 0 else 0
                    for option in self.options)
 
 
@@ -169,6 +170,7 @@ class Rule:
                  rhs,
                  prob=5,
                  template=[],
+                 short_template=[],
                  hunger=0,
                  tiredness=0,
                  social=0,
@@ -181,6 +183,7 @@ class Rule:
         self.rhs = rhs
         self.prob = prob
         self.template = template
+        self.short_template = short_template
         self.hunger = hunger
         self.tiredness = tiredness
         self.fulfilment = fulfilment
@@ -205,10 +208,13 @@ class Rule:
                 hashes.append(self.hash_predicate(predicate.name, actors))
             self.permutations.append((hashes, pairs))
 
-    def template_for_choice(self, choice):
-        if len(self.template) < 1:
+    def template_for_choice(self, choice, short=False):
+        templates = (self.short_template
+                     if short and self.short_template is not None
+                     else self.template)
+        if len(templates) < 1:
             return None
-        return self.template[choice]
+        return templates[choice]
 
     def __eq__(self, other):
         return isinstance(other, Rule) and self.name == other.name

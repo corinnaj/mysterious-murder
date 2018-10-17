@@ -21,7 +21,11 @@ class GraphPrinter:
         for instance in instances:
             if instance.consumed_by or show_all:
                 self.dot.attr('node',
-                              style='striped',
+                              style='striped,dotted',
+                              fontsize='7',
+                              margin='0.01',
+                              height='0',
+                              width='0',
                               fillcolor=self.color_list(instance.actors, 0.1),
                               shape='box')
                 self.dot.node(instance.id, str(instance))
@@ -38,7 +42,10 @@ class GraphPrinter:
         self.existing_rules.add(rule.id)
         self.dot.attr('node',
                       style='striped',
+                      fontsize='16',
+                      margin='0.1',
                       shape='box',
-                      fillcolor=self.color_list(rule.actors, 0.4))
-        self.dot.node(rule.id, str(rule))
+                      fillcolor='#eeeeee')
+        # fillcolor=self.color_list(rule.actors, 0.4))
+        self.dot.node(rule.id, rule.story_print(short=True))
         self.print_instances(rule.produced, rule, show_all=show_all)

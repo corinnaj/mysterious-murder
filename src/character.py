@@ -32,6 +32,7 @@ RULE_DISPLAY_MAPPING = {
     'nothing': '\N{shrug}'
 }
 
+
 class Character(Instance):
     def __init__(self, empty=False):
         if not empty:
@@ -41,11 +42,13 @@ class Character(Instance):
             self.first_name = self.full_name.split(' ')[0]
             self.name = self.full_name.replace(' ', '_').lower()
             self._hash = hash(self.name)
-            self.predicates = []
-            self.predicates.append(PredicateInstance('alive', self))
             self.hunger = self.tiredness = -10
             self.social = self.sanity = self.fulfilment = 0
             self.witnessed = []
+
+            self.predicates = []
+            self.predicates.append(PredicateInstance('alive', self))
+            self.predicates.append(PredicateInstance('single', self))
 
     def copy(self):
         # immutable
@@ -103,7 +106,9 @@ class Character(Instance):
 
     def married(self, other):
         self.predicates.append(PredicateInstance('married', self, other))
+        self.predicates = [p for p in self.predicates if p.name != 'single']
         other.predicates.append(PredicateInstance('married', other, self))
+        other.predicates = [p for p in other.predicates if p.name != 'single']
 
     def lovers(self, other):
         self.predicates.append(PredicateInstance('lovers', self, other))
