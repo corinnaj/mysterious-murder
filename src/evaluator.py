@@ -1,7 +1,7 @@
 from typing import List, Dict
 import itertools
 import random
-from .state import State, StateAccess
+from .state import State, StateAccess, hash_name_actors
 from .graph import GraphPrinter
 from .text_templating import apply as template_apply
 
@@ -23,7 +23,7 @@ class Instance:
         self._hash = hash(self.name)
 
     def __repr__(self):
-        return '<' + self.portrait + '>'
+        return '<' + self.name + '>'
 
     def __eq__(self, value):
         return isinstance(value, Instance) and self.name == value.name
@@ -50,9 +50,7 @@ class PredicateInstance:
         self.permanent = permanent
         self.id = assign_id()
 
-        self._hash = hash(name)
-        for actor in actors:
-            self._hash ^= hash(actor)
+        self._hash = hash_name_actors(name, actors)
 
     def __repr__(self):
         return self.name + '(' + ','.join(str(a) for a in self.actors) + ')'
@@ -115,7 +113,8 @@ class RuleInstance:
         for i in range(len(self.predicate_instances)):
             instance = self.predicate_instances[i]
             if not instance.permanent:
-                instance.consumed_by = self
+                if record:
+                    instance.consumed_by = self
                 evaluator.state.remove(instance)
                 if self.rule.lhs[i].keep:
                     copy = instance.copy()
@@ -171,16 +170,16 @@ class Rule:
                  prob=5,
                  template=[],
                  short_template=[],
-                 hunger=0,
-                 tiredness=0,
-                 social=0,
-                 sanity=0,
-                 fulfilment=0,
+                 hunger=[0],
+                 tiredness=[0],
+                 social=[0],
+                 sanity=[0],
+                 fulfilment=[0],
                  witness_probability=0,
                  reset_rewards=False):
         self.name = name
         self.lhs = lhs
-        self.rhs = rhs
+        self.rhs = rhs if isinstance(rhs, Outcome) else Outcome(only=rhs)
         self.prob = prob
         self.template = template
         self.short_template = short_template
@@ -193,19 +192,13 @@ class Rule:
         self.witness_probability = witness_probability
         self.n_actors = self.get_n_actors()
 
-    def hash_predicate(self, name, actors):
-        h = hash(name)
-        for actor in actors:
-            h ^= hash(actor)
-        return h
-
     def precomp_permutations(self, actors):
         self.permutations = []
         for pairs in itertools.permutations(actors, self.n_actors):
             hashes = []
             for predicate in self.lhs:
                 actors = [pairs[index] for index in predicate.actors]
-                hashes.append(self.hash_predicate(predicate.name, actors))
+                hashes.append(hash_name_actors(predicate.name, actors))
             self.permutations.append((hashes, pairs))
 
     def template_for_choice(self, choice, short=False):

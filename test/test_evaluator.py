@@ -150,7 +150,31 @@ class EvaluatorTestCase(MyTestCase):
         r = RuleInstance(
                 Rule('test', [Predicate('steal', 0, 1)], [], template=['{0} tried to steal from {1}, but {1} caught [0:him|her]. [1:He|She]']),
                 [c0, c1], [])
+        r.chosen_rhs = 0
         self.assertEqual(r.story_print(), 'Alice tried to steal from Bob, but Bob caught her. He')
+
+    def test_bug_multiple_not_fulfilled(self):
+        c0 = Instance('alice', 'Alice', 'female')
+        c1 = Instance('bob', 'Bob', 'male')
+
+        eval = Evaluator(
+            actors=[c0, c1],
+            rules=[Rule('test', [Predicate('angry', 0, 1)] * 5, [])],
+            state=[*[PredicateInstance('angry', c0, c1) for _ in range(3)],
+                   *[PredicateInstance('angry', c1, c0) for _ in range(2)]]
+        )
+        options = eval.step()
+        self.assertEqual(len(options), 0)
+
+        eval = Evaluator(
+            actors=[c0, c1],
+            rules=[Rule('test', [Predicate('angry', 0, 1)] * 3, [])],
+            state=[PredicateInstance('angry', c0, c1) for _ in range(3)]
+        )
+        print(eval.state.flatten())
+        options = eval.step()
+        print(options)
+        self.assertEqual(len(options), 1)
 
 
 if __name__ == '__main__':

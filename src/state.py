@@ -1,6 +1,14 @@
 import copy
 
 
+def hash_predicate(predicate):
+    return hash_name_actors(predicate.name, predicate.actors)
+
+
+def hash_name_actors(name, actors):
+    return hash(name) ^ hash(tuple(actors))
+
+
 class State:
     def __init__(self, init_state_list=None):
         self.dict = {}
@@ -12,21 +20,11 @@ class State:
         s.dict = {key: copy.copy(l) for key, l in self.dict.items()}
         return s
 
-    def hash_predicate(self, predicate):
-        return self.hash(predicate.name, predicate.actors)
-
-    def hash(self, name, actors):
-        h = hash(name)
-        for actor in actors:
-            h ^= hash(actor)
-        return h
-
     def append_all(self, predicate_list):
         for predicate in predicate_list:
             self.append(predicate)
 
     def append(self, predicate):
-        # h = self.hash_predicate(predicate)
         h = predicate._hash
         list = self.dict.get(h)
         if not list:
@@ -41,11 +39,11 @@ class State:
         return list
 
     def remove(self, predicate):
-        self.dict[self.hash_predicate(predicate)].remove(predicate)
+        self.dict[hash_predicate(predicate)].remove(predicate)
 
     def fetch(self, name, actors):
         """returns the list of resources matching the given description"""
-        return self.fetch_hash(self.hash(name, actors))
+        return self.fetch_hash(hash_name_actors(name, actors))
 
     def fetch_hash(self, hash):
         return self.dict.get(hash, [])
@@ -55,7 +53,7 @@ class State:
         return list is not None and len(list) > 0
 
     def count(self, name, actors):
-        return len(self.dict.get(self.hash(name, actors)))
+        return len(self.dict.get(hash_name_actors(name, actors)))
 
     def all_predicates_from(self, actor):
         return self.all_predicates_matching(lambda pred:

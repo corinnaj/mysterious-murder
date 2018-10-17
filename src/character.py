@@ -50,6 +50,9 @@ class Character(Instance):
             self.predicates.append(PredicateInstance('alive', self))
             self.predicates.append(PredicateInstance('single', self))
 
+    def __repr__(self):
+        return '<' + self.portrait + '>'
+
     def copy(self):
         # immutable
         c = Character(empty=True)

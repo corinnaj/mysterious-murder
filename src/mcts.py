@@ -24,6 +24,8 @@ class Node:
     def uct_select_next(self):
         if self.has_untried_rules():
             return self
+        if len(self.children) < 1:
+            return None
         return self.uct_select_child().uct_select_next()
 
     def has_untried_rules(self):
@@ -72,6 +74,8 @@ def uct_find_best_rule(simulation,
 
     for _ in range(max_iterations):
         node = root.uct_select_next().create_random_child_state()
+        if not node:
+            continue
         node.do_rollout(rollout_steps)
 
         score = node.get_score()
@@ -82,5 +86,4 @@ def uct_find_best_rule(simulation,
             else:
                 break
 
-    print([c.print_score() for c in root.children])
     return max(root.children, key=lambda n: n.visits).rule_instance

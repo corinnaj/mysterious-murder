@@ -61,7 +61,7 @@ class Simulation:
         #     print('Too few actors remaining')
         #     return True
         # return False
-        if 'murder' in option.rule.name:
+        if 'murder' in option.rule.name or 'suicide' in option.rule.name:
             self.murderers.append(option.actors[0])
             self.murder = option
             return True

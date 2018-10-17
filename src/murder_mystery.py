@@ -13,7 +13,7 @@ rules = []
 
 def rule(name, lhs, *rhs, prob=5, template=None, short_template=None,
          hunger=None, tiredness=None, sanity=None, fulfilment=None,
-         social=None, reset_rewards=False, witness_probability=0.5):
+         social=None, reset_rewards=False, witness_probability=0.0):
     num_outcomes = len(rhs)
     rules.append(Rule(name,
                       lhs,
@@ -86,7 +86,7 @@ def greed(a):
 rule('get_weapon',
      [*alive(A)],
      [P('has_weapon', 0)],
-     sanity=[-5],
+     sanity=[-40],
      template=['{0} acquired a weapon.'])
 
 # A spreads rumor about B to C
@@ -169,12 +169,12 @@ rule('get_married',
          P('single', B),
          P('not_related', A, B, keep=True),
          P('not_related', B, A, keep=True)],
-     [
-         P('married', A, B),
-         P('married', B, A)],
-     template=['{0} and {1} got married!'],
-     social=[40],
-     sanity=[10])
+     (0.9, [P('married', A, B), P('married', B, A)]),
+     (0.1, [P('anger', A, B)]),
+     template=['{0} and {1} got married!',
+               '{0} proposed to {1} but got rejected!'],
+     social=[40, -20],
+     sanity=[10, -20])
 
 rule('get_divorced',
      [
@@ -200,6 +200,17 @@ rule('steal_N',
      (0.3, [P('anger', B, A)] * 2),
      (0.7, [P('has_money', A)]),
      fulfilment=[-60, 80],
+     sanity=[-10, -10],
+     short_template=['{0} was caught stealing from {1}',
+                     '{0} stole from {1}'],
+     template=['{0} tried to steal from {1}, but {1} caught [0:him|her]!',
+               '{0} managed to steal from {1}, unnoticed.'])
+
+rule('steal_debt',
+     [*alive(A, B), P('has_money', B)],
+     (0.3, [P('anger', B, A)] * 2),
+     (0.7, [P('has_money', A)]),
+     fulfilment=[-80, 120],
      sanity=[-10, -10],
      short_template=['{0} was caught stealing from {1}',
                      '{0} stole from {1}'],
@@ -291,12 +302,18 @@ rule('grief',
      template=['{0} was sad about the loss of {1}.'],
      sanity=[20])
 
+rule('pay_debt',
+     [*alive(A), P('has_money', A), P('debt', A)],
+     [],
+     template=['{0} paid off {0:his|her} debt.'],
+     sanity=[40])
+
 rule('gamble',
      [
          *alive(A),
      ],
      (0.1, [P('has_money', A)]),
-     (0.9, []),
+     (0.9, [P('debt', A)]),
      template=['{0} won big time in the casino!',
                '{0} tried their luck in the casino, but to no avail'],
      fulfilment=[100, -30])
