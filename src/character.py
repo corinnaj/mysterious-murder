@@ -29,6 +29,7 @@ RULE_DISPLAY_MAPPING = {
     'stealing': '\N{money bag}',
     'murder': '\N{hocho}',
     'lie': '\U0001f92b',
+    'unknown': '\N{BLACK QUESTION MARK ORNAMENT}',
     'nothing': '\N{shrug}'
 }
 
@@ -83,7 +84,12 @@ class Character(Instance):
             res += RULE_DISPLAY_MAPPING['murder']
         elif 'steal' in rule.rule.name:
             res += RULE_DISPLAY_MAPPING['steal']
-        res += [rule.actors[1].portrait]
+        else:
+            res += RULE_DISPLAY_MAPPING['unknown']
+        if len(rule.actors) > 1:
+            res += [rule.actors[1].portrait]
+        if len(rule.actors) > 2:
+            res += [rule.actors[2].portrait]
         return res
 
     def random_trait(self, type, opposite_type, max_degree=3):
