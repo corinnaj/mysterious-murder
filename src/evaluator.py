@@ -1,7 +1,7 @@
 from typing import List, Dict
 import itertools
 import random
-from .state import State, StateAccess
+from .state import State, StateAccess, hash_name_actors
 from .graph import GraphPrinter
 from .text_templating import apply as template_apply
 
@@ -50,9 +50,7 @@ class PredicateInstance:
         self.permanent = permanent
         self.id = assign_id()
 
-        self._hash = hash(name)
-        for actor in actors:
-            self._hash ^= hash(actor)
+        self._hash = hash_name_actors(name, actors)
 
     def __repr__(self):
         return self.name + '(' + ','.join(str(a) for a in self.actors) + ')'
@@ -92,13 +90,13 @@ class RuleInstance:
             s ^= hash(a)
         return s
 
-    def story_print(self):
+    def story_print(self, short=False):
         assert(self.chosen_rhs is not None)
 
-        template = self.rule.template_for_choice(self.chosen_rhs)
+        template = self.rule.template_for_choice(self.chosen_rhs, short=short)
         if not template:
             return str(self)
-        return template_apply(template, self.actors)
+        return template_apply(template, self.actors, short=short)
 
     def apply(self, evaluator, record=True, rewards=False):
         # add new from rhs
@@ -115,7 +113,8 @@ class RuleInstance:
         for i in range(len(self.predicate_instances)):
             instance = self.predicate_instances[i]
             if not instance.permanent:
-                instance.consumed_by = self
+                if record:
+                    instance.consumed_by = self
                 evaluator.state.remove(instance)
                 if self.rule.lhs[i].keep:
                     copy = instance.copy()
@@ -159,6 +158,7 @@ class Outcome:
         if len(self.options) == 1 and len(self.options[0][1]) == 0:
             return 0
         return max(max(index for p in option[1] for index in p.actors) + 1
+                   if len(option[1]) > 0 else 0
                    for option in self.options)
 
 
@@ -169,18 +169,20 @@ class Rule:
                  rhs,
                  prob=5,
                  template=[],
-                 hunger=0,
-                 tiredness=0,
-                 social=0,
-                 sanity=0,
-                 fulfilment=0,
+                 short_template=[],
+                 hunger=[0],
+                 tiredness=[0],
+                 social=[0],
+                 sanity=[0],
+                 fulfilment=[0],
                  witness_probability=0,
                  reset_rewards=False):
         self.name = name
         self.lhs = lhs
-        self.rhs = rhs
+        self.rhs = rhs if isinstance(rhs, Outcome) else Outcome(only=rhs)
         self.prob = prob
         self.template = template
+        self.short_template = short_template
         self.hunger = hunger
         self.tiredness = tiredness
         self.fulfilment = fulfilment
@@ -190,25 +192,22 @@ class Rule:
         self.witness_probability = witness_probability
         self.n_actors = self.get_n_actors()
 
-    def hash_predicate(self, name, actors):
-        h = hash(name)
-        for actor in actors:
-            h ^= hash(actor)
-        return h
-
     def precomp_permutations(self, actors):
         self.permutations = []
         for pairs in itertools.permutations(actors, self.n_actors):
             hashes = []
             for predicate in self.lhs:
                 actors = [pairs[index] for index in predicate.actors]
-                hashes.append(self.hash_predicate(predicate.name, actors))
+                hashes.append(hash_name_actors(predicate.name, actors))
             self.permutations.append((hashes, pairs))
 
-    def template_for_choice(self, choice):
-        if len(self.template) < 1:
+    def template_for_choice(self, choice, short=False):
+        templates = (self.short_template
+                     if short and self.short_template is not None
+                     else self.template)
+        if len(templates) < 1:
             return None
-        return self.template[choice]
+        return templates[choice]
 
     def __eq__(self, other):
         return isinstance(other, Rule) and self.name == other.name
