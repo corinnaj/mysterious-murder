@@ -73,7 +73,10 @@ def uct_find_best_rule(simulation,
     root = Node(simulation=simulation, actor=actor)
 
     for _ in range(max_iterations):
-        node = root.uct_select_next().create_random_child_state()
+        node = root.uct_select_next()
+        if not node:
+            continue
+        node = node.create_random_child_state()
         if not node:
             continue
         node.do_rollout(rollout_steps)
