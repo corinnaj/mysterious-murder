@@ -1,5 +1,5 @@
 import names
-from random import randrange, choice
+from random import randrange, choice, random
 from .evaluator import Instance, PredicateInstance
 from .emoji import get_random_portrait
 
@@ -26,9 +26,17 @@ MOOD_DISPLAY_MAPPING = {
 }
 
 RULE_DISPLAY_MAPPING = {
-    'stealing': '\N{money bag}',
+    'steal': '\N{money bag}',
     'murder': '\N{hocho}',
     'lie': '\U0001f92b',
+    'gamble': '\N{slot machine}',
+    'fight': '\U0001F92C',
+    'get_married': '\N{WEDDING}',
+    'get_divorced': '\N{BROKEN HEART}',
+    'seduce': '\N{KISS}',
+    'get_weapon': '\N{hocho}',
+    'pay_debt': '\N{handshake}\N{money bag}',
+    'make_up': '\N{HANDSHAKE}',
     'unknown': '\N{BLACK QUESTION MARK ORNAMENT}',
     'nothing': '\N{shrug}'
 }
@@ -84,14 +92,10 @@ class Character(Instance):
         print(rule)
         res = []
         res += [rule.actors[0].portrait]
-        if 'lie' in rule.rule.name:
-            res += RULE_DISPLAY_MAPPING['lie']
-        elif 'murder' in rule.rule.name:
-            res += RULE_DISPLAY_MAPPING['murder']
-        elif 'steal' in rule.rule.name:
-            res += RULE_DISPLAY_MAPPING['steal']
-        else:
-            res += RULE_DISPLAY_MAPPING['unknown']
+        for x in RULE_DISPLAY_MAPPING:
+            if x in rule.rule.name:
+                res += RULE_DISPLAY_MAPPING[x]
+                break
         if len(rule.actors) > 1:
             res += [rule.actors[1].portrait]
         if len(rule.actors) > 2:
@@ -208,3 +212,35 @@ class Character(Instance):
                                           self.calculate_score()))
         else:
             print('%s\t%s' % (self.portrait, self.calculate_score()))
+
+    def go(self, evaluator):
+        self.rules = set()
+        self.rules_seen = set()
+        self.process_predicates(evaluator.init_state)
+
+    def process_predicates(self, predicates):
+        for p in predicates:
+            if p.consumed_by is not None:
+                self.process_rule(p.consumed_by)
+
+    def process_rule(self, rule):
+        if rule in self.rules_seen:
+            return
+        self.rules_seen.add(rule)
+        value = random()
+        if value <= rule.rule.admit_probability[rule.chosen_rhs]:
+            if self in rule.actors:
+                self.rules.add(rule)
+        self.process_predicates(rule.produced)
+
+    def get_admitted_events(self, evaluator):
+        self.go(evaluator)
+        for predInstance in evaluator.init_state:
+            if predInstance.consumed_by is not None:
+                self.process_rule(predInstance.consumed_by)
+
+        for rule in self.witnessed:
+            self.rules.add(rule)
+
+        for rule in self.rules:
+            print(rule.story_print(short=False))

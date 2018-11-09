@@ -176,6 +176,7 @@ class Rule:
                  sanity=[0],
                  fulfilment=[0],
                  witness_probability=0,
+                 admit_probability=0,
                  reset_rewards=False):
         self.name = name
         self.lhs = lhs
@@ -190,6 +191,7 @@ class Rule:
         self.sanity = sanity
         self.reset_rewards = reset_rewards
         self.witness_probability = witness_probability
+        self.admit_probability = admit_probability
         self.n_actors = self.get_n_actors()
 
     def precomp_permutations(self, actors):

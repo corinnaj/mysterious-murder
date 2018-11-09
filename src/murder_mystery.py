@@ -13,7 +13,7 @@ rules = []
 
 def rule(name, lhs, *rhs, prob=5, template=None, short_template=None,
          hunger=None, tiredness=None, sanity=None, fulfilment=None,
-         social=None, reset_rewards=False, witness_probability=0.0):
+         social=None, reset_rewards=False, witness_probability=0.5, admit_probability=[0.0]):
     num_outcomes = len(rhs)
     rules.append(Rule(name,
                       lhs,
@@ -27,6 +27,7 @@ def rule(name, lhs, *rhs, prob=5, template=None, short_template=None,
                       fulfilment=[0] * num_outcomes if fulfilment is None else fulfilment,
                       social=[0] * num_outcomes if social is None else social,
                       witness_probability=witness_probability,
+                      admit_probability=admit_probability,
                       reset_rewards=reset_rewards))
 
 
@@ -102,6 +103,7 @@ rule('lie_easy',
      (0.4, [P('disgust', C, B)]),
      (0.6, [P('disgust', C, A), P('anger', C, A)]),
      social=[30, -40],
+     admit_probability=[0, 0],
      short_template=['{0} lied about {1} to {2}',
                      '{0} failed to lie about {1} to {2}'],
      template=['{0} told some dirty rumors about {1} to {2}.',
@@ -120,6 +122,7 @@ rule('lie_difficult',
      (0.2, [P('disgust', C, B)]),
      (0.8, [P('disgust', C, A), P('anger', C, A)]),
      social=[30, -40],
+     admit_probability=[0, 0],
      short_template=['{0} lied about {1} to {2}',
                      '{0} failed to lie about {1} to {2}'],
      template=['{0} told some dirty rumors about {1} to {2}.',
@@ -133,7 +136,8 @@ rule('fight',
      [P('anger', B, A)],
      social=[-11],
      short_template=['{0} and {1} fought'],
-     template=['{0} and {1} ended up fighting.'])
+     template=['{0} and {1} ended up fighting.'],
+     admit_probability=[0.5])
 
 rule('make_up',
      [
@@ -159,7 +163,6 @@ rule('seduce',
      social=[70],
      template=['{0} seduced {1}.'])
 
-# TODO check if they are already married
 rule('get_married',
      [
          *alive(A, B),
@@ -174,7 +177,8 @@ rule('get_married',
      template=['{0} and {1} got married!',
                '{0} proposed to {1} but got rejected!'],
      social=[40, -20],
-     sanity=[10, -20])
+     sanity=[10, -20],
+     admit_probability=[1.0, 0.5])
 
 rule('get_divorced',
      [
@@ -188,7 +192,8 @@ rule('get_divorced',
      ],
      template=['{0} and {1} got divorced.'],
      social=[-20],
-     sanity=[40])
+     sanity=[40],
+     admit_probability=[1.0])
 
 rule('steal_N',
      [
@@ -204,10 +209,11 @@ rule('steal_N',
      short_template=['{0} was caught stealing from {1}',
                      '{0} stole from {1}'],
      template=['{0} tried to steal from {1}, but {1} caught [0:him|her]!',
-               '{0} managed to steal from {1}, unnoticed.'])
+               '{0} managed to steal from {1}, unnoticed.'],
+     admit_probability=[0.25, 0.1])
 
 rule('steal_debt',
-     [*alive(A, B), P('has_money', B)],
+     [*alive(A, B), P('has_money', B), P('debt', A)],
      (0.3, [P('anger', B, A)] * 2),
      (0.7, [P('has_money', A)]),
      fulfilment=[-80, 120],
@@ -215,7 +221,8 @@ rule('steal_debt',
      short_template=['{0} was caught stealing from {1}',
                      '{0} stole from {1}'],
      template=['{0} tried to steal from {1}, but {1} caught [0:him|her]!',
-               '{0} managed to steal from {1}, unnoticed.'])
+               '{0} managed to steal from {1}, unnoticed.'],
+     admit_probability=[0.25, 0.1])
 
 rule('steal_E',
      [
@@ -229,7 +236,8 @@ rule('steal_E',
      short_template=['{0} was caught stealing from {1}',
                      '{0} stole from {1}'],
      template=['{0} tried to steal from {1}, but {1} caught [0:him|her]!',
-               '{0} managed to steal from {1}, unnoticed.'])
+               '{0} managed to steal from {1}, unnoticed.'],
+     admit_probability=[0.25, 0.1])
 
 rule('murder_anger',
      [
@@ -300,13 +308,15 @@ rule('grief',
          pK('trust', A, B)],
      [p('sadness', A)],
      template=['{0} was sad about the loss of {1}.'],
-     sanity=[20])
+     sanity=[20],
+     admit_probability=[1.0])
 
 rule('pay_debt',
      [*alive(A), P('has_money', A), P('debt', A)],
      [],
      template=['{0} paid off {0:his|her} debt.'],
-     sanity=[40])
+     sanity=[40],
+     admit_probability=[1.0])
 
 rule('gamble',
      [
@@ -316,7 +326,8 @@ rule('gamble',
      (0.9, [P('debt', A)]),
      template=['{0} won big time in the casino!',
                '{0} tried their luck in the casino, but to no avail'],
-     fulfilment=[100, -30])
+     fulfilment=[100, -30],
+     admit_probability=[0.95, 0.6])
 
 if __name__ == '__main__':
     characters, state = create_characters(4)
@@ -326,3 +337,8 @@ if __name__ == '__main__':
     s.evaluator.verify_integrity()
     s.run(interactive=False, max_steps=100)
     s.print_graph(view=True, show_all=False)
+    for c in characters:
+        print(c.full_name)
+        c.get_admitted_events(s.evaluator)
+        print('\n')
+
