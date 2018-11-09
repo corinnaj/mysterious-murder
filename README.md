@@ -1,5 +1,5 @@
 # mysterious-murder
-A murder mystery generator using Ceptre and Q-Learning.
+A murder mystery generator using the concepts found in Ceptre and MCTS agents.
 
 ### Setup on Windows
 
