@@ -163,7 +163,6 @@ rule('seduce',
      social=[70],
      template=['{0} seduced {1}.'])
 
-# TODO check if they are already married
 rule('get_married',
      [
          *alive(A, B),
