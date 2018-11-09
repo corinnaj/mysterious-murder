@@ -6,6 +6,7 @@ from kivy.uix.image import Image
 from kivy.uix.button import Button
 from kivy.uix.togglebutton import ToggleButton
 
+from .agent import MCTSAgent
 from .murder_mystery import rules, Simulation, Evaluator, create_characters
 from .text_templating import apply as template_apply
 from .emoji import get_filename_for
@@ -171,13 +172,20 @@ class MurderMysteryApp(App):
         redo_button.bind(on_press=do_redo)
         self.main_layout.add_widget(redo_button)
 
+    def open_graph(self):
+        self.simulation.print_graph(view=True, show_all=False)
+
     def redo(self):
         self.selected = []
         self.main_layout.clear_widgets()
         self.ask_label.text = "Select a character to start asking them questions"
 
         characters, state = create_characters(4)
-        self.simulation = Simulation(Evaluator(rules=rules, actors=characters, state=state))
+        self.simulation = Simulation(Evaluator(rules=rules,
+                                               actors=characters,
+                                               state=state),
+                                     agent=MCTSAgent(),
+                                     log=False)
         self.simulation.evaluator.verify_integrity()
         self.simulation.run(interactive=False, max_steps=100)
 
@@ -195,5 +203,16 @@ class MurderMysteryApp(App):
         self.main_layout.add_widget(images)
 
 
+def run_forever():
+    try:
+        MurderMysteryApp().run()
+    except Exception as e:
+        if e is KeyboardInterrupt:
+            return
+        else:
+            print(e)
+            run_forever()
+
+
 if __name__ == '__main__':
-    MurderMysteryApp().run()
+    run_forever()

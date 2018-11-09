@@ -90,7 +90,7 @@ class Simulation:
         self.random_witness(option)
         if self.log:
             print(option.story_print())
-            self.print_reward_state()
+        self.print_reward_state()
         # self.print_causality(option)
         # print(option.actors[0].relationship_to(option.actors[1],
         #                                       self.evaluator.state))
