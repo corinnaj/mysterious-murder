@@ -314,7 +314,7 @@ rule('grief',
 rule('pay_debt',
      [*alive(A), P('has_money', A), P('debt', A)],
      [],
-     template=['{0} paid off {0:his|her} debt.'],
+     template=['{0} paid off [0:his|her] debt.'],
      sanity=[40],
      admit_probability=[1.0])
 
