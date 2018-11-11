@@ -158,11 +158,19 @@ class MurderMysteryApp(App):
         self.main_layout.remove_widget(self.doubleWidget)
         self.main_layout.remove_widget(images)
         self.ask_label.text = ""
+        images.clear_widgets()
         self.main_layout.add_widget(Label(text="You confront " + character.full_name + '.', font_size=30))
         if self.simulation.check_is_murderer(character):
             self.main_layout.add_widget(Label(text=template_apply('[0:He|She] confesses immediatly!', [character]), font_size=30))
         else:
             self.main_layout.add_widget(Label(text="You got the wrong person!\nIt was actually " + self.simulation.get_murderers()[0].full_name + '!', font_size=30))
+
+        def open_graph(instance):
+            self.simulation.print_graph(view=True, show_all=False)
+
+        graph_button = Button(text="Show me what actually happenend")
+        graph_button.bind(on_press=open_graph)
+        self.main_layout.add_widget(graph_button)
 
         # self.simulation.print_murder_causality()
 
@@ -171,9 +179,6 @@ class MurderMysteryApp(App):
         redo_button = Button(text="Play again")
         redo_button.bind(on_press=do_redo)
         self.main_layout.add_widget(redo_button)
-
-    def open_graph(self):
-        self.simulation.print_graph(view=True, show_all=False)
 
     def redo(self):
         self.selected = []
