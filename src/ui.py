@@ -166,7 +166,6 @@ class MurderMysteryApp(App):
             self.main_layout.add_widget(Label(text="You got the wrong person!\nIt was actually " + self.simulation.get_murderers()[0].full_name + '!', font_size=30))
 
         def open_graph(instance):
-            raise Exception('asas')
             self.simulation.print_graph(view=True, show_all=False)
 
         graph_button = Button(text="Show me what actually happenend")
@@ -197,6 +196,7 @@ class MurderMysteryApp(App):
             self.simulation.run(interactive=False, max_steps=20)
             if self.simulation.murder is not None:
                 break
+            print("\n\nNo Murder occured! Retrying ...\n\n")
 
         self.lastNum = 0
         self.singleWidget = SingleCharWidget(self, orientation="vertical")
@@ -214,12 +214,18 @@ class MurderMysteryApp(App):
 
 def run_forever():
     try:
+        app = App.get_running_app()
+        if app is not None:
+            app.stop()
         MurderMysteryApp().run()
     except Exception as e:
         if e is KeyboardInterrupt:
             return
         else:
             print(e)
+            print('\n\n\n\n****************************************\n' +
+                  'Oups, crash! Restarting the app.\n' +
+                  '****************************************\n\n\n\n\n')
             run_forever()
 
 

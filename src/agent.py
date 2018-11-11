@@ -23,5 +23,5 @@ class RandomAgent:
 class MCTSAgent:
     def choose_action(self, actor, simulation):
         return uct_find_best_rule(simulation, actor,
-                                  max_iterations=100,
-                                  rollout_steps=10)
+                                  max_iterations=60,
+                                  rollout_steps=6)
