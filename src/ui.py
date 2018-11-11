@@ -173,6 +173,7 @@ class MurderMysteryApp(App):
         self.main_layout.add_widget(redo_button)
 
     def open_graph(self):
+        raise Exception('asas')
         self.simulation.print_graph(view=True, show_all=False)
 
     def redo(self):
@@ -181,13 +182,16 @@ class MurderMysteryApp(App):
         self.ask_label.text = "Select a character to start asking them questions"
 
         characters, state = create_characters(4)
-        self.simulation = Simulation(Evaluator(rules=rules,
-                                               actors=characters,
-                                               state=state),
-                                     agent=MCTSAgent(),
-                                     log=False)
-        self.simulation.evaluator.verify_integrity()
-        self.simulation.run(interactive=False, max_steps=100)
+        while True:
+            self.simulation = Simulation(Evaluator(rules=rules,
+                                                   actors=characters,
+                                                   state=state),
+                                         agent=MCTSAgent(),
+                                         log=False)
+            self.simulation.evaluator.verify_integrity()
+            self.simulation.run(interactive=False, max_steps=20)
+            if self.simulation.murder is not None:
+                break
 
         self.lastNum = 0
         self.singleWidget = SingleCharWidget(self, orientation="vertical")
