@@ -7,7 +7,11 @@ from kivy.uix.button import Button
 from kivy.uix.togglebutton import ToggleButton
 
 from .agent import MCTSAgent
-from .murder_mystery import rules, Simulation, Evaluator, create_characters
+from .murder_mystery import (
+        rules,
+        MurderMysterySimulation,
+        Evaluator,
+        create_characters)
 from .text_templating import apply as template_apply
 from .emoji import get_filename_for
 
@@ -187,11 +191,10 @@ class MurderMysteryApp(App):
 
         characters, state = create_characters(4)
         while True:
-            self.simulation = Simulation(Evaluator(rules=rules,
-                                                   actors=characters,
-                                                   state=state),
-                                         agent=MCTSAgent(),
-                                         log=False)
+            evaluator = Evaluator(rules=rules, actors=characters, state=state)
+            self.simulation = MurderMysterySimulation(evaluator,
+                                                      agent=MCTSAgent(),
+                                                      log=False)
             self.simulation.evaluator.verify_integrity()
             self.simulation.run(interactive=False, max_steps=20)
             if self.simulation.murder is not None:

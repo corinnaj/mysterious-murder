@@ -1,46 +1,8 @@
-from .evaluator import Predicate as P
-from .evaluator import Rule, Evaluator, Outcome
+from .evaluator import Evaluator
 from .state_generator import create_characters
 from .simulation import Simulation
 from .agent import MCTSAgent
-
-A = 0
-B = 1
-C = 2
-
-rules = []
-
-
-def rule(name, lhs, *rhs, prob=5, template=None, short_template=None,
-         hunger=None, tiredness=None, sanity=None, fulfilment=None,
-         social=None, reset_rewards=False, witness_probability=0.5, admit_probability=[0.0]):
-    num_outcomes = len(rhs)
-    rules.append(Rule(name,
-                      lhs,
-                      Outcome(only=rhs[0]) if num_outcomes == 1 else Outcome(*rhs),
-                      prob=prob,
-                      template=template,
-                      short_template=short_template,
-                      hunger=[0] * num_outcomes if hunger is None else hunger,
-                      tiredness=[0] * num_outcomes if tiredness is None else tiredness,
-                      sanity=[0] * num_outcomes if sanity is None else sanity,
-                      fulfilment=[0] * num_outcomes if fulfilment is None else fulfilment,
-                      social=[0] * num_outcomes if social is None else social,
-                      witness_probability=witness_probability,
-                      admit_probability=admit_probability,
-                      reset_rewards=reset_rewards))
-
-
-def p(name, *args):
-    return P(name, *args)
-
-
-def pK(name, *args):
-    return P(name, *args, keep=True)
-
-
-def pP(name, *args):
-    return P(name, *args, permanent=True)
+from .rule_helpers import rule, p, pK, pP, rules, A, B, C, P
 
 
 def alive(*args):
@@ -79,10 +41,10 @@ def greed(a):
     return [P('spontaneous', a, keep=True), P('confident', a, keep=True)]
 
 
-#rule('eat', [*alive(A)], [], hunger=10)
-#rule('sleep', [*alive(A)], [], tiredness=10)
-#rule('talk', [*alive(A, B)], [], social=5)
-#rule('work', [*alive(A)], [], sanity=5, fulfilment=10)
+# rule('eat', [*alive(A)], [], hunger=10)
+# rule('sleep', [*alive(A)], [], tiredness=10)
+# rule('talk', [*alive(A, B)], [], social=5)
+# rule('work', [*alive(A)], [], sanity=5, fulfilment=10)
 
 rule('get_weapon',
      [*alive(A)],
@@ -329,12 +291,43 @@ rule('gamble',
      fulfilment=[100, -30],
      admit_probability=[0.95, 0.6])
 
+
+class MurderMysterySimulation(Simulation):
+    def __init__(self, evaluator, agent=MCTSAgent(), log=False):
+        super(MurderMysterySimulation, self).__init__(evaluator, agent=agent, log=log)
+        self.murder = None
+        self.murderers = []
+
+    def copy(self):
+        c = super().copy()
+        c.murderers = self.murderers[:]
+        return c
+
+    def check_is_murderer(self, actor):
+        return actor in self.murderers
+
+    def get_murderers(self):
+        return self.murderers
+
+    def print_murder_causality(self):
+        self.print_causality(self.murder)
+
+    def check_stop(self, option):
+        if 'murder' in option.rule.name or 'suicide' in option.rule.name:
+            self.murderers.append(option.actors[0])
+            self.murder = option
+            return True
+        return False
+
+
 if __name__ == '__main__':
     characters, state = create_characters(4)
-    s = Simulation(Evaluator(rules=rules, actors=characters, state=state),
-                   agent=MCTSAgent(),
-                   log=True)
-    s.evaluator.verify_integrity()
+    evaluator = Evaluator(rules=rules, actors=characters, state=state)
+    evaluator.verify_integrity()
+
+    s = MurderMysterySimulation(evaluator,
+                                agent=MCTSAgent(),
+                                log=True)
     s.run(interactive=False, max_steps=100)
     s.print_graph(view=True, show_all=False)
     for c in characters:

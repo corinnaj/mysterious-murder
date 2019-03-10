@@ -8,13 +8,9 @@ class Simulation:
         self.evaluator = evaluator
         self.agent = agent
         self.log = log
-        self.murder = None
-        self.murderers = []
 
     def copy(self):
-        s = Simulation(self.evaluator.copy())
-        s.murderers = self.murderers[:]
-        return s
+        return Simulation(self.evaluator.copy())
 
     def run(self, interactive=False, max_steps=100):
         if interactive:
@@ -50,25 +46,8 @@ class Simulation:
                 count += 1
         return count
 
-    def check_is_murderer(self, actor):
-        return actor in self.murderers
-
-    def get_murderers(self):
-        return self.murderers
-
-    def check_stop(self, option):
-        # if self.count_alive_actors() < 3:
-        #     print('Too few actors remaining')
-        #     return True
-        # return False
-        if 'murder' in option.rule.name or 'suicide' in option.rule.name:
-            self.murderers.append(option.actors[0])
-            self.murder = option
-            return True
+    def check_stop(self):
         return False
-
-    def print_murder_causality(self):
-        self.print_causality(self.murder)
 
     def get_actions_for_actor(self, actor):
         options = self.evaluator.step()
