@@ -40,6 +40,9 @@ class Predicate:
         self.keep = keep
         self.permanent = permanent
 
+    def to_json(self):
+        return {'name': self.name, 'actors': self.actors, 'keep': self.keep, 'permanent': self.permanent}
+
 
 class PredicateInstance:
     def __init__(self, name, *actors, permanent=False):
@@ -193,6 +196,19 @@ class Rule:
         self.witness_probability = witness_probability
         self.admit_probability = admit_probability
         self.n_actors = self.get_n_actors()
+
+    def to_json(self):
+        return {
+            'name': self.name,
+            'lhs': [l.to_json() for l in self.lhs],
+            'rhs': [
+                {
+                    'probability': o[0],
+                    'predicates': [p.to_json() for p in o[1]],
+                    'template': self.template[i] if self.short_template is None else self.short_template[i]
+                } for i, o in enumerate(self.rhs.options)
+            ],
+        }
 
     def precomp_permutations(self, actors):
         self.permutations = []

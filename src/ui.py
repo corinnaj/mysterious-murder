@@ -14,10 +14,13 @@ from .murder_mystery import (
         create_characters)
 from .text_templating import apply as template_apply
 from .emoji import get_filename_for
+from kivy.core.window import Window
+
 
 colors = [[0, 0, 1, 1], [0, 0.25, 0.75, 1], [0, 0.5, 0.5, 1], [0.5, 0.5, 0, 1]]
 images = BoxLayout(orientation='horizontal')
 
+Window.clearcolor = (1, 1, 1, 1)
 
 def display(emojis):
     images.clear_widgets()
@@ -60,7 +63,7 @@ class ProfileWidget(BoxLayout):
             self.add_widget(stack)
         else:
             self.add_widget(Image(source=img, height=PORTRAIT_SIZE, size_hint=(1, None)))
-        self.add_widget(Label(text=c.full_name, bold=True))
+        self.add_widget(Label(text=c.full_name, bold=True, color=[0, 0, 0, 1]))
         self.add_widget(btn)
 
 
@@ -135,7 +138,7 @@ class MurderMysteryApp(App):
     def __init__(self, **kwargs):
         super(MurderMysteryApp, self).__init__(**kwargs)
         self.main_layout = BoxLayout(orientation="vertical")
-        self.ask_label = Label(text="", bold=True, font_size=30)
+        self.ask_label = Label(text="", bold=True, font_size=30, color=[0, 0, 0, 1])
         self.redo()
 
     def build(self):
@@ -163,11 +166,11 @@ class MurderMysteryApp(App):
         self.main_layout.remove_widget(images)
         self.ask_label.text = ""
         images.clear_widgets()
-        self.main_layout.add_widget(Label(text="You confront " + character.full_name + '.', font_size=30))
+        self.main_layout.add_widget(Label(text="You confront " + character.full_name + '.', font_size=30, color=[0, 0, 0, 1]))
         if self.simulation.check_is_murderer(character):
-            self.main_layout.add_widget(Label(text=template_apply('[0:He|She] confesses immediatly!', [character]), font_size=30))
+            self.main_layout.add_widget(Label(text=template_apply('[0:He|She] confesses immediatly!', [character]), font_size=30, color=[0, 0, 0, 1]))
         else:
-            self.main_layout.add_widget(Label(text="You got the wrong person!\nIt was actually " + self.simulation.get_murderers()[0].full_name + '!', font_size=30))
+            self.main_layout.add_widget(Label(text="You got the wrong person!\nIt was actually " + self.simulation.get_murderers()[0].full_name + '!', font_size=30, color=[0, 0, 0, 1]))
 
         def open_graph(instance):
             self.simulation.print_graph(view=True, show_all=False)

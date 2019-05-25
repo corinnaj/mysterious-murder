@@ -299,7 +299,7 @@ rule('hire NPCs to for protection',
 rule('hire NPCs to settle debt',
         [*alive(A), *[pK('debt', A)] * 2, *[pK('anger', B, A)] * 2],
         [],
-        template=['Unaible to pay back the money [0:he|she] owed and afraid of {1}s anger, {0} decided to hire your party'])
+        template=['Unable to pay back the money [0:he|she] owed and afraid of {1}s anger, {0} decided to hire your party'])
 
 rule('hire NPCs to clear name',
         [*alive(A, B, C), *[pK('disgust', B, A)] * 2, *[pK('disgust', C, A)] * 3],

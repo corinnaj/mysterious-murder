@@ -3,6 +3,7 @@ from .state_generator import create_characters
 from .simulation import Simulation
 from .agent import MCTSAgent
 from .rule_helpers import rule, p, pK, pP, rules, A, B, C, P
+import json
 
 
 def alive(*args):
@@ -321,17 +322,21 @@ class MurderMysterySimulation(Simulation):
 
 
 if __name__ == '__main__':
-    characters, state = create_characters(4)
-    evaluator = Evaluator(rules=rules, actors=characters, state=state)
-    evaluator.verify_integrity()
+    if False:
+        j = [r.to_json() for r in rules]
+        print(json.dumps(j))
+    else:
+        characters, state = create_characters(4)
+        evaluator = Evaluator(rules=rules, actors=characters, state=state)
+        evaluator.verify_integrity()
 
-    s = MurderMysterySimulation(evaluator,
-                                agent=MCTSAgent(),
-                                log=True)
-    s.run(interactive=False, max_steps=100)
-    s.print_graph(view=True, show_all=False)
-    for c in characters:
-        print(c.full_name)
-        c.get_admitted_events(s.evaluator)
-        print('\n')
+        s = MurderMysterySimulation(evaluator,
+                                    agent=MCTSAgent(),
+                                    log=True)
+        s.run(interactive=False, max_steps=100)
+        s.print_graph(view=True, show_all=False)
+        for c in characters:
+            print(c.full_name)
+            c.get_admitted_events(s.evaluator)
+            print('\n')
 
