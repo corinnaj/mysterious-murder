@@ -1,0 +1,23 @@
+
+.actor-profile {
+	float: left;
+	padding: 1rem;
+	background: #444;
+	color: #fff;
+	margin: 2rem;
+	border-radius: 0.5rem;
+}
+.actor-icon {
+	font-size: 128px;
+}
+
+.event-log {
+	float: right;
+	font-size: 14px;
+}
+
+.predicate span {
+	font-size: 22px;
+	display: inline-block;
+	margin-left: 1rem;
+}
