@@ -11,3 +11,4 @@ init.inc.cep
 script.cep
 
 __pycache__
+.pytest_cache

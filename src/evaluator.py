@@ -41,7 +41,7 @@ class Predicate:
         self.permanent = permanent
 
     def to_json(self):
-        return {'name': self.name, 'actors': self.actors, 'keep': self.keep, 'permanent': self.permanent}
+        return {'signature': {'name': self.name, 'actors': self.actors}, 'keep': self.keep, 'permanent': self.permanent}
 
 
 class PredicateInstance:
@@ -205,7 +205,13 @@ class Rule:
                 {
                     'probability': o[0],
                     'predicates': [p.to_json() for p in o[1]],
-                    'template': self.template[i] if self.short_template is None else self.short_template[i]
+                    'template': self.template[i] if self.short_template is None else self.short_template[i],
+                    'sanity': self.sanity[i],
+                    'fulfilment': self.fulfilment[i],
+                    'social': self.social[i],
+                    'witness_probability': self.witness_probability,
+                    'admit_probability': self.admit_probability[i],
+                    'reset_rewards': self.reset_rewards,
                 } for i, o in enumerate(self.rhs.options)
             ],
         }
