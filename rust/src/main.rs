@@ -54,7 +54,7 @@ fn main() {
         } else {
             if let Some(action) = actions.choose(simulation.get_rng()) {
                 println!("{:?}", action.get_name());
-                simulation.take_action(0, action, &mut registry)
+                simulation.take_action(0, action, &mut registry);
             } else {
                 println!("none");
                 break;
