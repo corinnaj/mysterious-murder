@@ -49,12 +49,8 @@ pub fn run_simulation(data: &str, seed: usize) -> String {
     let mut simulation = Simulation::new(_eval.to_small_signatures(&mut registry), state, seed);
 
     let mut turn = 0;
-    let mut i = 0;
-    loop {
-        if i == 5 {
-            break;
-        }
 
+    loop {
         match mcts::uct_find_best_rule(&mut simulation, turn, 10, 30, &mut registry) {
             Some(action) => {
                 let outputs = simulation.take_action(0, &action, &mut registry);
@@ -77,7 +73,6 @@ pub fn run_simulation(data: &str, seed: usize) -> String {
             },
             None => {},
         }
-        i += 1;
         turn = (turn + 1) % N_ACTORS;
     }
     serde_json::to_string("").unwrap()
