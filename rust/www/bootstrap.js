@@ -82,7 +82,7 @@ function App() {
       let data = JSON.parse(event.data)
       if (data.type == 'action') {
         setLog(log => [...log, event.data])
-        setGraph(graph => graph + graphFromAction(data))
+        // setGraph(graph => graph + graphFromAction(data))
       } else if (data.type == 'state')
         setSimulationState(state => data.state.map(p => ({...p, actors: p.actors.map(index => actors[index])})))
     })

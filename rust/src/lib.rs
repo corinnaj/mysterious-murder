@@ -51,10 +51,6 @@ pub fn run_simulation(data: &str, seed: usize) -> String {
     let mut turn = 0;
     let mut i = 0;
     loop {
-        if i == 5 {
-            break;
-        }
-
         match mcts::uct_find_best_rule(&mut simulation, turn, 10, 30, &mut registry) {
             Some(action) => {
                 let outputs = simulation.take_action(0, &action, &mut registry);
