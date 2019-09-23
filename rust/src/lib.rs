@@ -46,9 +46,12 @@ pub fn run_simulation(data: &str, seed: usize) -> String {
     _eval.set_actors(characters);
     _eval.prepare_after_parse(&mut _registry);
 
+    const MAX_STEPS: usize = 40;
+
     let mut simulation = Simulation::new(_eval.to_small_signatures(&mut registry), state, seed);
 
     let mut turn = 0;
+    let mut steps = 0;
 
     loop {
         match mcts::uct_find_best_rule(&mut simulation, turn, 10, 30, &mut registry) {
@@ -62,6 +65,15 @@ pub fn run_simulation(data: &str, seed: usize) -> String {
                     "inputs": action.get_predicate_instances().iter().map(|p| p.get_json(&registry)).collect::<Vec<Value>>(),
                     "outputs": outputs.iter().map(|p| p.get_json(&registry)).collect::<Vec<Value>>(),
                 }).to_string()));
+
+                steps += 1;
+                if steps >= MAX_STEPS {
+                    postMessage(&JsValue::from_str(&json!({
+                        "type": "abort",
+                        "seed": seed,
+                    }).to_string()));
+                    break;
+                }
 
                 if action.get_name().contains("murder") {
                     postMessage(&JsValue::from_str(&json!({

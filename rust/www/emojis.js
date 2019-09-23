@@ -390,13 +390,16 @@ export const female = [
 ]
 
 export const relationshipIconMapping = {
+  lovers: '😍',
+  related: '👪',
+  married: '💑',
+}
+
+export const feelingIconMapping = {
   fear: '😬',
   trust: '😌',
   disgust: '😤',
   anger: '😠',
-  lovers: '😍',
-  related: '👪',
-  married: '💑',
 }
 
 export const moodIconMapping = {
@@ -404,10 +407,18 @@ export const moodIconMapping = {
   sadness: '😭',
 }
 
+export const objectIconMapping = {
+  has_weapon: '🔪',
+  has_money: '💰',
+}
+
 export const ruleIconMapping = {
   steal: '💰',
+  steal_E: '💰',
   murder: '🔪',
+  murder_anger: '🔪',
   lie: '🤫',
+  lie_difficult: '🤫',
   gamble: '🎰',
   fight: '🤬',
   get_married: '💒',
@@ -424,4 +435,6 @@ export const iconMappings = {
   ...ruleIconMapping,
   ...moodIconMapping,
   ...relationshipIconMapping,
+  ...objectIconMapping,
+  ...feelingIconMapping,
 }

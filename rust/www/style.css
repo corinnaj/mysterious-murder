@@ -1,14 +1,52 @@
+@font-face {
+    font-family: 'Noto Emoji';
+    src: url('/NotoColorEmoji.woff') format('woff');
+}
+
+.invisible-button {
+	padding: 0;
+	margin: 0;
+	color: transparent;
+	background-color: transparent;
+}
 
 .actor-profile {
-	float: left;
 	padding: 1rem;
-	background: #444;
+	background: rgb(155, 155, 123);
 	color: #fff;
-	margin: 2rem;
-	border-radius: 0.5rem;
+	margin: 1rem;
+	border-radius: 0.2rem;
+	width: 400px;
+	align-self: center;
 }
+
+.emoji {
+	font-family: 'Noto Emoji';
+}
+
 .actor-icon {
+	background: rgb(245, 245, 220);
+	border-radius: 0.2rem;
 	font-size: 128px;
+	width: 180px;
+	text-align: center;
+	position: relative;
+}
+
+.actor-is-victim:before {
+	content: "❌";
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	text-align: center;
+	top: 0;
+	left: 0;
+	opacity: 0.85;
+}
+
+.actor-stats {
+	margin-left: 1rem; 
+	font-size: 20px;
 }
 
 .event-log {
@@ -17,7 +55,49 @@
 }
 
 .predicate span {
-	font-size: 22px;
+	font-size: 128px;
 	display: inline-block;
 	margin-left: 1rem;
+}
+
+.target-container {
+	margin: 1rem;
+	border: solid;
+	border-width: 4px;
+	border-color: #ddd;
+	border-radius: 0.5rem;
+	min-width: 400px;
+	min-height: 250px;
+	text-align: center;
+}
+
+.remove-button {
+	margin-top: 1rem;
+	margin-bottom: 1rem;
+	margin-right: 1rem;
+}
+
+.horizontal-row {
+	display: flex;
+	flex-direction: row; 
+	flex-wrap: nowrap;
+	justify-content: center;
+}
+
+.opposite {
+	display: flex;
+	flex-direction: row; 
+	justify-content: space-between !important;
+}
+
+.question-button {
+	margin: 0.5rem;
+}
+
+.margin {
+	margin: 1rem;
+}
+
+.centered {
+	text-align: center;
 }
