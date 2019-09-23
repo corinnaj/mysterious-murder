@@ -290,7 +290,6 @@ function App() {
     <AccuseModal
       show={modalShow}
       onHide={() => {setModalShow(false); replay()}}
-      onShowGraph={() => showGraph()}
     />
     <LoadingModal />
     {/*<Graph dot={graph} />*/}

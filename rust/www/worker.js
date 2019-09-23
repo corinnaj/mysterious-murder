@@ -1,4 +1,4 @@
-import('./index.js')
+import('./worker-start.js')
   .then(module => {
     postMessage('ready')
 
