@@ -14,6 +14,8 @@ import HTML5Backend from 'react-dnd-html5-backend'
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Spinner from 'react-bootstrap/Spinner';
+import Tooltip from 'react-bootstrap/Tooltip';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import faker from 'faker';
 let actors = createActors();
 
@@ -26,18 +28,26 @@ function createActors() {
   }))
 }
 
+const readablePredicate = predicate => predicate.name.replace('_', ' ')
+
 function PredicateDisplay({ predicate }) {
   console.log(predicate)
-  return <div className="predicate emoji">
+  return <div className="predicate emoji horizontal-row">
     <span key={predicate.actors[0].index} className="predicate-actor-icon">{actors[predicate.actors[0]].icon}</span>
-    <span className="predicate-rule-icon">{iconMappings[predicate.name] || predicate.name}</span>
+      <OverlayTrigger overlay={<Tooltip id="tooltip-disabled">{readablePredicate(predicate)}</Tooltip>}>
+        <span className="predicate-rule-icon">{iconMappings[predicate.name] || predicate.name}</span>
+      </OverlayTrigger>
     {predicate.actors.slice(1).map(a => <span key={a.index} className="predicate-actor-icon">{actors[a].icon}</span>)}
   </div>
 }
 
 function CollectionDisplay({ predicates }) {
-  return <div className="predicate emoji">
-    {predicates.map((p, i) => <span key={i} className="predicate-rule-icon">{iconMappings[p.name] || p.name}</span>)}
+  return <div className="predicate emoji horizontal-row">
+    {predicates.map((p, i) =>
+      <OverlayTrigger overlay={<Tooltip id="tooltip-disabled">{p.name}</Tooltip>}>
+        <span key={i} className="predicate-rule-icon">{iconMappings[p.name] || p.name}</span>
+      </OverlayTrigger>
+    )}
   </div>
 }
 
@@ -59,6 +69,10 @@ function emojisForPredicateInstance(p) {
   return p.name + ' ' + p.actors.map(a => actors[a].icon).join(' ')
 }
 
+function randomSeed() {
+    return parseInt(Math.floor(Math.random() * Math.pow(2, 32)));
+}
+
 function App() {
   const [simulationState, setSimulationState] = useState([])
   const [log, setLog] = useState([])
@@ -68,7 +82,7 @@ function App() {
   const [droppedActors, setDroppedActors] = useState([undefined, undefined])
   const [modalShow, setModalShow] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [seed, setSeed] = useState(20);
+  const [seed, setSeed] = useState(() => randomSeed());
 
   function graphFromAction({ inputs, outputs, name: actionName, actors: actionActors }) {
     const finalInputs = inputs.map(i => {
@@ -93,7 +107,7 @@ function App() {
 
   function AnswerArea() {
     return answer == undefined || (Array.isArray(answer) && answer.length == 0)
-      ? <p>No Predicates found</p>
+      ? <p className="horizontal-row bigger-font">None to speak of</p>
       : (Array.isArray(answer)
         ? <CollectionDisplay predicates={answer} />
         : <PredicateDisplay predicate={answer.rule} key={idForPredicateInstance(answer.rule)} />
@@ -119,6 +133,7 @@ function App() {
         })
 
       let data = JSON.parse(event.data)
+      console.log(data)
       if (data.type == 'action') {
         setLog(log => [...log, data])
         witness(data);
@@ -156,7 +171,7 @@ function App() {
           </Modal.Title>
       </Modal.Header>
       <Modal.Body className="centered">
-        <p>This will take about 15 seconds. Please stand by...</p>
+        <p>This may take up to 1 minute. Please stand by...</p>
         <Spinner animation="border" />
       </Modal.Body>
     </Modal>
@@ -186,7 +201,13 @@ function App() {
           </p>
         </Modal.Body>
         <Modal.Footer className="opposite">
-          <Button onClick={props.onShowGraph}>Show Me What Happened</Button>
+          <OverlayTrigger overlay={<Tooltip id="tooltip-disabled">Coming Soon!</Tooltip>}>
+            <span className="d-inline-block">
+              <Button disabled style={{ pointerEvents: 'none' }}>
+                Show Me What Happened
+              </Button>
+            </span>
+          </OverlayTrigger>
           <Button variant="success" onClick={props.onHide}>Play Again</Button>
         </Modal.Footer>
       </Modal>
@@ -198,7 +219,8 @@ function App() {
   }
 
   function renderSinglePersonButtons(actor) {
-    return <div className="horizontal-row">
+    return <div className="vertical-row">
+      <div/>
       <Button
         className="question-button"
         onClick={() => setAnswer(askQuestion([actor], Object.keys(objectIconMapping), 'object'))}>
@@ -219,7 +241,8 @@ function App() {
   }
 
   function renderTwoPersonButtons(actor1, actor2) {
-    return <div className="horizontal-row">
+    return <div className="vertical-row">
+      <div/>
       <Button
         className="question-button"
         onClick={() => setAnswer(askQuestion([actor1, actor2], Object.keys(relationshipIconMapping), 'object'))}>
@@ -255,7 +278,7 @@ function App() {
     setGraph('')
     setAnswer(undefined)
     setDroppedActors([undefined, undefined])
-    setSeed(parseInt(Math.floor(Math.random() * 64)));
+    setSeed(randomSeed());
   }
 
   function isVictim(actor) {
@@ -274,18 +297,24 @@ function App() {
     <DndProvider backend={HTML5Backend}>
       <Container fluid={true} className="main">
         {actors != null ? <IdCards actors={actors} isVictim={(actor) => isVictim(actor)} /> : <div/>}
-        <div className="horizontal-row">
-          <TargetArea index={0} onDrop={(actor) => setActor(actor, 0)} droppedActor={droppedActors[0]} isVictim={(actor) => isVictim(actor)} />
-          <TargetArea index={1} onDrop={(actor) => setActor(actor, 1)} droppedActor={droppedActors[1]} isVictim={(actor) => isVictim(actor)} />
+        <div className="horizontal-row wrap">
+          <div>
+            <p className="question-label">Ask...</p>
+            <TargetArea index={0} onDrop={(actor) => setActor(actor, 0)} droppedActor={droppedActors[0]} isVictim={(actor) => isVictim(actor)} />
+          </div>
+          {droppedActors[0] != undefined && droppedActors[1] == undefined
+            ? renderSinglePersonButtons(droppedActors[0])
+            : <div></div>
+          }
+          {droppedActors[0] != undefined && droppedActors[1] != undefined
+            ? renderTwoPersonButtons(droppedActors[0], droppedActors[1])
+            : <div></div>
+          }
+          <div>
+            <p className="question-label">...about...</p>
+            <TargetArea index={1} onDrop={(actor) => setActor(actor, 1)} droppedActor={droppedActors[1]} isVictim={(actor) => isVictim(actor)} />
+          </div>
         </div>
-        {droppedActors[0] != undefined && droppedActors[1] == undefined
-          ? renderSinglePersonButtons(droppedActors[0])
-          : <div></div>
-        }
-        {droppedActors[0] != undefined && droppedActors[1] != undefined
-          ? renderTwoPersonButtons(droppedActors[0], droppedActors[1])
-          : <div></div>
-        }
         <AnswerArea />
         {/*<div className="event-log">{log.map((item, i) => <div key={i}>{JSON.stringify(item)}</div>)}</div>*/}
       </Container>

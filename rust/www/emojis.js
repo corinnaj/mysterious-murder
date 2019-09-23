@@ -417,6 +417,7 @@ export const ruleIconMapping = {
   steal_E: '💰',
   murder: '🔪',
   murder_anger: '🔪',
+  murder_money: '🔪',
   lie: '🤫',
   lie_difficult: '🤫',
   gamble: '🎰',

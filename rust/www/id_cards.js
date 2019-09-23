@@ -27,7 +27,7 @@ export function ActorProfile({ actor, isVictim }) {
 }
 
 export function IdCards({ actors, isVictim }) {
-    return <div className="horizontal-row">
+    return <div className="horizontal-row wrap">
         {actors.map(actor =>
             <ActorProfile key={actor.index} {...{actor}} isVictim={isVictim(actor)}/>
         )}
