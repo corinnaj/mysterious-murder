@@ -31,7 +31,6 @@ function createActors() {
 const readablePredicate = predicate => predicate.name.replace('_', ' ')
 
 function PredicateDisplay({ predicate }) {
-  console.log(predicate)
   return <div className="predicate emoji horizontal-row">
     <span key={predicate.actors[0].index} className="predicate-actor-icon">{actors[predicate.actors[0]].icon}</span>
       <OverlayTrigger overlay={<Tooltip id="tooltip-disabled">{readablePredicate(predicate)}</Tooltip>}>
@@ -133,7 +132,6 @@ function App() {
         })
 
       let data = JSON.parse(event.data)
-      console.log(data)
       if (data.type == 'action') {
         setLog(log => [...log, data])
         witness(data);
