@@ -478,6 +478,8 @@ impl<T: PredicateSignature> Evaluator<T> {
         for (instance, predicate) in option.predicate_instances.iter().zip(option.rule.lhs.iter()) {
             if !predicate.keep && !predicate.permanent {
                 state.remove(state.iter().position(|p| *p == *instance).unwrap());
+            } else {
+                callback(&instance);
             }
         }
         let outcome = option.pick_outcome(rng);

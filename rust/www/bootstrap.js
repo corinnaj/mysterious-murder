@@ -51,16 +51,18 @@ function CollectionDisplay({ predicates }) {
 }
 
 function Graph({ dot }) {
+  const height = 600
   const ref = createRef()
   useEffect(() => {
-    d3.select(ref.current).graphviz().renderDot(`digraph {
+    d3.select(ref.current).graphviz({height, width: 600}).renderDot(`digraph {
       node [shape=box, margin=0.01, height=0, width=0, fontsize=7]; ${dot}}`)
+    d3.select(ref.current).select('svg').attr('width', '100%')
   }, [dot])
-  return <div ref={ref} className="graph"></div>
+  return <div style={{height: height + 'px', width: '100%'}} ref={ref} className="graph"></div>
 }
 
 let globId = 0
-function idForPredicateInstance(p) {
+function signatureForPredicateInstance(p) {
   return p.name + p.actors.join('')
 }
 
@@ -70,6 +72,26 @@ function emojisForPredicateInstance(p) {
 
 function randomSeed() {
     return parseInt(Math.floor(Math.random() * Math.pow(2, 32)));
+}
+
+// given a predicate instance signature, e.g. `anger 0 1`, store the current index used for deduplication
+let indexMap = {}
+const nextIndex = signature => indexMap[signature] = !indexMap[signature] ? 1 : indexMap[signature] + 1
+const newResource = signature => {
+  const id = signature + '_' + nextIndex()
+  resourcesFor(signature).push(id)
+  return id
+}
+// map predicate instances on a list of existing indices in the simulation state
+let resourceMap = {}
+const resourcesFor = signature => !resourceMap[signature]
+  ? resourceMap[signature] = []
+  : resourceMap[signature]
+
+const ignorePredicates = ['alive']
+const resetGraphResources = () => {
+  indexMap = {}
+  resourceMap = {}
 }
 
 function App() {
@@ -84,24 +106,30 @@ function App() {
   const [seed, setSeed] = useState(() => randomSeed());
 
   function graphFromAction({ inputs, outputs, name: actionName, actors: actionActors }) {
-    const finalInputs = inputs.map(i => {
-      const id = idForPredicateInstance(i);
-      return { id, node: `n${id} [label="${emojisForPredicateInstance(i)}"]` }
+    const finalInputs = inputs.filter(i => !ignorePredicates.includes(i.name)).map(i => {
+      const signature = signatureForPredicateInstance(i)
+      let id = resourcesFor(signature).pop()
+      if (id)
+        return {id}
+      id = signature + '_' + nextIndex(signature)
+      return {id, node: `n${id} [label="${emojisForPredicateInstance(i)}"]`}
     })
-    const finalOutputs = outputs.map(i => {
-      const id = idForPredicateInstance(i);
+    const finalOutputs = outputs.filter(i => !ignorePredicates.includes(i.name)).map(i => {
+      const signature = signatureForPredicateInstance(i)
+      const id = newResource(signature)
       return { id, node: `n${id} [label="${emojisForPredicateInstance(i)}"]` }
     })
     const actionId = ++globId;
-    const actionNode = `n${actionId} [fontsize=16, label="${actionName} ${actionActors.map(a => actors[a].icon).join('')}"]`;
+    const fontSize = actionName.includes('murder') ? 32 : 16
+    const actionNode = `n${actionId} [fillcolor=cyan, fontsize=${fontSize}, label="${actionName} ${actionActors.map(a => actors[a].icon).join('')}"]`;
 
     return [
-      ...finalInputs.map(i => i.node),
-      ...finalOutputs.map(i => i.node),
+      ...finalInputs.map(i => i.node).filter(n => !!n),
+      ...finalOutputs.map(i => i.node).filter(n => !!n),
       actionNode,
       ...finalInputs.map(i => `n${i.id} -> n${actionId}`),
       ...finalOutputs.map(i => `n${actionId} -> n${i.id}`)
-    ].join(';') + ';'
+    ].join(';\n') + ';\n'
   }
 
   function AnswerArea() {
@@ -109,7 +137,7 @@ function App() {
       ? <p className="horizontal-row bigger-font">None to speak of</p>
       : (Array.isArray(answer)
         ? <CollectionDisplay predicates={answer} />
-        : <PredicateDisplay predicate={answer.rule} key={idForPredicateInstance(answer.rule)} />
+        : <PredicateDisplay predicate={answer.rule} key={signatureForPredicateInstance(answer.rule)} />
       )
   }
 
@@ -122,7 +150,7 @@ function App() {
   }
 
   useEffect(() => {
-    setLoading(true);
+    setLoading(true)
     const worker = new Worker('worker.js')
     worker.addEventListener('message', event => {
       if (event.data == 'ready')
@@ -136,10 +164,10 @@ function App() {
         setLog(log => [...log, data])
         witness(data);
         setGraph(graph => graph + graphFromAction(data))
-      } else if (data.type == 'abort')  {
+      } else if (data.type == 'abort') {
         replay();
-      } else if (data.type == 'state')  {
-        setSimulationState(state => data.state.map(p => ({ ...p, actors: p.actors.map(index => actors[index]) })))
+      } else if (data.type == 'state') {
+        setSimulationState(state => data.state.map(p => ({...p, actors: p.actors.map(index => actors[index])})))
         setLoading(false)
       }
     })
@@ -263,10 +291,6 @@ function App() {
     setDroppedActors(droppedActors.map((a, i) => index === i ? actor : a))
   }
 
-  function showGraph() {
-
-  }
-
   function replay() {
     setModalShow(false);
     actors = createActors();
@@ -276,7 +300,8 @@ function App() {
     setGraph('')
     setAnswer(undefined)
     setDroppedActors([undefined, undefined])
-    setSeed(randomSeed());
+    setSeed(randomSeed())
+    resetGraphResources()
   }
 
   function isVictim(actor) {
@@ -290,7 +315,6 @@ function App() {
       onHide={() => {setModalShow(false); replay()}}
     />
     <LoadingModal />
-    {/*<Graph dot={graph} />*/}
     <DndProvider backend={HTML5Backend}>
       <Container fluid={true} className="main">
         {actors != null ? <IdCards actors={actors} isVictim={(actor) => isVictim(actor)} /> : <div/>}
@@ -313,7 +337,8 @@ function App() {
           </div>
         </div>
         <AnswerArea />
-        {/*<div className="event-log">{log.map((item, i) => <div key={i}>{JSON.stringify(item)}</div>)}</div>*/}
+        {simulationState.length > 0 && <Graph dot={graph} />}
+        {false && <div className="event-log">{log.map((item, i) => <div key={i}>{JSON.stringify(item)}</div>)}</div>}
       </Container>
     </DndProvider>
   </div>

@@ -2,6 +2,8 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
 const path = require('path');
 
+const mode = 'development'
+
 module.exports = [
   {
     entry: "./bootstrap.js",
@@ -9,13 +11,14 @@ module.exports = [
       path: path.resolve(__dirname, "dist"),
       filename: "bootstrap.js",
     },
-    mode: "production",
+    mode: mode,
     plugins: [
       new CopyWebpackPlugin(['index.html', 'logo.png', 'style.css']),
       new WasmPackPlugin({
         crateDirectory: path.resolve(__dirname, '..'),
         outName: 'mysterious_murder',
         outDir: 'pkg',
+        forceMode: 'production',
       }),
     ],
     module: {
@@ -57,6 +60,6 @@ module.exports = [
         },
       ]
     },
-    mode: "production",
+    mode: mode,
   }
 ];
