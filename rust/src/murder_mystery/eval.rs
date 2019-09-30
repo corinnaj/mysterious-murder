@@ -189,6 +189,10 @@ impl<T: PredicateSignature> Outcome<T> {
         }
     }
 
+    pub fn get_template(&self) -> String {
+        self.template.to_owned()
+    }
+
     pub fn apply_score(&self, actor: &mut ActorState) {
         if self.reset_rewards {
             actor.sanity_score = 0f32;

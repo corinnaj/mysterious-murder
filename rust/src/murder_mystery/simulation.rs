@@ -29,15 +29,16 @@ impl<T: PredicateSignature> PredicateState<T> {
         self.take_action_reporting(evaluator, actor, rule_instance, registry, rng, |_| {});
     }
 
-    pub fn take_action_reporting<F: FnMut(&T)>(&mut self,
+    pub fn take_action_reporting<'a, F: FnMut(&T)>(&mut self,
                                                evaluator: &Evaluator<T>,
                                                actor: usize,
-                                               rule_instance: &RuleInstance<T>,
+                                               rule_instance: &'a RuleInstance<T>,
                                                registry: &mut <T as PredicateSignature>::Registry,
                                                rng: &mut impl Rng,
-                                               callback: F) {
+                                               callback: F) -> &'a Outcome<T> {
         let outcome = evaluator.apply_reporting(rule_instance, &mut self.predicates, rng, registry, callback);
         outcome.apply_score(&mut self.scores[actor]);
+        return outcome
     }
 
     pub fn get_actions_for_actor(&self, actor: usize, evaluator: &Evaluator<T>) -> Vec<RuleInstance<T>> {
@@ -87,12 +88,12 @@ impl<T: PredicateSignature> Simulation<T> {
         &self.evaluator
     }
 
-    pub fn take_action(&mut self, actor: usize, rule_instance: &RuleInstance<T>, registry: &mut <T as PredicateSignature>::Registry) -> Vec<T> {
+    pub fn take_action(&mut self, actor: usize, rule_instance: &RuleInstance<T>, registry: &mut <T as PredicateSignature>::Registry) -> (Vec<T>, String) {
         let mut outputs: Vec<T> = vec![];
-        self.state.take_action_reporting(&self.evaluator, actor, rule_instance, registry, &mut self.rng, |p| {
+        let outcome = self.state.take_action_reporting(&self.evaluator, actor, rule_instance, registry, &mut self.rng, |p| {
             outputs.push(p.clone());
         });
-        outputs
+        (outputs, outcome.get_template())
     }
 
     pub fn get_score_for_actor(&self, actor: usize) -> f32 {

@@ -1,6 +1,6 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-import React, { useState, useEffect, createRef } from 'react'
+import React, { useState, useEffect, useMemo, createRef } from 'react'
 import ReactDOM from 'react-dom'
 import Container from 'react-bootstrap/Container';
 import { iconMappings, male, female, feelingIconMapping, objectIconMapping, moodIconMapping, relationshipIconMapping, ruleIconMapping } from './emojis'
@@ -149,6 +149,14 @@ function App() {
     }
   }
 
+  const fillTemplate = (actorMapping, actors, template) => {
+    return actorMapping.map(index => actors[index]).reduce((currentTemplate, actor, index) =>
+      currentTemplate
+        .replace(`{${index}}`, actor.name)
+        .replace(new RegExp(`\\[${index}:([^|]+)\\|([^\\]]+)\\]`),
+          actor.gender === 'female' ? '$2' : '$1'), template)
+  }
+
   useEffect(() => {
     setLoading(true)
     const worker = new Worker('worker.js')
@@ -161,7 +169,7 @@ function App() {
 
       let data = JSON.parse(event.data)
       if (data.type == 'action') {
-        setLog(log => [...log, data])
+        setLog(log => [...log, {...data, story: fillTemplate(data.actors, actors, data.template)}])
         witness(data);
         setGraph(graph => graph + graphFromAction(data))
       } else if (data.type == 'abort') {
@@ -204,16 +212,22 @@ function App() {
   }
 
   function AccuseModal(props) {
+    const [showGraph, setShowGraph] = useState(false)
+    const [showLog, setShowLog] = useState(false)
     const rule = log[log.length - 1];
     const actor = droppedActors[0];
     if (rule == undefined || actor == undefined || rule.actors == undefined || rule.actors.length < 1) return <div></div>;
     const correct = rule.actors[0] == actor.index;
     const murderer = actors[rule.actors[0]];
+
+    const stringLog = useMemo(() => JSON.stringify({actors, log}, null, 2), [log])
+
     return (
       <Modal
         {...props}
         size="md"
         aria-labelledby="modal-title"
+        dialogClassName={showGraph ? 'modal-90w' : ''}
         centered
       >
         <Modal.Header closeButton>
@@ -225,15 +239,18 @@ function App() {
           <p>
             {correct ? actor.name + " confesses immediatly!" : "It was actually " + murderer.name}
           </p>
+          {showGraph && <Graph dot={graph} />}
+          {showLog && <textarea readOnly className="story-log-json" value={stringLog} />}
         </Modal.Body>
         <Modal.Footer className="opposite">
-          <OverlayTrigger overlay={<Tooltip id="tooltip-disabled">Coming Soon!</Tooltip>}>
-            <span className="d-inline-block">
-              <Button disabled style={{ pointerEvents: 'none' }}>
-                Show Me What Happened
-              </Button>
-            </span>
-          </OverlayTrigger>
+          <span className="d-inline-block">
+            <Button style={{marginRight: '1rem'}} onClick={_ => setShowGraph(true)}>
+              Show Me What Happened
+            </Button>
+            <Button onClick={_ => setShowLog(true)}>
+              Story as JSON
+            </Button>
+          </span>
           <Button variant="success" onClick={props.onHide}>Play Again</Button>
         </Modal.Footer>
       </Modal>
@@ -337,7 +354,6 @@ function App() {
           </div>
         </div>
         <AnswerArea />
-        {simulationState.length > 0 && <Graph dot={graph} />}
         {false && <div className="event-log">{log.map((item, i) => <div key={i}>{JSON.stringify(item)}</div>)}</div>}
       </Container>
     </DndProvider>

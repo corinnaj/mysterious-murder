@@ -56,12 +56,13 @@ pub fn run_simulation(data: &str, seed: usize) -> String {
     loop {
         match mcts::uct_find_best_rule(&mut simulation, turn, 10, 30, &mut registry) {
             Some(action) => {
-                let outputs = simulation.take_action(0, &action, &mut registry);
+                let (outputs, template) = simulation.take_action(0, &action, &mut registry);
 
                 postMessage(&JsValue::from_str(&json!({
                     "type": "action",
                     "name": action.get_name(),
                     "actors": action.get_actors(),
+                    "template": template,
                     "inputs": action.get_predicate_instances().iter().map(|p| p.get_json(&registry)).collect::<Vec<Value>>(),
                     "outputs": outputs.iter().map(|p| p.get_json(&registry)).collect::<Vec<Value>>(),
                 }).to_string()));

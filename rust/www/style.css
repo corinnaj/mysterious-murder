@@ -144,3 +144,14 @@ body {
 .content {
   flex: 1 0 auto;
 }
+.modal-90w {
+  width: 90%;
+  max-width: none !important;
+}
+.story-log-json {
+  height: 200px;
+  width: 100%;
+  font-family: monospace;
+  font-size: 0.8rem;
+  overflow-y: auto;
+}
