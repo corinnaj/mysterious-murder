@@ -16,16 +16,22 @@ import Modal from 'react-bootstrap/Modal';
 import Spinner from 'react-bootstrap/Spinner';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import faker from 'faker';
+import { getFullName } from 'local-names';
 let actors = createActors();
 
 function createActors() {
-  return [0, 1, 2, 3].map(index => ({
-    icon: [...male, ...female][parseInt(Math.random() * (male.length + female.length))],
-    name: faker.name.firstName() + " " + faker.name.lastName(),
-    age: 32,
-    index,
-  }))
+  return [0, 1, 2, 3].map(index => {
+    const gender = Math.random() > 0.5 ? 'male' : 'female';
+    return ({
+      gender: gender,
+      icon: gender == 'male'
+        ? male[Math.floor(Math.random() * male.length)]
+        : female[Math.floor(Math.random() * female.length)],
+      name: getFullName(gender),
+      age: 32,
+      index,
+    });
+  })
 }
 
 const readablePredicate = predicate => predicate.name.replace('_', ' ')
