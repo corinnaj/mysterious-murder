@@ -1,5 +1,6 @@
 {
   "name": "create-wasm-app",
+  "homepage": "https://github.com/rustwasm/create-wasm-app#readme",
   "version": "0.1.0",
   "description": "create an app to consume rust-generated wasm packages",
   "main": "index.js",
@@ -8,7 +9,9 @@
   },
   "scripts": {
     "build": "webpack --config webpack.config.js",
-    "start": "webpack-dev-server"
+    "start": "webpack-dev-server",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "repository": {
     "type": "git",
@@ -31,7 +34,6 @@
   "bugs": {
     "url": "https://github.com/rustwasm/create-wasm-app/issues"
   },
-  "homepage": "https://github.com/rustwasm/create-wasm-app#readme",
   "devDependencies": {
     "@babel/core": "^7.6.4",
     "@babel/preset-env": "^7.6.3",
@@ -40,6 +42,7 @@
     "babel-loader": "^8.0.6",
     "copy-webpack-plugin": "^5.0.4",
     "css-loader": "^3.2.0",
+    "gh-pages": "^2.1.1",
     "hello-wasm-pack": "^0.1.0",
     "style-loader": "^1.0.0",
     "webpack": "^4.41.2",
