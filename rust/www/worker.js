@@ -4,4 +4,4 @@ import('./worker-start.js')
 
     onmessage = event => module.onmessage(event) 
   })
-  .catch(e => console.error('Error importing `index.js`:', e));
+  .catch(e => console.error('Error importing `worker-start.js`:', e));
