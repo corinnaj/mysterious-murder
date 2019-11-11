@@ -8,7 +8,6 @@ import { murderMysteryRuleset } from './murder_mystery'
 import { IdCards } from './id_cards'
 import { TargetArea } from './target_area'
 import * as d3 from 'd3'
-import * as d3Graphviz from 'd3-graphviz'
 import { DndProvider } from 'react-dnd'
 import HTML5Backend from 'react-dnd-html5-backend'
 import Button from 'react-bootstrap/Button';
@@ -16,37 +15,24 @@ import Modal from 'react-bootstrap/Modal';
 import Spinner from 'react-bootstrap/Spinner';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import { getFullName } from 'local-names';
-let actors = createActors();
+import { createActors, Actor } from './actors';
+import { RuleInvocation, Predicate, WitnessLog, graphFromAction, StoryStep, resetGraphResources } from './graph';
 
-function createActors() {
-  return [0, 1, 2, 3].map(index => {
-    const gender = Math.random() > 0.5 ? 'male' : 'female';
-    return ({
-      gender: gender,
-      icon: gender == 'male'
-        ? male[Math.floor(Math.random() * male.length)]
-        : female[Math.floor(Math.random() * female.length)],
-      name: getFullName(gender),
-      age: 32,
-      index,
-    });
-  })
-}
+let actors = createActors();
 
 const readablePredicate = predicate => predicate.name.replace('_', ' ')
 
-function PredicateDisplay({ predicate }) {
+const RuleInvocationDisplay: React.FC<{ruleInvocation: RuleInvocation}> = ({ ruleInvocation }) => {
   return <div className="predicate emoji horizontal-row">
-    <span key={predicate.actors[0].index} className="predicate-actor-icon">{actors[predicate.actors[0]].icon}</span>
-      <OverlayTrigger overlay={<Tooltip id="tooltip-disabled">{readablePredicate(predicate)}</Tooltip>}>
-        <span className="predicate-rule-icon">{iconMappings[predicate.name] || predicate.name}</span>
+    <span key={ruleInvocation.actors[0].index} className="predicate-actor-icon">{ruleInvocation.actors[0].icon}</span>
+      <OverlayTrigger overlay={<Tooltip id="tooltip-disabled">{readablePredicate(ruleInvocation)}</Tooltip>}>
+        <span className="predicate-rule-icon">{iconMappings[ruleInvocation.name] || ruleInvocation.name}</span>
       </OverlayTrigger>
-    {predicate.actors.slice(1).map(a => <span key={a.index} className="predicate-actor-icon">{actors[a].icon}</span>)}
+    {ruleInvocation.actors.slice(1).map(a => <span key={a.index} className="predicate-actor-icon">{a.icon}</span>)}
   </div>
 }
 
-function CollectionDisplay({ predicates }) {
+const PredicatesDisplay: React.FC<{predicates: Predicate[]}> = ({predicates}) => {
   return <div className="predicate emoji horizontal-row">
     {predicates.map((p, i) =>
       <OverlayTrigger overlay={<Tooltip id="tooltip-disabled">{p.name}</Tooltip>}>
@@ -58,104 +44,49 @@ function CollectionDisplay({ predicates }) {
 
 function Graph({ dot }) {
   const height = 600
-  const ref = createRef()
+  const ref = createRef<HTMLDivElement>()
   useEffect(() => {
-    d3.select(ref.current).graphviz({height, width: 600}).renderDot(`digraph {
+    const el: any = d3.select(ref.current)
+    el.graphviz({height, width: 600}).renderDot(`digraph {
       node [shape=box, margin=0.01, height=0, width=0, fontsize=7]; ${dot}}`)
     d3.select(ref.current).select('svg').attr('width', '100%')
   }, [dot])
   return <div style={{height: height + 'px', width: '100%'}} ref={ref} className="graph"></div>
 }
 
-let globId = 0
-function signatureForPredicateInstance(p) {
-  return p.name + p.actors.join('')
-}
-
-function emojisForPredicateInstance(p) {
-  return p.name + ' ' + p.actors.map(a => actors[a].icon).join(' ')
-}
-
-function randomSeed() {
-    return parseInt(Math.floor(Math.random() * Math.pow(2, 32)));
-}
-
-// given a predicate instance signature, e.g. `anger 0 1`, store the current index used for deduplication
-let indexMap = {}
-const nextIndex = signature => indexMap[signature] = !indexMap[signature] ? 1 : indexMap[signature] + 1
-const newResource = signature => {
-  const id = signature + '_' + nextIndex()
-  resourcesFor(signature).push(id)
-  return id
-}
-// map predicate instances on a list of existing indices in the simulation state
-let resourceMap = {}
-const resourcesFor = signature => !resourceMap[signature]
-  ? resourceMap[signature] = []
-  : resourceMap[signature]
-
-const ignorePredicates = ['alive']
-const resetGraphResources = () => {
-  indexMap = {}
-  resourceMap = {}
+function randomSeed(): number {
+    return Math.floor(Math.random() * Math.pow(2, 32));
 }
 
 function App() {
-  const [simulationState, setSimulationState] = useState([])
-  const [log, setLog] = useState([])
-  const [witnessLog, setWitnessLog] = useState([])
+  const [simulationState, setSimulationState] = useState<Predicate[]>([])
+  const [log, setLog] = useState<StoryStep[]>([])
+  const [witnessLog, setWitnessLog] = useState<WitnessLog[]>([])
   const [graph, setGraph] = useState('')
-  const [answer, setAnswer] = useState(undefined)
-  const [droppedActors, setDroppedActors] = useState([undefined, undefined])
+  const [answer, setAnswer] = useState<Predicate[]|RuleInvocation|undefined>(undefined)
+  const [droppedActors, setDroppedActors] = useState<[Actor|undefined, Actor|undefined]>([undefined, undefined])
   const [modalShow, setModalShow] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [seed, setSeed] = useState(() => randomSeed());
-
-  function graphFromAction({ inputs, outputs, name: actionName, actors: actionActors }) {
-    const finalInputs = inputs.filter(i => !ignorePredicates.includes(i.name)).map(i => {
-      const signature = signatureForPredicateInstance(i)
-      let id = resourcesFor(signature).pop()
-      if (id)
-        return {id}
-      id = signature + '_' + nextIndex(signature)
-      return {id, node: `n${id} [label="${emojisForPredicateInstance(i)}"]`}
-    })
-    const finalOutputs = outputs.filter(i => !ignorePredicates.includes(i.name)).map(i => {
-      const signature = signatureForPredicateInstance(i)
-      const id = newResource(signature)
-      return { id, node: `n${id} [label="${emojisForPredicateInstance(i)}"]` }
-    })
-    const actionId = ++globId;
-    const fontSize = actionName.includes('murder') ? 32 : 16
-    const actionNode = `n${actionId} [fillcolor=cyan, fontsize=${fontSize}, label="${actionName} ${actionActors.map(a => actors[a].icon).join('')}"]`;
-
-    return [
-      ...finalInputs.map(i => i.node).filter(n => !!n),
-      ...finalOutputs.map(i => i.node).filter(n => !!n),
-      actionNode,
-      ...finalInputs.map(i => `n${i.id} -> n${actionId}`),
-      ...finalOutputs.map(i => `n${actionId} -> n${i.id}`)
-    ].join(';\n') + ';\n'
-  }
+  const [seed, setSeed] = useState<number>(() => randomSeed());
 
   function AnswerArea() {
-    return answer == undefined || (Array.isArray(answer) && answer.length == 0)
-      ? <p className="horizontal-row bigger-font">None to speak of</p>
-      : (Array.isArray(answer)
-        ? <CollectionDisplay predicates={answer} />
-        : <PredicateDisplay predicate={answer.rule} key={signatureForPredicateInstance(answer.rule)} />
-      )
+    if (!answer || (Array.isArray(answer) && answer.length < 1))
+      return <p className="horizontal-row bigger-font">None to speak of</p>
+
+    return Array.isArray(answer)
+      ? <PredicatesDisplay predicates={answer} />
+      : <RuleInvocationDisplay ruleInvocation={answer} />
   }
 
-  function witness(data) {
+  function witness(rule: RuleInvocation) {
     if (Math.random() < 0.5) {
-      const possibleWitnesses = (actors.filter(a => !data.actors.includes(a)));
+      const possibleWitnesses = (actors.filter(a => !rule.actors.includes(a)));
       const witness = possibleWitnesses[Math.floor(Math.random() * possibleWitnesses.length)];
-      setWitnessLog(witnessLog => [...witnessLog, {rule: data, witness: witness}])
+      setWitnessLog(witnessLog => [...witnessLog, {rule: rule, witness: witness}])
     }
   }
 
-  const fillTemplate = (actorMapping, actors, template) => {
+  const fillTemplate = (actorMapping: number[], actors: Actor[], template: string) => {
     return actorMapping.map(index => actors[index]).reduce((currentTemplate, actor, index) =>
       currentTemplate
         .replace(`{${index}}`, actor.name)
@@ -175,28 +106,29 @@ function App() {
 
       let data = JSON.parse(event.data)
       if (data.type == 'action') {
-        setLog(log => [...log, {...data, story: fillTemplate(data.actors, actors, data.template)}])
-        witness(data);
-        setGraph(graph => graph + graphFromAction(data))
+        const action = {...data, actors: data.actors.map(index => actors[index])} as RuleInvocation
+        setLog(log => [...log, {...action, story: fillTemplate(data.actors, actors, data.template)}])
+        witness(action)
+        setGraph(graph => graph + graphFromAction(action, actors))
       } else if (data.type == 'abort') {
         replay();
       } else if (data.type == 'state') {
-        setSimulationState(state => data.state.map(p => ({...p, actors: p.actors.map(index => actors[index])})))
+        setSimulationState(state => data.state.map(p => ({...p, actors: p.actors.map((index: number) => actors[index])})))
         setLoading(false)
       }
     })
   }, [seed])
 
-  function askQuestion(actors, predNames, type) {
-    if (type == 'object') {
-      let allPreds = simulationState.filter(p => p.actors[0] == actors[0] && iconMappings[p.name] && predNames.includes(p.name));
-      allPreds = actors[1] != undefined ? allPreds.filter(p => p.actors[1] == actors[1]) : allPreds;
-      if (allPreds.length == 0) return undefined;
-      return allPreds;
-    } else {
-      let allRules = witnessLog.filter(p => p.witness == actors[0] && p.rule.actors.includes(actors[1].index))
-      return allRules[Math.floor(Math.random() * allRules.length)];
-    }
+  function askQuestion(actors: Actor[], predNames: string[]): Predicate[] {
+    let allPreds = simulationState.filter(p => p.actors[0] === actors[0] && iconMappings[p.name] && predNames.includes(p.name))
+    allPreds = actors[1] != undefined ? allPreds.filter(p => p.actors[1] === actors[1]) : allPreds
+    if (allPreds.length == 0) return undefined
+    return allPreds
+  }
+
+  function askWitnessQuestion(actors: Actor[], predNames: string[]): RuleInvocation {
+      let allRules = witnessLog.filter(p => p.witness == actors[0] && p.rule.actors.includes(actors[1]))
+      return allRules[Math.floor(Math.random() * allRules.length)].rule
   }
 
   function LoadingModal() {
@@ -222,9 +154,10 @@ function App() {
     const [showLog, setShowLog] = useState(false)
     const rule = log[log.length - 1];
     const actor = droppedActors[0];
-    if (rule == undefined || actor == undefined || rule.actors == undefined || rule.actors.length < 1) return <div></div>;
-    const correct = rule.actors[0] == actor.index;
-    const murderer = actors[rule.actors[0]];
+    if (!rule || !actor || !rule.actors || rule.actors.length < 1)
+      return <div></div>
+    const correct = rule.actors[0] === actor;
+    const murderer = rule.actors[0]
 
     const stringLog = useMemo(() => JSON.stringify({actors, log}, null, 2), [log])
 
@@ -250,10 +183,10 @@ function App() {
         </Modal.Body>
         <Modal.Footer className="opposite">
           <span className="d-inline-block">
-            <Button style={{marginRight: '1rem'}} onClick={_ => setShowGraph(true)}>
+            <Button style={{marginRight: '1rem'}} onClick={() => setShowGraph(true)}>
               Show Me What Happened
             </Button>
-            <Button onClick={_ => setShowLog(true)}>
+            <Button onClick={() => setShowLog(true)}>
               Story as JSON
             </Button>
           </span>
@@ -267,17 +200,17 @@ function App() {
     setModalShow(true)
   }
 
-  function renderSinglePersonButtons(actor) {
+  function renderSinglePersonButtons(actor: Actor) {
     return <div className="vertical-row">
       <div/>
       <Button
         className="question-button"
-        onClick={() => setAnswer(askQuestion([actor], Object.keys(objectIconMapping), 'object'))}>
+        onClick={() => setAnswer(askQuestion([actor], Object.keys(objectIconMapping)))}>
         Possessions
       </Button>
       <Button
         className="question-button"
-        onClick={() => setAnswer(askQuestion([actor], Object.keys(moodIconMapping), 'object'))}>
+        onClick={() => setAnswer(askQuestion([actor], Object.keys(moodIconMapping)))}>
         Current Mood
       </Button>
       <Button
@@ -294,24 +227,24 @@ function App() {
       <div/>
       <Button
         className="question-button"
-        onClick={() => setAnswer(askQuestion([actor1, actor2], Object.keys(relationshipIconMapping), 'object'))}>
+        onClick={() => setAnswer(askQuestion([actor1, actor2], Object.keys(relationshipIconMapping)))}>
         Relationship
       </Button>
       <Button
         className="question-button"
-        onClick={() => setAnswer(askQuestion([actor1, actor2], Object.keys(feelingIconMapping), 'object'))}>
+        onClick={() => setAnswer(askQuestion([actor1, actor2], Object.keys(feelingIconMapping)))}>
         Feelings
       </Button>
       <Button
         className="question-button"
-        onClick={() => setAnswer(askQuestion([actor1, actor2], Object.keys(ruleIconMapping), 'predicate'))}>
+        onClick={() => setAnswer(askWitnessQuestion([actor1, actor2], Object.keys(ruleIconMapping)))}>
         Facts
       </Button>
     </div>
   }
 
-  function setActor(actor, index) {
-    setDroppedActors(droppedActors.map((a, i) => index === i ? actor : a))
+  function setActor(actor: Actor, index: number) {
+    setDroppedActors(a => a.map((a, i) => index === i ? actor : a) as [Actor, Actor])
   }
 
   function replay() {
@@ -327,7 +260,7 @@ function App() {
     resetGraphResources()
   }
 
-  function isVictim(actor) {
+  function isVictim(actor: Actor) {
     const rule = simulationState.filter(p => p.name == "dead" && p.actors[0] == actor)
     return rule.length > 0;
   }
@@ -340,11 +273,11 @@ function App() {
     <LoadingModal />
     <DndProvider backend={HTML5Backend}>
       <Container fluid={true} className="main">
-        {actors != null ? <IdCards actors={actors} isVictim={(actor) => isVictim(actor)} /> : <div/>}
+        {actors != null ? <IdCards actors={actors} isVictim={(actor: Actor) => isVictim(actor)} /> : <div/>}
         <div className="horizontal-row wrap">
           <div>
             <p className="question-label">Ask...</p>
-            <TargetArea index={0} onDrop={(actor) => setActor(actor, 0)} droppedActor={droppedActors[0]} isVictim={(actor) => isVictim(actor)} />
+            <TargetArea index={0} onDrop={(actor: Actor) => setActor(actor, 0)} droppedActors={droppedActors} isVictim={(actor: Actor) => isVictim(actor)} />
           </div>
           {droppedActors[0] != undefined && droppedActors[1] == undefined
             ? renderSinglePersonButtons(droppedActors[0])
@@ -356,7 +289,7 @@ function App() {
           }
           <div>
             <p className="question-label">...about...</p>
-            <TargetArea index={1} onDrop={(actor) => setActor(actor, 1)} droppedActor={droppedActors[1]} isVictim={(actor) => isVictim(actor)} />
+            <TargetArea index={1} onDrop={(actor: Actor) => setActor(actor, 1)} droppedActors={droppedActors} isVictim={(actor) => isVictim(actor)} />
           </div>
         </div>
         <AnswerArea />

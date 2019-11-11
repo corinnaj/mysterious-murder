@@ -26,7 +26,8 @@
   "babel": {
     "presets": [
       "@babel/preset-env",
-      "@babel/preset-react"
+      "@babel/preset-react",
+      "@babel/typescript"
     ]
   },
   "author": "Ashley Williams <ashley666ashley@gmail.com>",
@@ -38,6 +39,7 @@
     "@babel/core": "^7.6.4",
     "@babel/preset-env": "^7.6.3",
     "@babel/preset-react": "^7.6.3",
+    "@babel/preset-typescript": "^7.7.2",
     "@wasm-tool/wasm-pack-plugin": "^1.0.1",
     "babel-loader": "^8.0.6",
     "copy-webpack-plugin": "^5.0.4",
@@ -50,6 +52,11 @@
     "webpack-dev-server": "^3.9.0"
   },
   "dependencies": {
+    "@types/d3": "^5.7.2",
+    "@types/jest": "^24.0.22",
+    "@types/node": "^12.12.7",
+    "@types/react": "^16.9.11",
+    "@types/react-dom": "^16.9.4",
     "bootstrap": "^4.3.1",
     "d3": "^5.12.0",
     "d3-graphviz": "^2.6.1",
@@ -58,6 +65,7 @@
     "react-bootstrap": "^1.0.0-beta.14",
     "react-dnd": "^9.4.0",
     "react-dnd-html5-backend": "^9.4.0",
-    "react-dom": "^16.11.0"
+    "react-dom": "^16.11.0",
+    "typescript": "^3.7.2"
   }
 }

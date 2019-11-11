@@ -1,15 +1,20 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React from 'react'
-import { useDrag } from 'react-dnd'
+import { useDrag, DragObjectWithType } from 'react-dnd'
+import { Actor } from './actors';
 
-export function ActorProfile({ actor, isVictim }) {
+export interface DraggedActor extends DragObjectWithType {
+    type: string
+    actor: Actor
+}
 
-    const [{ isDragging }, drag] = useDrag({
-        item: { type: 'actor' },
+export const ActorProfile: React.FC<{isVictim: boolean, actor: Actor}> = ({ actor, isVictim }) => {
+    const [{ isDragging }, drag] = useDrag<DraggedActor, Actor, {isDragging: boolean}>({
+        item: { actor, type: 'actor' },
         collect: monitor => ({
             isDragging: !!monitor.isDragging(),
         }),
-        begin: monitor => ({ actor }),
+        begin: monitor => ({ actor, type: 'actor' }),
     })
 
     return <div ref={drag} style={{ opacity: isDragging ? 0.5 : 1 }}>

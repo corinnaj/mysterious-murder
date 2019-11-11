@@ -6,10 +6,10 @@ const mode = 'development'
 
 module.exports = [
   {
-    entry: "./bootstrap.js",
+    entry: "./main.tsx",
     output: {
       path: path.resolve(__dirname, "dist"),
-      filename: "bootstrap.js",
+      filename: "main.js",
     },
     mode: mode,
     plugins: [
@@ -24,7 +24,7 @@ module.exports = [
     module: {
       rules: [
         {
-          test: /\.(js|jsx)$/,
+          test: /\.(ts|tsx|js|jsx)$/,
           exclude: /node_modules/,
           use: ['babel-loader']
         },
@@ -35,7 +35,7 @@ module.exports = [
       ],
     },
     resolve: {
-      extensions: ['*', '.js', '.jsx'],
+      extensions: ['*', '.js', '.jsx', '.ts', '.tsx'],
       modules: [path.resolve(__dirname), 'node_modules'],
     },
   },
