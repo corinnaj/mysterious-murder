@@ -155,3 +155,17 @@ body {
   font-size: 0.8rem;
   overflow-y: auto;
 }
+
+input {
+	color: grey;
+	opacity: 0.5;
+	width: 100px;
+	height: 100px;
+}
+
+output {
+	color: green;
+	opacity: 0.5;
+	width: 100px;
+	height: 100px;
+}

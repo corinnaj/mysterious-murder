@@ -1,7 +1,7 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/css/bootstrap.min.css'
 import React from 'react'
 import { useDrag, DragObjectWithType } from 'react-dnd'
-import { Actor } from './actors';
+import { Actor } from './actors'
 
 export interface DraggedActor extends DragObjectWithType {
     type: string

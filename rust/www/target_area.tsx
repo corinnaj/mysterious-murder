@@ -1,5 +1,5 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import React, {useState} from 'react'
+import React from 'react'
 import Button from 'react-bootstrap/Button';
 import { useDrop } from 'react-dnd'
 import { ActorProfile, DraggedActor } from './id_cards';
