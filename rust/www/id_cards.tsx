@@ -1,12 +1,7 @@
 import 'bootstrap/dist/css/bootstrap.min.css'
 import React from 'react'
-import { useDrag, DragObjectWithType } from 'react-dnd'
-import { Actor } from './actors'
-
-export interface DraggedActor extends DragObjectWithType {
-    type: string
-    actor: Actor
-}
+import { useDrag } from 'react-dnd'
+import { Actor, DraggedActor } from './actors'
 
 export const ActorProfile: React.FC<{isVictim: boolean, actor: Actor}> = ({ actor, isVictim }) => {
     const [{ isDragging }, drag] = useDrag<DraggedActor, Actor, {isDragging: boolean}>({

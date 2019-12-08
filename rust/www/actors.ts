@@ -1,5 +1,6 @@
 import { getFullName } from 'local-names';
 import { male, female } from "./emojis";
+import { DragObjectWithType } from 'react-dnd';
 
 export interface Actor {
   gender: string
@@ -7,6 +8,11 @@ export interface Actor {
   name: string
   age: number
   index: number
+}
+
+export interface DraggedActor extends DragObjectWithType {
+    type: string
+    actor: Actor
 }
 
 export const createActors = (): Actor[]  => {
