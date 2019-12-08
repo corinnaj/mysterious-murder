@@ -2,8 +2,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import React from 'react'
 import Button from 'react-bootstrap/Button';
 import { useDrop } from 'react-dnd'
-import { ActorProfile, DraggedActor } from './id_cards';
-import { Actor } from './actors';
+import { ActorProfile } from './id_cards';
+import { Actor, DraggedActor } from './actors';
 
 export function TargetArea({ onDrop, isVictim, index, droppedActors }) {
     const [collectedProps, drop] = useDrop<DraggedActor, Actor, {isDragging: boolean}>({

@@ -1,31 +1,35 @@
 import { Actor } from "./actors";
 
-export interface AbsPred {
+export interface AbstractPredicate {
+    category: number,
     name: string,
     numActors: number
 }
 
-export class Pred {
-    abstract: AbsPred
+export class Predicate {
+    abstract: AbstractPredicate
     actors: Actor[]
     amount: number
     keep: boolean
     permanent: boolean
 
-    constructor(thingie: AbsPred) {
+    constructor(thingie: AbstractPredicate) {
         this.abstract = thingie
         this.amount = 1
     } 
 }
 
-const happy = {name: "Happy", numActors: 1}
-const sad = {name: "Sad", numActors: 1}
-const anger = {name: "Anger", numActors: 2}
-const trust = {name: "Anger", numActors: 2}
-const married = {name: "Married", numActors: 2}
-const related = {name: "Related", numActors: 2}
-const dead = {name: "Dead", numActors: 1}
-const alive = {name: "Alive", numActors: 1}
-const has_weapon = {name: "Has A Weapon", numActors: 1}
+export enum categories {Relationship, Feeling, Possesions, State}
 
-export const allPredicates = [happy, sad, anger, trust, married, related, dead, alive, has_weapon];
+const happy = {category: categories.Feeling, name: "Happy", numActors: 1} as AbstractPredicate
+const sad = {category: categories.Feeling, name: "Sad", numActors: 1} as AbstractPredicate
+const anger = {category: categories.Relationship, name: "Anger", numActors: 2} as AbstractPredicate
+const trust = {category: categories.Relationship, name: "Trust", numActors: 2} as AbstractPredicate
+const married = {category: categories.Relationship, name: "Married", numActors: 2} as AbstractPredicate
+const related = {category: categories.Relationship, name: "Related", numActors: 2} as AbstractPredicate
+const dead = {category: categories.State, name: "Dead", numActors: 1} as AbstractPredicate
+const alive = {category: categories.State, name: "Alive", numActors: 1} as AbstractPredicate
+const has_weapon = {category: categories.Possesions, name: "Has A Weapon", numActors: 1} as AbstractPredicate
+const has_money = {category: categories.Possesions, name: "Has Money", numActors: 1} as AbstractPredicate
+
+export const allPredicates = [happy, sad, anger, trust, married, related, dead, alive, has_weapon, has_money];

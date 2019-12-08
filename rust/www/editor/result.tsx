@@ -1,9 +1,10 @@
+import React from "react"
 import InputGroup from "react-bootstrap/InputGroup";
 import FormControl from "react-bootstrap/FormControl";
 import Button from "react-bootstrap/Button";
-import { PredicateArea } from "./editor";
+import { PredicateArea } from "./predicate-area";
 
-class Result {
+export class Result {
     probability: number
     title: string
     admit_probablity: number
@@ -14,21 +15,21 @@ class Result {
     template: string
 }
 
-function ResultSide({results, setResults}) {
+export const ResultSide: React.FC<{results: Result[], addResult: () => void}> = ({results, addResult}) => {
     return <div>
         <h2>Result</h2>
         <div className="horizontal-row wrap">
-            {results.map(result => <RuleResult result={result} ></RuleResult>)}
+            {results.map((result: Result) => <RuleResult result={result} ></RuleResult>)}
             <Button
                 className="add-result"
-                onClick={() => setResults(results => [...results, new Result()])}>
+                onClick={addResult}>
             +
             </Button>
         </div>
     </div>
 }
 
-function RuleResult({result}) {
+const RuleResult: React.FC<{result: Result}> = ({result}) => {
     return <div className="result">
         <PredicateArea></PredicateArea>
         <InputGroup className="mb-3">
