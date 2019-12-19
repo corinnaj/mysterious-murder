@@ -4,6 +4,6 @@ import { PredicateArea } from "./predicate-area";
 export function PreconditionSide() {
     return <div className="margin">
         <h2>Preconditions</h2>
-        <PredicateArea></PredicateArea>
+        <PredicateArea isResultSide={false}></PredicateArea>
     </div>
 }

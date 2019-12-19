@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { Predicate, AbstractPredicate } from "../predicates";
 import { useDrop, DragObjectWithType } from "react-dnd";
-import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import { Actor, DraggedActor } from "../actors";
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
+import Tooltip from 'react-bootstrap/Tooltip'
 
-export const PredicateArea: React.FC = () => {
+export const PredicateArea: React.FC<{isResultSide: boolean}> = ({isResultSide}) => {
     const [preds, setPreds] = useState<Predicate[]>([])
     const [collectedProps, drop] = useDrop<DraggedPredicate, AbstractPredicate, {isDragging: boolean}>({
         accept: 'pred',
@@ -22,7 +23,7 @@ export const PredicateArea: React.FC = () => {
     }
 
     return <div ref={drop} className="predicate-area">
-        {preds.map(pred => <PredicateDisplay pred={pred} handleRemove={() => handleRemove(pred)}></PredicateDisplay>)}
+        {preds.map(pred => <PredicateDisplay pred={pred} handleRemove={() => handleRemove(pred)} isResultSide={isResultSide}></PredicateDisplay>)}
     </div>
 }
 
@@ -32,7 +33,7 @@ export interface DraggedPredicate extends DragObjectWithType {
 }
 
 //TODO fix any 
-const PredicateDisplay: React.FC<{pred: Predicate, handleRemove: any}> = ({pred, handleRemove}) => {
+const PredicateDisplay: React.FC<{pred: Predicate, handleRemove: any, isResultSide: boolean}> = ({pred, handleRemove, isResultSide}) => {
     let areas = []
     for (let i = 0; i < pred.abstract.numActors; i++) {
         areas.push(<ActorDropArea index={i}></ActorDropArea>)
@@ -42,10 +43,21 @@ const PredicateDisplay: React.FC<{pred: Predicate, handleRemove: any}> = ({pred,
         {pred.amount + "x"}
         {pred.abstract.name}
         {areas}
-        <Form.Check></Form.Check>
-        {"permanent"}
-        <Form.Check></Form.Check>
-        {"keep"}
+        {isResultSide ? <div></div> : <OverlayTrigger
+            key={1}
+            placement="bottom"
+            overlay={<Tooltip id="tooltip-keep">This predicate will be kept after the rule application.</Tooltip>}
+            >
+                <Button variant="secondary">keep</Button>
+        </OverlayTrigger>}
+
+        {isResultSide ? <OverlayTrigger
+            key={0}
+            placement="bottom"
+            overlay={<Tooltip id="tooltip-permanent">This predicate is permanent and cannot be removed.</Tooltip>}
+            >
+                <Button variant="secondary">permanent</Button>
+        </OverlayTrigger> : <div></div>}
         <Button
             variant="outline-danger"
             onClick={handleRemove}>
