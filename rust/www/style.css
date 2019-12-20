@@ -158,7 +158,7 @@ body {
 
 .abs-pred {
 	border-radius: 0.5rem;
-	background: #ddd;
+	background: #eee;
 	padding: 0.5rem;
 	margin: 0.5rem;
 	justify-content: center;
@@ -167,14 +167,14 @@ body {
 
 .simplified-actor {
 	font-size: 3rem;
-	background: #eee;
-	margin: 0 0.5rem;
+	background: #ddd;
+	margin: 0.25rem 0.5rem;
 	padding: 0.2rem 0.5rem;
-    border-radius: 0.5rem;
+  border-radius: 0.5rem;
 }
 
 .predicate-area {
-	background: #eee;
+	background: lightblue;
 	min-width: 400px;
 	max-width: 800px;
 	min-height: 150px;
@@ -191,7 +191,7 @@ body {
 }
 
 .actor-drop-area {
-	background: #bbb;
+	background: lightgoldenrodyellow;
 	padding: 0.2rem;
 	font-size: 1.5rem;
 	margin: 0.2rem;
@@ -212,9 +212,27 @@ body {
 }
 
 .actor-pick-area {
-
+  background: lightgoldenrodyellow;
+	border-radius: 0.5rem;
+	padding: 0.5rem;
+	max-width: 200px;
 }
 
 .predicate-pick-area {
+  background: lightblue;
+	border-radius: 0.5rem;
+	padding: 0.5rem;
+	max-width: 800px;
+	margin: 0 2rem 0 0;
+}
 
+.intro-text {
+    columns: 3;
+    margin: 1rem 2rem;
+}
+
+.pick-rule {
+	flex-direction: row;
+	display: flex;
+	margin: 1rem 2rem;
 }

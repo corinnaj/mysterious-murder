@@ -13,8 +13,8 @@ export class Predicate {
     keep: boolean
     permanent: boolean
 
-    constructor(thingie: AbstractPredicate) {
-        this.abstract = thingie
+    constructor(abstract: AbstractPredicate) {
+        this.abstract = abstract
         this.amount = 1
     } 
 }

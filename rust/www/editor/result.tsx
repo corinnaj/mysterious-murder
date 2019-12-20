@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
+import React  from 'react'
 import InputGroup from 'react-bootstrap/InputGroup'
 import FormControl from 'react-bootstrap/FormControl'
 import Button from 'react-bootstrap/Button'
 import { PredicateArea } from './predicate-area'
 import Slider from 'rc-slider'
 import 'rc-slider/assets/index.css'
+import { Predicate } from '../predicates';
 
 export class Result {
     probability: number
@@ -15,33 +16,20 @@ export class Result {
     social: number
     fulfilment: number
     template: string
+    predicates: Predicate[]
+
+    constructor(probability: number) {
+        this.probability = probability
+    } 
 }
 
-export const ResultSide: React.FC<{results: Result[], addResult: () => void}> = ({results, addResult}) => {
-    const [percentages, setPercentages] = useState<number[]>([100])
-    
-    function addNewResult() {
-        setPercentages(percentages => [...percentages, 0])
-        addResult()
-    }
-
-    function updatePercentage(index: number, newProb: number) {
-        const newPercentages = percentages.slice()
-        newPercentages[index] = newProb
-        
-        //if we only have one option it has to be 100
-        if (newPercentages.length == 1) return
-
-        let sum = 0
-        newPercentages.map(val => sum = sum + val)
-        const overflow = sum - 100;
-        const overflowPerResult = overflow / (newPercentages.length - 1)
-        for (let i = 0; i < newPercentages.length; i++) {
-            if (i == index) continue
-            newPercentages[i] = newPercentages[i] - overflowPerResult
-        }
-        setPercentages(newPercentages)
-    }
+export const ResultSide: React.FC<{
+        results: Result[],
+        addResult: () => void,
+        updateProbabilites: (index: number, value: number) => void,
+        removePredicate: (pred: Predicate, result: Result) => void,
+        addPredicate: (pred: Predicate, result: Result) => void
+    }> = ({results, addResult, updateProbabilites, removePredicate, addPredicate}) => {
 
     return <div>
         <h2>Result</h2>
@@ -49,26 +37,49 @@ export const ResultSide: React.FC<{results: Result[], addResult: () => void}> = 
             {results.map((result: Result, index: number) => <RuleResult
                     index={index}
                     result={result}
-                    onPercentageChange={(index: number, value: number) => updatePercentage(index, value)}
-                    percentages={percentages}>
-                </RuleResult>)}
+                    onPercentageChange={(index: number, value: number) => updateProbabilites(index, value)}
+                    removePredicateFromResult={removePredicate}
+                    addPredicateToResult={addPredicate}>
+            </RuleResult>)}
             <Button
                 className="add-result"
-                onClick={addNewResult}>
+                onClick={addResult}>
             +
             </Button>
         </div>
     </div>
 }
 
-const RuleResult: React.FC<{index: number, result: Result, onPercentageChange: (index: number, value: number) => void, percentages: number[]}> = ({index, result, onPercentageChange, percentages}) => {
+const RuleResult: React.FC<{
+        index: number,
+        result: Result,
+        onPercentageChange: (index: number, value: number) => void,
+        removePredicateFromResult: (pred: Predicate, result: Result) => void,
+        addPredicateToResult: (pred: Predicate, result: Result) => void,
+    }> = ({index, result, onPercentageChange, removePredicateFromResult, addPredicateToResult}) => {
+
+    const addPredicateWrapper = function(pred: Predicate) {
+        addPredicateToResult(pred, result)
+    }
+
+    const removePredicateWrapper = function(pred: Predicate) {
+        removePredicateFromResult(pred, result)
+    }
+
     return <div className="result">
         <Slider
-            value={percentages[index]}
+            value={result.probability}
+            max={1.0}
+            step={0.01}
             onChange={(value) => onPercentageChange(index, value)}
-            marks={{0: '0', 10: '10', 20: '20', 30: '30', 40: '40', 50: '50', 60: '60', 70: '70', 80: '80', 90: '90', 100: '100'}}>
+            marks={{0: '0', 0.1: '10', 0.2: '20', 0.3: '30', 0.4: '40', 0.5: '50', 0.6: '60', 0.7: '70', 0.8: '80', 0.9: '90', 1: '100'}}>
         </Slider>
-        <PredicateArea isResultSide={true}></PredicateArea>
+        <PredicateArea
+            isResultSide={true}
+            predicates={result.predicates != null ? result.predicates : []}
+            removePredicate={(pred) => removePredicateWrapper(pred)}
+            addPredicate={(pred) => addPredicateWrapper(pred)}>
+        </PredicateArea>
         <InputGroup className="mb-3">
             <InputGroup.Prepend>
                 <InputGroup.Text id="inputGroup-sizing-default">Title</InputGroup.Text>
@@ -85,6 +96,7 @@ const RuleResult: React.FC<{index: number, result: Result, onPercentageChange: (
                 <InputGroup.Text id="inputGroup-sizing-default">Templating String</InputGroup.Text>
             </InputGroup.Prepend>
             <FormControl
+                defaultValue={result.template}
                 as="textarea"
                 aria-label="Default"
                 placeholder="e.g. "
@@ -97,6 +109,7 @@ const RuleResult: React.FC<{index: number, result: Result, onPercentageChange: (
                 <InputGroup.Text id="inputGroup-sizing-default">Sanity</InputGroup.Text>
             </InputGroup.Prepend>
             <FormControl
+                defaultValue={result.sanity}
                 aria-label="Default"
                 aria-describedby="inputGroup-sizing-default"
             />
@@ -106,6 +119,7 @@ const RuleResult: React.FC<{index: number, result: Result, onPercentageChange: (
                 <InputGroup.Text id="inputGroup-sizing-default">Fulfilment</InputGroup.Text>
             </InputGroup.Prepend>
             <FormControl
+                defaultValue={result.fulfilment}
                 aria-label="Default"
                 aria-describedby="inputGroup-sizing-default"
             />
@@ -115,6 +129,7 @@ const RuleResult: React.FC<{index: number, result: Result, onPercentageChange: (
                 <InputGroup.Text id="inputGroup-sizing-default">Social</InputGroup.Text>
             </InputGroup.Prepend>
             <FormControl
+                defaultValue={result.social}
                 aria-label="Default"
                 aria-describedby="inputGroup-sizing-default"
             />
@@ -125,6 +140,7 @@ const RuleResult: React.FC<{index: number, result: Result, onPercentageChange: (
                 <InputGroup.Text id="inputGroup-sizing-default">Admit Probability</InputGroup.Text>
             </InputGroup.Prepend>
             <FormControl
+                defaultValue={result.admit_probablity}
                 aria-label="Default"
                 aria-describedby="inputGroup-sizing-default"
             />
@@ -134,6 +150,7 @@ const RuleResult: React.FC<{index: number, result: Result, onPercentageChange: (
                 <InputGroup.Text id="inputGroup-sizing-default">Witness Probability</InputGroup.Text>
             </InputGroup.Prepend>
             <FormControl
+                defaultValue={result.witness_probability}
                 aria-label="Default"
                 aria-describedby="inputGroup-sizing-default"
             />

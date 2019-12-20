@@ -6,24 +6,26 @@ import { Actor, DraggedActor } from "../actors";
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 import Tooltip from 'react-bootstrap/Tooltip'
 
-export const PredicateArea: React.FC<{isResultSide: boolean}> = ({isResultSide}) => {
-    const [preds, setPreds] = useState<Predicate[]>([])
+export const PredicateArea: React.FC<{
+        isResultSide: boolean,
+        predicates: Predicate[],
+        removePredicate: (predicate: Predicate) => void,
+        addPredicate: (predicate: Predicate) => void
+    }> = ({isResultSide, predicates, removePredicate, addPredicate}) => {
+
     const [collectedProps, drop] = useDrop<DraggedPredicate, AbstractPredicate, {isDragging: boolean}>({
         accept: 'pred',
         drop: (item, monitor) => {
-            setPreds(preds => [...preds, new Predicate(item.abspred)])
+            addPredicate(new Predicate(item.abspred))
             return item.abspred
         },
         collect: monitor => ({
             isDragging: !monitor.isOver(),
         }),
     })
-    const handleRemove = (pred: Predicate) => {
-        setPreds(preds.filter(item => item.abstract != pred.abstract))
-    }
 
     return <div ref={drop} className="predicate-area">
-        {preds.map(pred => <PredicateDisplay pred={pred} handleRemove={() => handleRemove(pred)} isResultSide={isResultSide}></PredicateDisplay>)}
+        {predicates.map(pred => <PredicateDisplay pred={pred} handleRemove={() => removePredicate(pred)} isResultSide={isResultSide}></PredicateDisplay>)}
     </div>
 }
 
@@ -32,8 +34,7 @@ export interface DraggedPredicate extends DragObjectWithType {
     abspred: AbstractPredicate
 }
 
-//TODO fix any 
-const PredicateDisplay: React.FC<{pred: Predicate, handleRemove: any, isResultSide: boolean}> = ({pred, handleRemove, isResultSide}) => {
+const PredicateDisplay: React.FC<{pred: Predicate, handleRemove: () => void, isResultSide: boolean}> = ({pred, handleRemove, isResultSide}) => {
     let areas = []
     for (let i = 0; i < pred.abstract.numActors; i++) {
         areas.push(<ActorDropArea index={i}></ActorDropArea>)
