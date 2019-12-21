@@ -4,8 +4,13 @@ import { Predicate } from "./predicates";
 
 export class Rule {
     results: Result[]
-    preconditions: Predicate[]
+    preconditions: Predicate[] 
     name: string
+
+    constructor(results?: Result[]) {
+        this.preconditions = []
+        this.results = results != null ? results : []
+    }
 }
 
 export const parseAllRules = function () : Rule[] {

@@ -6,15 +6,16 @@ import HTML5Backend from 'react-dnd-html5-backend'
 import InputGroup from 'react-bootstrap/InputGroup';
 import FormControl from 'react-bootstrap/FormControl';
 import Dropdown from 'react-bootstrap/Dropdown';
+import Tabs from 'react-bootstrap/Tabs'
+import Tab from 'react-bootstrap/Tab'
 
 import { createActors, Actor, DraggedActor } from '../actors';
 import { allPredicates, AbstractPredicate, Predicate } from '../predicates';
 import { ResultSide, Result } from './result';
 import { PreconditionSide } from './preconditions';
 import { DraggedPredicate } from './predicate-area';
-import { Rule, parseRuleByName, parseRule } from '../rules';
+import { Rule, parseRule } from '../rules';
 import { murderMysteryRuleset } from '../murder_mystery';
-import { Dirent } from 'fs';
 
 function AbstractPredicateDisplay({abspred}) {
     const [{ isDragging }, drag] = useDrag<DraggedPredicate, AbstractPredicate, {isDragging: boolean}>({
@@ -33,16 +34,12 @@ function AbstractPredicateDisplay({abspred}) {
 }
 
 function Editor() {
-    const [rule, updateRule] = useState<Rule>(new Rule())
+    const [rule, updateRule] = useState<Rule>(new Rule([new Result(1)]))
     const actors = createActors();
 
     const addResult = () => {
-        let updatedResults = rule.results
-        updatedResults.push(new Result(0))
-
-        let updatedRule = rule
-        updatedRule.results = updatedResults
-        updateRule(updatedRule)
+        let updatedResults = [...rule.results, new Result(0)]
+        updateRule({...rule, results: updatedResults})
     }
 
     function updatePercentage(index: number, newProb: number) {
@@ -69,31 +66,57 @@ function Editor() {
     }
 
     const removePredicateFromRhs = (pred: Predicate) => {
-        let updatedRule = rule
-        let updatePreconditions = updatedRule.preconditions.filter((item) => item.abstract.name != pred.abstract.name)
-        updatedRule.preconditions = updatePreconditions
-        updateRule(updatedRule)
+        let updatePreconditions = rule.preconditions.filter((item) => item.abstract.name != pred.abstract.name)
+        updateRule({...rule, preconditions: updatePreconditions})
     }
 
     const addPredicateToRhs = (pred: Predicate) => {
-        let updatedRule = rule
-        updatedRule.preconditions.push(pred)
-        updateRule(updatedRule)
+        let updatedPreconditions = [...rule.preconditions, pred]
+        updateRule({...rule, preconditions: updatedPreconditions})
     }
 
     const removePredicateFromResult = (pred: Predicate, result: Result) => {
-        let updatedRule = rule
-        updatedRule.results.find((res) => res == result).predicates.filter((item) => item.abstract.name != pred.abstract.name)
-        updateRule(updatedRule)
+        let r = rule.results.findIndex((res) => res == result)
+        let updatedPredicated = rule.results[r].predicates.filter((item) => item.abstract.name != pred.abstract.name)
+        //TODO
+        let updatedResults = rule.results
+        updateRule({...rule, results: updatedResults})
     }
 
     const addPredicateToResult = (pred: Predicate, result: Result) => {
-        let updatedRule = rule
-        updatedRule.results.find((res) => res.template == result.template).predicates.push(pred)
-        updateRule(updatedRule)
+        rule.results.find((res) => res.template == result.template).predicates.push(pred)
+        let updatedPreconditions = [...rule.preconditions, pred]
+        //updateRule({...rule, results: updatedResults})
     }
-    
-    console.log(rule)
+
+    const RuleEditor = function() {
+        return <div>
+            <div className="horizontal-row" style={{}}>
+                <div className="horizontal-row predicate-pick-area" style={{flexWrap: "wrap", minWidth: "400px"}}>
+                    {allPredicates.map(pred => <AbstractPredicateDisplay abspred={pred}></AbstractPredicateDisplay>)}
+                </div> 
+                <div className="horizontal-row actor-pick-area" style={{flexWrap: "wrap", minWidth: "200px"}}>
+                    {actors.map(actor => <SimplifiedActor actor={actor}></SimplifiedActor>)}
+                </div>
+            </div>
+
+            <div className="horizontal-row wrap">
+                <PreconditionSide
+                    predicates={rule.preconditions}
+                    removePredicate={(pred) => removePredicateFromRhs(pred)}
+                    addPredicate={(pred) => addPredicateToRhs(pred)}
+                > 
+                </PreconditionSide>
+                <ResultSide
+                    results={rule.results}
+                    addResult={() => addResult()}
+                    updateProbabilites={(index, value) => updatePercentage(index, value)}
+                    addPredicate={(pred, result) => addPredicateToResult(pred, result)}
+                    removePredicate={(pred, result) => removePredicateFromResult(pred, result)}>
+                </ResultSide>
+            </div>
+        </div>
+    }
 
     return <DndProvider backend={HTML5Backend}>
         <h1 style={{margin: "1rem 2rem"}}>Editor</h1>
@@ -107,6 +130,24 @@ function Editor() {
             Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
             Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
         </p>
+        <Tabs defaultActiveKey="new" id="uncontrolled-tab-example" style={{margin: "1rem 2rem"}}>
+        <Tab eventKey="new" title="New Rule">
+        <div className="pick-rule" style={{}}>
+            <InputGroup className="mb-3">
+                <InputGroup.Prepend>
+                    <InputGroup.Text id="inputGroup-sizing-default">Rule Name</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl
+                    defaultValue={rule.name}
+                    aria-label="Default"
+                    placeholder="e.g. lie"
+                    aria-describedby="inputGroup-sizing-default"
+                />
+            </InputGroup>
+        </div>
+        <RuleEditor></RuleEditor>
+        </Tab>
+        <Tab eventKey="explore" title="Explore Existing Rules">
         <div className="pick-rule" style={{}}>
             <InputGroup className="mb-3">
                 <InputGroup.Prepend>
@@ -128,31 +169,9 @@ function Editor() {
                 </Dropdown.Menu>
             </Dropdown>
         </div>
-
-        <div className="horizontal-row" style={{}}>
-            <div className="horizontal-row predicate-pick-area" style={{flexWrap: "wrap", minWidth: "400px"}}>
-                {allPredicates.map(pred => <AbstractPredicateDisplay abspred={pred}></AbstractPredicateDisplay>)}
-            </div> 
-            <div className="horizontal-row actor-pick-area" style={{flexWrap: "wrap", minWidth: "200px"}}>
-                {actors.map(actor => <SimplifiedActor actor={actor}></SimplifiedActor>)}
-            </div>
-        </div>
-
-        <div className="horizontal-row wrap">
-            <PreconditionSide
-                predicates={rule.preconditions != null ? rule.preconditions : []}
-                removePredicate={(pred) => removePredicateFromRhs(pred)}
-                addPredicate={(pred) => addPredicateToRhs(pred)}
-            > 
-            </PreconditionSide>
-            <ResultSide
-                results={rule.results != null ? rule.results : [new Result(1)]}
-                addResult={() => addResult()}
-                updateProbabilites={(index, value) => updatePercentage(index, value)}
-                addPredicate={(pred, result) => addPredicateToResult(pred, result)}
-                removePredicate={(pred, result) => removePredicateFromResult(pred, result)}>
-            </ResultSide>
-        </div>
+        <RuleEditor></RuleEditor>
+        </Tab>
+    </Tabs>
     </DndProvider>
 }
 

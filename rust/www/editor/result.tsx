@@ -20,6 +20,7 @@ export class Result {
 
     constructor(probability: number) {
         this.probability = probability
+        this.predicates = []
     } 
 }
 
