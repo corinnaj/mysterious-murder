@@ -159,7 +159,7 @@ body {
 .abs-pred {
 	border-radius: 0.5rem;
 	background: #eee;
-	padding: 0.5rem;
+	padding: 0.25rem;
 	margin: 0.5rem;
 	justify-content: center;
 	align-items: center;
@@ -204,7 +204,13 @@ body {
 }
 
 .result {
-   margin: 0 0.5rem
+	width: 440px;
+   	margin: 0 0.5rem
+}
+
+.slider {
+	margin: 0 0 1.5rem 1rem;
+	width: 400px !important;
 }
 
 .add-result {
@@ -235,4 +241,24 @@ body {
 	flex-direction: row;
 	display: flex;
 	margin: 1rem 2rem;
+}
+
+.reward-input {
+	min-width: 80px;
+	max-width: 80px;
+}
+
+.prob-input {
+	min-width: 135px;
+	max-width: 135px;
+}
+
+.input-row .input-group {
+	width: auto;
+}
+
+.input-row {
+	justify-content: space-between;
+	display: flex;
+	flex-direction: row;
 }

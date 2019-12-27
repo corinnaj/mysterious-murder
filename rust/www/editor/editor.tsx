@@ -91,7 +91,7 @@ function Editor() {
 
     const RuleEditor = function() {
         return <div>
-            <div className="horizontal-row" style={{}}>
+            <div className="horizontal-row">
                 <div className="horizontal-row predicate-pick-area" style={{flexWrap: "wrap", minWidth: "400px"}}>
                     {allPredicates.map(pred => <AbstractPredicateDisplay abspred={pred}></AbstractPredicateDisplay>)}
                 </div> 

@@ -32,7 +32,7 @@ export const ResultSide: React.FC<{
         addPredicate: (pred: Predicate, result: Result) => void
     }> = ({results, addResult, updateProbabilites, removePredicate, addPredicate}) => {
 
-    return <div>
+    return <div className="margin">
         <h2>Result</h2>
         <div className="horizontal-row wrap">
             {results.map((result: Result, index: number) => <RuleResult
@@ -69,6 +69,7 @@ const RuleResult: React.FC<{
 
     return <div className="result">
         <Slider
+            className="slider"
             value={result.probability}
             max={1.0}
             step={0.01}
@@ -105,56 +106,65 @@ const RuleResult: React.FC<{
             />
         </InputGroup>
         <h4>Rewards</h4>
-        <InputGroup className="mb-3">
-            <InputGroup.Prepend>
-                <InputGroup.Text id="inputGroup-sizing-default">Sanity</InputGroup.Text>
-            </InputGroup.Prepend>
-            <FormControl
-                defaultValue={result.sanity}
-                aria-label="Default"
-                aria-describedby="inputGroup-sizing-default"
-            />
-        </InputGroup>
-        <InputGroup className="mb-3">
-            <InputGroup.Prepend>
-                <InputGroup.Text id="inputGroup-sizing-default">Fulfilment</InputGroup.Text>
-            </InputGroup.Prepend>
-            <FormControl
-                defaultValue={result.fulfilment}
-                aria-label="Default"
-                aria-describedby="inputGroup-sizing-default"
-            />
-        </InputGroup>
-        <InputGroup className="mb-3">
-            <InputGroup.Prepend>
-                <InputGroup.Text id="inputGroup-sizing-default">Social</InputGroup.Text>
-            </InputGroup.Prepend>
-            <FormControl
-                defaultValue={result.social}
-                aria-label="Default"
-                aria-describedby="inputGroup-sizing-default"
-            />
-        </InputGroup>
+        <div className="input-row">
+            <InputGroup size="sm" className="mb-3">
+                <InputGroup.Prepend>
+                    <InputGroup.Text id="inputGroup-sizing-sm">Sanity</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl
+                    defaultValue={result.sanity}
+                    aria-label="Small"
+                    aria-describedby="inputGroup-sizing-sm"
+                    className="reward-input"
+                />
+            </InputGroup>
+            <InputGroup size="sm" className="mb-3">
+                <InputGroup.Prepend>
+                    <InputGroup.Text id="inputGroup-sizing-sm">Fulfilment</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl
+                    defaultValue={result.fulfilment}
+                    aria-label="Small"
+                    aria-describedby="inputGroup-sizing-sm"
+                    className="reward-input"
+                />
+            </InputGroup>
+            <InputGroup size="sm" className="mb-3" >
+                <InputGroup.Prepend>
+                    <InputGroup.Text id="inputGroup-sizing-sm">Social</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl
+                    defaultValue={result.social}
+                    aria-label="Small"
+                    aria-describedby="inputGroup-sizing-sm"
+                    className="reward-input"
+                />
+            </InputGroup>
+            </div>
         <h4>Probabilities</h4>
-        <InputGroup className="mb-3">
-            <InputGroup.Prepend>
-                <InputGroup.Text id="inputGroup-sizing-default">Admit Probability</InputGroup.Text>
-            </InputGroup.Prepend>
-            <FormControl
-                defaultValue={result.admit_probablity}
-                aria-label="Default"
-                aria-describedby="inputGroup-sizing-default"
-            />
-        </InputGroup>
-        <InputGroup className="mb-3">
-            <InputGroup.Prepend>
-                <InputGroup.Text id="inputGroup-sizing-default">Witness Probability</InputGroup.Text>
-            </InputGroup.Prepend>
-            <FormControl
-                defaultValue={result.witness_probability}
-                aria-label="Default"
-                aria-describedby="inputGroup-sizing-default"
-            />
-        </InputGroup>
+        <div className="input-row">
+            <InputGroup size="sm" className="mb-3">
+                <InputGroup.Prepend>
+                    <InputGroup.Text id="inputGroup-sizing-sm">Admitting</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl
+                    defaultValue={result.admit_probablity}
+                    aria-label="Small"
+                    aria-describedby="inputGroup-sizing-sm"
+                    className="prob-input"
+                />
+            </InputGroup>
+            <InputGroup size="sm" className="mb-3">
+                <InputGroup.Prepend>
+                    <InputGroup.Text id="inputGroup-sizing-sm">Witnessing</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl
+                    defaultValue={result.witness_probability}
+                    aria-label="Small"
+                    aria-describedby="inputGroup-sizing-sm"
+                    className="prob-input"
+                />
+            </InputGroup>
+        </div>
     </div>
 }
