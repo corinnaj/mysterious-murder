@@ -91,14 +91,6 @@ function Editor() {
 
     const RuleEditor = function() {
         return <div>
-            <div className="horizontal-row">
-                <div className="horizontal-row predicate-pick-area" style={{flexWrap: "wrap", minWidth: "400px"}}>
-                    {allPredicates.map(pred => <AbstractPredicateDisplay abspred={pred}></AbstractPredicateDisplay>)}
-                </div> 
-                <div className="horizontal-row actor-pick-area" style={{flexWrap: "wrap", minWidth: "200px"}}>
-                    {actors.map(actor => <SimplifiedActor actor={actor}></SimplifiedActor>)}
-                </div>
-            </div>
 
             <div className="horizontal-row wrap">
                 <PreconditionSide
@@ -130,6 +122,17 @@ function Editor() {
             Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
             Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
         </p>
+        <div style={{display: "flex", flexDirection: "row"}}>
+            <div className="">
+                <div className="horizontal-row predicate-pick-area" style={{flexWrap: "wrap", width: "200px"}}>
+                    {allPredicates.map(pred => <AbstractPredicateDisplay abspred={pred}></AbstractPredicateDisplay>)}
+                </div> 
+                <div className="horizontal-row actor-pick-area" style={{flexWrap: "wrap", width: "200px"}}>
+                    {actors.map(actor => <SimplifiedActor actor={actor}></SimplifiedActor>)}
+                </div>
+            </div>
+
+        <div>
         <Tabs defaultActiveKey="new" id="uncontrolled-tab-example" style={{margin: "1rem 2rem"}}>
         <Tab eventKey="new" title="New Rule">
         <div className="pick-rule" style={{}}>
@@ -171,7 +174,8 @@ function Editor() {
         </div>
         <RuleEditor></RuleEditor>
         </Tab>
-    </Tabs>
+    </Tabs></div>
+    </div>
     </DndProvider>
 }
 
