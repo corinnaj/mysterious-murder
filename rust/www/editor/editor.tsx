@@ -3,11 +3,12 @@ import React, { useState } from 'react'
 import { useDrag, DndProvider } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend'
 
-import InputGroup from 'react-bootstrap/InputGroup';
-import FormControl from 'react-bootstrap/FormControl';
-import Dropdown from 'react-bootstrap/Dropdown';
-import Tabs from 'react-bootstrap/Tabs'
-import Tab from 'react-bootstrap/Tab'
+import InputGroup from 'react-bootstrap/InputGroup'
+import FormControl from 'react-bootstrap/FormControl'
+import Dropdown from 'react-bootstrap/Dropdown'
+import Collapse from 'react-bootstrap/Collapse'
+import Card from 'react-bootstrap/Card'
+import Button from 'react-bootstrap/Button'
 
 import { createActors, Actor, DraggedActor } from '../actors';
 import { allPredicates, AbstractPredicate, Predicate } from '../predicates';
@@ -110,6 +111,9 @@ function Editor() {
         </div>
     }
 
+    const [openNew, setOpenNew] = useState(false);
+    const [openExplore, setOpenExplore] = useState(false);
+
     return <DndProvider backend={HTML5Backend}>
         <h1 style={{margin: "1rem 2rem"}}>Editor</h1>
         <p className="intro-text">
@@ -133,48 +137,61 @@ function Editor() {
             </div>
 
         <div>
-        <Tabs defaultActiveKey="new" id="uncontrolled-tab-example" style={{margin: "1rem 2rem"}}>
-        <Tab eventKey="new" title="New Rule">
-        <div className="pick-rule" style={{}}>
-            <InputGroup className="mb-3">
-                <InputGroup.Prepend>
-                    <InputGroup.Text id="inputGroup-sizing-default">Rule Name</InputGroup.Text>
-                </InputGroup.Prepend>
-                <FormControl
-                    defaultValue={rule.name}
-                    aria-label="Default"
-                    placeholder="e.g. lie"
-                    aria-describedby="inputGroup-sizing-default"
-                />
-            </InputGroup>
-        </div>
-        <RuleEditor></RuleEditor>
-        </Tab>
-        <Tab eventKey="explore" title="Explore Existing Rules">
-        <div className="pick-rule" style={{}}>
-            <InputGroup className="mb-3">
-                <InputGroup.Prepend>
-                    <InputGroup.Text id="inputGroup-sizing-default">Rule Name</InputGroup.Text>
-                </InputGroup.Prepend>
-                <FormControl
-                    defaultValue={rule.name}
-                    aria-label="Default"
-                    placeholder="e.g. lie"
-                    aria-describedby="inputGroup-sizing-default"
-                />
-            </InputGroup>
-            <Dropdown alignRight style={{marginLeft: "1rem"}}>
-                <Dropdown.Toggle variant="primary" id="dropdown-basic">
-                    Pick Rule
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                    {murderMysteryRuleset.rules.map((rule) => <Dropdown.Item onClick={() => updateRule(parseRule(rule))}>{rule.name}</Dropdown.Item>)}
-                </Dropdown.Menu>
-            </Dropdown>
-        </div>
-        <RuleEditor></RuleEditor>
-        </Tab>
-    </Tabs></div>
+        <Card>
+            <Card.Header onClick={() => setOpenNew(!openNew)}>
+                New Rule
+            </Card.Header>
+            <Collapse in={openNew}>
+                <Card.Body>
+                    <div className="pick-rule" style={{}}>
+                        <InputGroup className="mb-3">
+                            <InputGroup.Prepend>
+                                <InputGroup.Text id="inputGroup-sizing-default">Rule Name</InputGroup.Text>
+                            </InputGroup.Prepend>
+                            <FormControl
+                                defaultValue={rule.name}
+                                aria-label="Default"
+                                placeholder="e.g. lie"
+                                aria-describedby="inputGroup-sizing-default"
+                            />
+                        </InputGroup>
+                    </div>
+                    <RuleEditor></RuleEditor>
+                </Card.Body>
+            </Collapse>
+        </Card>
+        <Card>
+            <Card.Header onClick={() => setOpenExplore(!openExplore)}>
+                Explore Existing Rules
+            </Card.Header>
+            <Collapse in={openExplore}>
+                <Card.Body>
+                    <div className="pick-rule" style={{}}>
+                        <InputGroup className="mb-3">
+                            <InputGroup.Prepend>
+                                <InputGroup.Text id="inputGroup-sizing-default">Rule Name</InputGroup.Text>
+                            </InputGroup.Prepend>
+                            <FormControl
+                                defaultValue={rule.name}
+                                aria-label="Default"
+                                placeholder="e.g. lie"
+                                aria-describedby="inputGroup-sizing-default"
+                            />
+                        </InputGroup>
+                        <Dropdown alignRight style={{marginLeft: "1rem"}}>
+                            <Dropdown.Toggle variant="primary" id="dropdown-basic">
+                                Pick Rule
+                            </Dropdown.Toggle>
+                            <Dropdown.Menu>
+                                {murderMysteryRuleset.rules.map((rule) => <Dropdown.Item onClick={() => updateRule(parseRule(rule))}>{rule.name}</Dropdown.Item>)}
+                            </Dropdown.Menu>
+                        </Dropdown>
+                    </div>
+                    <RuleEditor></RuleEditor>
+                </Card.Body>
+            </Collapse>
+        </Card>
+    </div>
     </div>
     </DndProvider>
 }
