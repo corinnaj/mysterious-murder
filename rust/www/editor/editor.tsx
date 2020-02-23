@@ -17,8 +17,8 @@ import { DraggedPredicate } from './predicate-area';
 import { Rule, parseRule } from '../rules';
 import { murderMysteryRuleset } from '../murder_mystery';
 
-function AbstractPredicateDisplay({abspred}) {
-    const [{ isDragging }, drag] = useDrag<DraggedPredicate, AbstractPredicate, {isDragging: boolean}>({
+function AbstractPredicateDisplay({ abspred }) {
+    const [{ isDragging }, drag] = useDrag<DraggedPredicate, AbstractPredicate, { isDragging: boolean }>({
         item: { abspred, type: 'pred' },
         collect: monitor => ({
             isDragging: !!monitor.isDragging(),
@@ -35,17 +35,18 @@ function AbstractPredicateDisplay({abspred}) {
 
 function Editor() {
     const [rule, updateRule] = useState<Rule>(new Rule([new Result(1)]))
-    const actors = createActors();
+    const [actors, setActors] = useState<Actor[]>(createActors())
+    //const actors = createActors();
 
     const addResult = () => {
         let updatedResults = [...rule.results, new Result(0)]
-        updateRule({...rule, results: updatedResults})
+        updateRule({ ...rule, results: updatedResults })
     }
 
     function updatePercentage(index: number, newProb: number) {
         const newPercentages = rule.results.map((rule) => rule.probability)
         newPercentages[index] = newProb
-        
+
         //if we only have one option it has to be 100
         if (newPercentages.length == 1) return
 
@@ -66,13 +67,14 @@ function Editor() {
     }
 
     const removePredicateFromRhs = (pred: Predicate) => {
+        //TODO make sure to only delete with same name and actors
         let updatePreconditions = rule.preconditions.filter((item) => item.abstract.name != pred.abstract.name)
-        updateRule({...rule, preconditions: updatePreconditions})
+        updateRule({ ...rule, preconditions: updatePreconditions })
     }
 
     const addPredicateToRhs = (pred: Predicate) => {
         let updatedPreconditions = [...rule.preconditions, pred]
-        updateRule({...rule, preconditions: updatedPreconditions})
+        updateRule({ ...rule, preconditions: updatedPreconditions })
     }
 
     const removePredicateFromResult = (pred: Predicate, result: Result) => {
@@ -80,7 +82,7 @@ function Editor() {
         let updatedPredicated = rule.results[r].predicates.filter((item) => item.abstract.name != pred.abstract.name)
         //TODO
         let updatedResults = rule.results
-        updateRule({...rule, results: updatedResults})
+        updateRule({ ...rule, results: updatedResults })
     }
 
     const addPredicateToResult = (pred: Predicate, result: Result) => {
@@ -89,17 +91,20 @@ function Editor() {
         //updateRule({...rule, results: updatedResults})
     }
 
-    const RuleEditor = function() {
+    const RuleEditor: React.FC<{ editable: boolean }> = ({ editable }) => {
         return <div>
-
             <div className="horizontal-row wrap">
                 <PreconditionSide
+                    actors={actors}
+                    editable={editable}
                     predicates={rule.preconditions}
                     removePredicate={(pred) => removePredicateFromRhs(pred)}
                     addPredicate={(pred) => addPredicateToRhs(pred)}
-                > 
+                >
                 </PreconditionSide>
                 <ResultSide
+                    actors={actors}
+                    editable={editable}
                     results={rule.results}
                     addResult={() => addResult()}
                     updateProbabilites={(index, value) => updatePercentage(index, value)}
@@ -111,7 +116,7 @@ function Editor() {
     }
 
     return <DndProvider backend={HTML5Backend}>
-        <h1 style={{margin: "1rem 2rem"}}>Editor</h1>
+        <h1 style={{ margin: "1rem 2rem" }}>Editor</h1>
         <p className="intro-text">
             Here you can explore the rules that drive our simulation.
             Each rule consists of preconditions that need to be met and will result in one of the possible outcomes.
@@ -122,65 +127,68 @@ function Editor() {
             Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
             Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
         </p>
-        <div style={{display: "flex", flexDirection: "row"}}>
+        <div style={{ display: "flex", flexDirection: "row", margin: "0 0 0 2rem" }}>
             <div className="">
-                <div className="horizontal-row predicate-pick-area" style={{flexWrap: "wrap", width: "200px"}}>
+                <div className="horizontal-row predicate-pick-area" style={{ flexWrap: "wrap", width: "200px" }}>
                     {allPredicates.map(pred => <AbstractPredicateDisplay abspred={pred}></AbstractPredicateDisplay>)}
-                </div> 
-                <div className="horizontal-row actor-pick-area" style={{flexWrap: "wrap", width: "200px"}}>
+                </div>
+                <div className="horizontal-row actor-pick-area" style={{ flexWrap: "wrap", width: "200px", margin: "1rem 0" }}>
                     {actors.map(actor => <SimplifiedActor actor={actor}></SimplifiedActor>)}
                 </div>
             </div>
 
-        <div>
-        <Tabs defaultActiveKey="new" id="uncontrolled-tab-example" style={{margin: "1rem 2rem"}}>
-        <Tab eventKey="new" title="New Rule">
-        <div className="pick-rule" style={{}}>
-            <InputGroup className="mb-3">
-                <InputGroup.Prepend>
-                    <InputGroup.Text id="inputGroup-sizing-default">Rule Name</InputGroup.Text>
-                </InputGroup.Prepend>
-                <FormControl
-                    defaultValue={rule.name}
-                    aria-label="Default"
-                    placeholder="e.g. lie"
-                    aria-describedby="inputGroup-sizing-default"
-                />
-            </InputGroup>
+            <div>
+                <Tabs defaultActiveKey="new" id="uncontrolled-tab-example" style={{ margin: "1rem 2rem" }}>
+                    <Tab eventKey="new" title="New Rule">
+                        <div className="pick-rule" style={{}}>
+                            <InputGroup className="mb-3">
+                                <InputGroup.Prepend>
+                                    <InputGroup.Text id="inputGroup-sizing-default">Rule Name</InputGroup.Text>
+                                </InputGroup.Prepend>
+                                <FormControl
+                                    defaultValue={rule.name}
+                                    aria-label="Default"
+                                    placeholder="e.g. lie"
+                                    aria-describedby="inputGroup-sizing-default"
+                                />
+                            </InputGroup>
+                        </div>
+                        <RuleEditor editable={true}></RuleEditor>
+                    </Tab>
+                    <Tab eventKey="explore" title="Explore Existing Rules">
+                        <div className="pick-rule" style={{}}>
+                            <InputGroup className="mb-3">
+                                <InputGroup.Prepend>
+                                    <InputGroup.Text id="inputGroup-sizing-default">Rule Name</InputGroup.Text>
+                                </InputGroup.Prepend>
+                                <FormControl
+                                    defaultValue={rule.name}
+                                    aria-label="Default"
+                                    placeholder="e.g. lie"
+                                    aria-describedby="inputGroup-sizing-default"
+                                />
+                            </InputGroup>
+                            <Dropdown alignRight style={{ marginLeft: "1rem" }}>
+                                <Dropdown.Toggle variant="primary" id="dropdown-basic">
+                                    Pick Rule
+                                </Dropdown.Toggle>
+                                <Dropdown.Menu>
+                                    {murderMysteryRuleset.rules.map((rule) =>
+                                        <Dropdown.Item onClick={() => updateRule(parseRule(rule))}>{rule.name}</Dropdown.Item>)
+                                    }
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        </div>
+                        <RuleEditor editable={false}></RuleEditor>
+                    </Tab>
+                </Tabs>
+            </div>
         </div>
-        <RuleEditor></RuleEditor>
-        </Tab>
-        <Tab eventKey="explore" title="Explore Existing Rules">
-        <div className="pick-rule" style={{}}>
-            <InputGroup className="mb-3">
-                <InputGroup.Prepend>
-                    <InputGroup.Text id="inputGroup-sizing-default">Rule Name</InputGroup.Text>
-                </InputGroup.Prepend>
-                <FormControl
-                    defaultValue={rule.name}
-                    aria-label="Default"
-                    placeholder="e.g. lie"
-                    aria-describedby="inputGroup-sizing-default"
-                />
-            </InputGroup>
-            <Dropdown alignRight style={{marginLeft: "1rem"}}>
-                <Dropdown.Toggle variant="primary" id="dropdown-basic">
-                    Pick Rule
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                    {murderMysteryRuleset.rules.map((rule) => <Dropdown.Item onClick={() => updateRule(parseRule(rule))}>{rule.name}</Dropdown.Item>)}
-                </Dropdown.Menu>
-            </Dropdown>
-        </div>
-        <RuleEditor></RuleEditor>
-        </Tab>
-    </Tabs></div>
-    </div>
     </DndProvider>
 }
 
-const SimplifiedActor: React.FC<{actor: Actor}> = ({actor}) => {
-    const [{ isDragging }, drag] = useDrag<DraggedActor, Actor, {isDragging: boolean}>({
+const SimplifiedActor: React.FC<{ actor: Actor }> = ({ actor }) => {
+    const [{ isDragging }, drag] = useDrag<DraggedActor, Actor, { isDragging: boolean }>({
         item: { actor, type: 'actor' },
         collect: monitor => ({
             isDragging: !!monitor.isDragging(),

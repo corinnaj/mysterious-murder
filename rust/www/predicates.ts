@@ -9,6 +9,7 @@ export interface AbstractPredicate {
 export class Predicate {
     abstract: AbstractPredicate
     actors: Actor[]
+    actorsNums: number[]
     amount: number
     keep: boolean
     permanent: boolean
