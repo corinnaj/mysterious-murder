@@ -6,6 +6,7 @@ import { PredicateArea } from './predicate-area'
 import Slider from 'rc-slider'
 import 'rc-slider/assets/index.css'
 import { Predicate } from '../predicates';
+import { Actor } from '../actors'
 
 export class Result {
     probability: number
@@ -25,12 +26,23 @@ export class Result {
 }
 
 export const ResultSide: React.FC<{
+        editable: boolean,
         results: Result[],
+        actors: Actor[],
         addResult: () => void,
         updateProbabilites: (index: number, value: number) => void,
         removePredicate: (pred: Predicate, result: Result) => void,
         addPredicate: (pred: Predicate, result: Result) => void
-    }> = ({results, addResult, updateProbabilites, removePredicate, addPredicate}) => {
+    }> = ({editable, results, actors, addResult, updateProbabilites, removePredicate, addPredicate}) => {
+
+
+    function addButton() {
+        return <Button
+            className="add-result"
+            onClick={addResult}>
+        +
+        </Button>
+    }
 
     return <div className="margin">
         <h2>Result</h2>
@@ -38,15 +50,13 @@ export const ResultSide: React.FC<{
             {results.map((result: Result, index: number) => <RuleResult
                     index={index}
                     result={result}
+                    editable={editable}
+                    actors={actors}
                     onPercentageChange={(index: number, value: number) => updateProbabilites(index, value)}
                     removePredicateFromResult={removePredicate}
                     addPredicateToResult={addPredicate}>
             </RuleResult>)}
-            <Button
-                className="add-result"
-                onClick={addResult}>
-            +
-            </Button>
+            {editable ? addButton() : <div/>}
         </div>
     </div>
 }
@@ -54,10 +64,12 @@ export const ResultSide: React.FC<{
 const RuleResult: React.FC<{
         index: number,
         result: Result,
+        editable: boolean,
+        actors: Actor[],
         onPercentageChange: (index: number, value: number) => void,
         removePredicateFromResult: (pred: Predicate, result: Result) => void,
         addPredicateToResult: (pred: Predicate, result: Result) => void,
-    }> = ({index, result, onPercentageChange, removePredicateFromResult, addPredicateToResult}) => {
+    }> = ({index, result, editable, actors, onPercentageChange, removePredicateFromResult, addPredicateToResult}) => {
 
     const addPredicateWrapper = function(pred: Predicate) {
         addPredicateToResult(pred, result)
@@ -65,6 +77,85 @@ const RuleResult: React.FC<{
 
     const removePredicateWrapper = function(pred: Predicate) {
         removePredicateFromResult(pred, result)
+    }
+
+    const reward_pairs = [
+        {name: "Sanity", value: result.sanity},
+        {name: "Fulfilment", value: result.fulfilment},
+        {name: "Social", value: result.social}
+    ];
+    
+    const probability_pairs = [
+        {name: "Witnessing", value: result.witness_probability},
+        {name: "Admitting", value: result.admit_probablity}
+    ]
+
+    function input(name: string, value: number) {
+        if (editable) {
+            return <InputGroup size="sm" className="mb-3">
+                <InputGroup.Prepend>
+                    <InputGroup.Text id="inputGroup-sizing-sm">{name}</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl
+                    defaultValue={value}
+                    aria-label="Small"
+                    aria-describedby="inputGroup-sizing-sm"
+                    className="reward-input"
+                />
+            </InputGroup>
+        } else {
+            return <p>
+                <b>{name}:</b>
+                {" "}
+                {value ? value : "--"}
+            </p>
+        }
+    }
+
+    function title() {
+        if (editable) {
+            return <InputGroup className="mb-3">
+                <InputGroup.Prepend>
+                    <InputGroup.Text id="inputGroup-sizing-default">Title</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl
+                    defaultValue={result.title}
+                    aria-label="Default"
+                    placeholder="e.g. "
+                    aria-describedby="inputGroup-sizing-default"
+                />
+            </InputGroup>
+        } else {
+            return <p>
+                <b>Title:</b>
+                {" "}
+                {result.title ? result.title : "--"}
+            </p>
+        }
+    }
+
+    function template() {
+        if (editable) {
+        <InputGroup className="mb-3">
+            <InputGroup.Prepend>
+                <InputGroup.Text id="inputGroup-sizing-default">Templating String</InputGroup.Text>
+            </InputGroup.Prepend>
+            <FormControl
+                defaultValue={result.template}
+                as="textarea"
+                aria-label="Default"
+                placeholder="e.g. "
+                aria-describedby="inputGroup-sizing-default"
+            />
+        </InputGroup>
+        } else {
+            return <p>
+                <b>Templating String:</b>
+                {" "}
+                {result.template ? result.template : "--"}
+            </p>
+        }
+
     }
 
     return <div className="result">
@@ -78,93 +169,21 @@ const RuleResult: React.FC<{
         </Slider>
         <PredicateArea
             isResultSide={true}
+            actors={actors}
             predicates={result.predicates != null ? result.predicates : []}
+            editable={editable}
             removePredicate={(pred) => removePredicateWrapper(pred)}
             addPredicate={(pred) => addPredicateWrapper(pred)}>
         </PredicateArea>
-        <InputGroup className="mb-3">
-            <InputGroup.Prepend>
-                <InputGroup.Text id="inputGroup-sizing-default">Title</InputGroup.Text>
-            </InputGroup.Prepend>
-            <FormControl
-                defaultValue={result.title}
-                aria-label="Default"
-                placeholder="e.g. "
-                aria-describedby="inputGroup-sizing-default"
-            />
-        </InputGroup>
-        <InputGroup className="mb-3">
-            <InputGroup.Prepend>
-                <InputGroup.Text id="inputGroup-sizing-default">Templating String</InputGroup.Text>
-            </InputGroup.Prepend>
-            <FormControl
-                defaultValue={result.template}
-                as="textarea"
-                aria-label="Default"
-                placeholder="e.g. "
-                aria-describedby="inputGroup-sizing-default"
-            />
-        </InputGroup>
+        {title()}
+        {template()}
         <h4>Rewards</h4>
         <div className="input-row">
-            <InputGroup size="sm" className="mb-3">
-                <InputGroup.Prepend>
-                    <InputGroup.Text id="inputGroup-sizing-sm">Sanity</InputGroup.Text>
-                </InputGroup.Prepend>
-                <FormControl
-                    defaultValue={result.sanity}
-                    aria-label="Small"
-                    aria-describedby="inputGroup-sizing-sm"
-                    className="reward-input"
-                />
-            </InputGroup>
-            <InputGroup size="sm" className="mb-3">
-                <InputGroup.Prepend>
-                    <InputGroup.Text id="inputGroup-sizing-sm">Fulfilment</InputGroup.Text>
-                </InputGroup.Prepend>
-                <FormControl
-                    defaultValue={result.fulfilment}
-                    aria-label="Small"
-                    aria-describedby="inputGroup-sizing-sm"
-                    className="reward-input"
-                />
-            </InputGroup>
-            <InputGroup size="sm" className="mb-3" >
-                <InputGroup.Prepend>
-                    <InputGroup.Text id="inputGroup-sizing-sm">Social</InputGroup.Text>
-                </InputGroup.Prepend>
-                <FormControl
-                    defaultValue={result.social}
-                    aria-label="Small"
-                    aria-describedby="inputGroup-sizing-sm"
-                    className="reward-input"
-                />
-            </InputGroup>
-            </div>
+            {reward_pairs.map(p => input(p.name, p.value))}
+        </div>
         <h4>Probabilities</h4>
         <div className="input-row">
-            <InputGroup size="sm" className="mb-3">
-                <InputGroup.Prepend>
-                    <InputGroup.Text id="inputGroup-sizing-sm">Admitting</InputGroup.Text>
-                </InputGroup.Prepend>
-                <FormControl
-                    defaultValue={result.admit_probablity}
-                    aria-label="Small"
-                    aria-describedby="inputGroup-sizing-sm"
-                    className="prob-input"
-                />
-            </InputGroup>
-            <InputGroup size="sm" className="mb-3">
-                <InputGroup.Prepend>
-                    <InputGroup.Text id="inputGroup-sizing-sm">Witnessing</InputGroup.Text>
-                </InputGroup.Prepend>
-                <FormControl
-                    defaultValue={result.witness_probability}
-                    aria-label="Small"
-                    aria-describedby="inputGroup-sizing-sm"
-                    className="prob-input"
-                />
-            </InputGroup>
+            {probability_pairs.map(p => input(p.name, p.value))}
         </div>
     </div>
 }
