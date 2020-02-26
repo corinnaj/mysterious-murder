@@ -1,6 +1,6 @@
-import { murderMysteryRuleset } from "./murder_mystery";
-import { Result } from "./editor/result";
-import { Predicate } from "./models/predicates";
+import { murderMysteryRuleset } from "../murder_mystery";
+import { Result } from "./result";
+import { Predicate } from "./predicates";
 
 export class Rule {
     results: Result[]

@@ -1,7 +1,7 @@
 import React from "react"
 import { PredicateArea } from "./predicate-area";
 import { Predicate } from "../models/predicates";
-import { Result } from "./result";
+import { Result } from "../models/result";
 import { Actor } from "../models/actors";
 import { ViewOnlyPredicateArea } from "./view-only-pred-area";
 
@@ -27,7 +27,7 @@ export const PreconditionSide: React.FC<{
     }
 
     return <div className="margin">
-        <h2>Preconditions</h2>
+        <h2 className="title2">Preconditions</h2>
         {editable
             ? <PredicateArea
                 actors={actors}

@@ -3,6 +3,14 @@
     src: url('/NotoColorEmoji.woff') format('woff');
 }
 
+.title2 {
+	font-size: 1.5rem;
+}
+
+.title4 {
+	font-size: 1.2rem;
+}
+
 .invisible-button {
 	padding: 0;
 	margin: 0;

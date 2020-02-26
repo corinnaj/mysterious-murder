@@ -11,14 +11,16 @@ import Button from 'react-bootstrap/Button'
 
 import { createActors, Actor, DraggedActor } from '../models/actors'
 import { allPredicates, AbstractPredicate, Predicate } from '../models/predicates'
-import { ResultSide, Result } from './result';
+import { ResultSide } from './result';
 import { PreconditionSide } from './preconditions'
 import { DraggedPredicate } from './predicate-area'
-import { Rule, parseRule } from '../rules'
+import { Rule, parseRule } from '../models/rules'
 import { murderMysteryRuleset } from '../murder_mystery'
 import { ruleIconMapping } from '../emojis'
 
 import { BsArrowCounterclockwise } from 'react-icons/bs'
+import { Result } from '../models/result';
+import { ViewOnlyResultSide } from './view-only-result';
 
 
 function AbstractPredicateDisplay({ abspred }) {
@@ -120,16 +122,23 @@ function Editor() {
                 updatePredicate={(pred) => updatePredicateRhs(pred)}
             >
             </PreconditionSide>
-            <ResultSide
-                actors={actors}
-                editable={editable}
-                results={rule.results}
-                keptPredicates={rule.preconditions.filter((p) => p.keep)}
-                addResult={() => addResult()}
-                updateProbabilites={(index, value) => updatePercentage(index, value)}
-                addPredicate={(pred, result) => addPredicateToResult(pred, result)}
-                removePredicate={(pred, result) => removePredicateFromResult(pred, result)}>
-            </ResultSide>
+            {editable 
+                ? <ResultSide
+                    actors={actors}
+                    results={rule.results}
+                    keptPredicates={rule.preconditions.filter((p) => p.keep)}
+                    addResult={() => addResult()}
+                    updateProbabilites={(index, value) => updatePercentage(index, value)}
+                    addPredicate={(pred, result) => addPredicateToResult(pred, result)}
+                    removePredicate={(pred, result) => removePredicateFromResult(pred, result)}>
+                </ResultSide>
+                : <ViewOnlyResultSide
+                    actors={actors}
+                    results={rule.results}
+                    keptPredicates={rule.preconditions.filter((p) => p.keep)}
+                    >
+                </ViewOnlyResultSide>
+            }
         </div>
     }
 
