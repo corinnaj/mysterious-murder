@@ -3,6 +3,7 @@ import { PredicateArea } from "./predicate-area";
 import { Predicate } from "../models/predicates";
 import { Result } from "./result";
 import { Actor } from "../models/actors";
+import { ViewOnlyPredicateArea } from "./view-only-pred-area";
 
 export const PreconditionSide: React.FC<{
         editable: boolean,
@@ -27,15 +28,22 @@ export const PreconditionSide: React.FC<{
 
     return <div className="margin">
         <h2>Preconditions</h2>
-        <PredicateArea
-            actors={actors}
-            isResultSide={false}
-            predicates={predicates}
-            keptPredicates={[]}
-            editable={editable}
-            updatePredicate={(pred) => updatePredicateWrapper(pred)}
-            removePredicate={(pred) => removePredicateWrapper(pred)}
-            addPredicate={(pred) => addPredicateWrapper(pred)}>
-        </PredicateArea>
+        {editable
+            ? <PredicateArea
+                actors={actors}
+                isResultSide={false}
+                predicates={predicates}
+                keptPredicates={[]}
+                updatePredicate={(pred) => updatePredicateWrapper(pred)}
+                removePredicate={(pred) => removePredicateWrapper(pred)}
+                addPredicate={(pred) => addPredicateWrapper(pred)}>
+            </PredicateArea>
+            : <ViewOnlyPredicateArea
+                actors={actors}
+                isResultSide={false}
+                predicates={predicates}
+                keptPredicates={[]}>
+            </ViewOnlyPredicateArea>
+        }
     </div>
 }

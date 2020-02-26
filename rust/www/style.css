@@ -211,7 +211,7 @@ html, body {
 	width: max-content;
 }
 
-.actor-drop-area-editable {
+.actor-drop-area {
 	background: lightgoldenrodyellow;
 	font-size: 1.5rem;
 	margin: 0.2rem;
@@ -219,7 +219,7 @@ html, body {
 	border-radius: 0.2rem;
 }
 
-.actor-drop-area {
+.actor-view-only {
 	padding: 0.2rem;
 	font-size: 1.5rem;
 	margin: 0.2rem;

@@ -13,12 +13,11 @@ export const PredicateArea: React.FC<{
     isResultSide: boolean,
     predicates: Predicate[],
     keptPredicates: Predicate[],
-    editable: boolean,
     actors: Actor[],
     updatePredicate: (predicate: Predicate) => void,
     removePredicate: (predicate: Predicate) => void,
     addPredicate: (predicate: Predicate) => void
-}> = ({ isResultSide, predicates, keptPredicates, editable, actors, updatePredicate, removePredicate, addPredicate }) => {
+}> = ({ isResultSide, predicates, keptPredicates, actors, updatePredicate, removePredicate, addPredicate }) => {
 
     const [collectedProps, drop] = useDrop<DraggedPredicate, AbstractPredicate, { isDragging: boolean }>({
         accept: 'pred',
@@ -29,40 +28,20 @@ export const PredicateArea: React.FC<{
         collect: monitor => ({
             isDragging: !monitor.isOver(),
         }),
-        canDrop: (item, monitor) => {
-           return editable;
-        }
     })
 
     function updateKeep(pred: Predicate, val: boolean) {
        pred.keep = val 
-       console.log(val)
        updatePredicate(pred)
     }
 
-    return editable
-    ? <div ref={drop} className="predicate-area-editable">
+    return <div ref={drop} className="predicate-area-editable">
         {predicates.map(pred => <PredicateDisplay
             pred={pred}
             actors={actors}
             handleRemove={() => removePredicate(pred)}
             setPredKeep={(val) => updateKeep(pred, val)}
             isResultSide={isResultSide}
-            editable={editable}
-        ></PredicateDisplay>)}
-        {keptPredicates.map(pred => <KeptPredicateDisplay
-            pred={pred}
-            actors={actors}
-        ></KeptPredicateDisplay>)}
-    </div>
-    : <div ref={drop} className="predicate-area">
-        {predicates.map(pred => <PredicateDisplay
-            pred={pred}
-            actors={actors}
-            handleRemove={() => removePredicate(pred)}
-            setPredKeep={(_) => {}}
-            isResultSide={isResultSide}
-            editable={editable}
         ></PredicateDisplay>)}
         {keptPredicates.map(pred => <KeptPredicateDisplay
             pred={pred}
@@ -78,7 +57,7 @@ const KeptPredicateDisplay: React.FC<{
 
     let areas = []
     for (let i = 0; i < pred.abstract.numActors; i++) {
-        areas.push(<ActorDropArea index={i} editable={false} initActor={actors[pred.actorsNums[i]]}></ActorDropArea>)
+        areas.push(<ActorDropArea index={i} initActor={actors[pred.actorsNums[i]]}></ActorDropArea>)
     }
 
     return <div className="horizontal-row abs-pred-kept">
@@ -99,19 +78,15 @@ const PredicateDisplay: React.FC<{
             handleRemove: () => void,
             setPredKeep: (arg0: boolean) => void,
             isResultSide: boolean,
-            editable: boolean
-        }> = ({ pred, actors, handleRemove, setPredKeep, isResultSide, editable }) => {
+        }> = ({ pred, actors, handleRemove, setPredKeep, isResultSide }) => {
     let areas = []
     for (let i = 0; i < pred.abstract.numActors; i++) {
-        areas.push(<ActorDropArea index={i} editable={editable} initActor={actors[pred.actorsNums[i]]}></ActorDropArea>)
+        areas.push(<ActorDropArea index={i} initActor={actors[pred.actorsNums[i]]}></ActorDropArea>)
     }
 
     function keepIndicator() {
         if (isResultSide) return
-        if (!editable && pred.keep) {
-            return <p style={{color: "green", fontWeight: "bold", marginTop: "0", marginBottom: "0"}}>will be kept</p>
-        }
-        if (editable && pred.keep) {
+        if (pred.keep) {
             return <OverlayTrigger
                 key={1}
                 placement="bottom"
@@ -123,7 +98,7 @@ const PredicateDisplay: React.FC<{
                 </Button>
             </OverlayTrigger>
         }
-        if (editable && !pred.keep) {
+        if (!pred.keep) {
             return <OverlayTrigger
                 key={1}
                 placement="bottom"
@@ -139,31 +114,24 @@ const PredicateDisplay: React.FC<{
 
     function permanentIndicator() {
         if (!isResultSide) return
-        if (!editable && pred.permanent) {
-            return <p style={{color: "red", fontWeight: "bold", marginTop: "0", marginBottom: "0"}}>permanent</p>
-        } else if (!editable && !pred.permanent) {
-            return
-        } else {
-            return pred.permanent ? 
-            <OverlayTrigger
-                key={0}
-                placement="bottom"
-                overlay={<Tooltip id="tooltip-permanent">This predicate is permanent and cannot be removed.</Tooltip>}
-            >
-                <Button variant="success">permanent</Button>
-            </OverlayTrigger> :
-            <OverlayTrigger
-                key={0}
-                placement="bottom"
-                overlay={<Tooltip id="tooltip-permanent">This predicate is not permanent.</Tooltip>}
-            >
-                <Button variant="danger">not permanent</Button>
-            </OverlayTrigger>
-        }
+        return pred.permanent ? 
+        <OverlayTrigger
+            key={0}
+            placement="bottom"
+            overlay={<Tooltip id="tooltip-permanent">This predicate is permanent and cannot be removed.</Tooltip>}
+        >
+            <Button variant="success">permanent</Button>
+        </OverlayTrigger> :
+        <OverlayTrigger
+            key={0}
+            placement="bottom"
+            overlay={<Tooltip id="tooltip-permanent">This predicate is not permanent.</Tooltip>}
+        >
+            <Button variant="danger">not permanent</Button>
+        </OverlayTrigger>
     }
 
     function amountIndicator() {
-        if (!editable) return pred.amount + "x "
         return <Form>
             <Form.Group>
                 <Form.Control as="select">
@@ -183,15 +151,15 @@ const PredicateDisplay: React.FC<{
         {areas}
         {keepIndicator()}
         {permanentIndicator()}
-        {editable ? <Button
+        <Button
             variant="outline-danger"
             onClick={handleRemove}>
             ❌
-        </Button> : <div/>}
+        </Button> 
     </div>
 }
 
-const ActorDropArea: React.FC<{ index: number, editable: boolean, initActor: Actor }> = ({ index, editable, initActor }) => {
+const ActorDropArea: React.FC<{ index: number, initActor: Actor }> = ({ index, initActor }) => {
     const [actor, setActor] = useState<Actor>(initActor)
     const [collectedProps, drop] = useDrop<DraggedActor, Actor, { isDragging: boolean }>({
         accept: 'actor',
@@ -202,18 +170,11 @@ const ActorDropArea: React.FC<{ index: number, editable: boolean, initActor: Act
         collect: monitor => ({
             isDragging: !monitor.isOver(),
         }),
-        canDrop: (item, monitor) => {
-            return editable
-        }
     })
     let icon = "👤"
     if (actor != null)
         icon = actor.icon
-    return editable
-    ? <div ref={drop} className="actor-drop-area-editable">
-        {icon}
-    </div>
-    : <div ref={drop} className="actor-drop-area">
+    return <div ref={drop} className="actor-drop-area">
         {icon}
     </div>
 }
