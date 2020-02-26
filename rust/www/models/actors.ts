@@ -1,5 +1,5 @@
 import { getFullName } from 'local-names';
-import { male, female } from "./emojis";
+import { male, female } from "../emojis";
 import { DragObjectWithType } from 'react-dnd';
 
 export interface Actor {

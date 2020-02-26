@@ -1,7 +1,7 @@
 import 'bootstrap/dist/css/bootstrap.min.css'
 import React from 'react'
 import { useDrag } from 'react-dnd'
-import { Actor, DraggedActor } from './actors'
+import { Actor, DraggedActor } from '../models/actors'
 
 export const ActorProfile: React.FC<{isVictim: boolean, actor: Actor}> = ({ actor, isVictim }) => {
     const [{ isDragging }, drag] = useDrag<DraggedActor, Actor, {isDragging: boolean}>({

@@ -5,18 +5,21 @@ import HTML5Backend from 'react-dnd-html5-backend'
 
 import InputGroup from 'react-bootstrap/InputGroup'
 import FormControl from 'react-bootstrap/FormControl'
-import Dropdown from 'react-bootstrap/Dropdown'
 import Collapse from 'react-bootstrap/Collapse'
 import Card from 'react-bootstrap/Card'
 import Button from 'react-bootstrap/Button'
 
-import { createActors, Actor, DraggedActor } from '../actors';
-import { allPredicates, AbstractPredicate, Predicate } from '../predicates';
+import { createActors, Actor, DraggedActor } from '../models/actors'
+import { allPredicates, AbstractPredicate, Predicate } from '../models/predicates'
 import { ResultSide, Result } from './result';
-import { PreconditionSide } from './preconditions';
-import { DraggedPredicate } from './predicate-area';
-import { Rule, parseRule } from '../rules';
-import { murderMysteryRuleset } from '../murder_mystery';
+import { PreconditionSide } from './preconditions'
+import { DraggedPredicate } from './predicate-area'
+import { Rule, parseRule } from '../rules'
+import { murderMysteryRuleset } from '../murder_mystery'
+import { ruleIconMapping } from '../emojis'
+
+import { BsArrowCounterclockwise } from 'react-icons/bs'
+
 
 function AbstractPredicateDisplay({ abspred }) {
     const [{ isDragging }, drag] = useDrag<DraggedPredicate, AbstractPredicate, { isDragging: boolean }>({
@@ -37,7 +40,8 @@ function AbstractPredicateDisplay({ abspred }) {
 function Editor() {
     const [rule, updateRule] = useState<Rule>(new Rule([new Result(1)]))
     const [actors, setActors] = useState<Actor[]>(createActors())
-    //const actors = createActors();
+    const [openNew, setOpenNew] = useState(false);
+    const [openExplore, setOpenExplore] = useState(new Array(murderMysteryRuleset.rules.length).fill(false));
 
     const addResult = () => {
         let updatedResults = [...rule.results, new Result(0)]
@@ -78,6 +82,11 @@ function Editor() {
         updateRule({ ...rule, preconditions: updatedPreconditions })
     }
 
+    const updatePredicateRhs = (pred: Predicate) => {
+        //const toEdit = rule.preconditions.find((p) => p.abstract.name = pred.abstract.name)
+        
+    }
+
     const removePredicateFromResult = (pred: Predicate, result: Result) => {
         let r = rule.results.findIndex((res) => res == result)
         let updatedPredicated = rule.results[r].predicates.filter((item) => item.abstract.name != pred.abstract.name)
@@ -92,32 +101,52 @@ function Editor() {
         //updateRule({...rule, results: updatedResults})
     }
 
-    const RuleEditor: React.FC<{ editable: boolean }> = ({ editable }) => {
-        return <div>
-            <div className="horizontal-row wrap">
-                <PreconditionSide
-                    actors={actors}
-                    editable={editable}
-                    predicates={rule.preconditions}
-                    removePredicate={(pred) => removePredicateFromRhs(pred)}
-                    addPredicate={(pred) => addPredicateToRhs(pred)}
-                >
-                </PreconditionSide>
-                <ResultSide
-                    actors={actors}
-                    editable={editable}
-                    results={rule.results}
-                    addResult={() => addResult()}
-                    updateProbabilites={(index, value) => updatePercentage(index, value)}
-                    addPredicate={(pred, result) => addPredicateToResult(pred, result)}
-                    removePredicate={(pred, result) => removePredicateFromResult(pred, result)}>
-                </ResultSide>
-            </div>
+    const toggleOpen = (index: number) => {
+        setOpenExplore(old => {
+            const copy = [...old];
+            copy[index] = !openExplore[index]
+            return copy
+        });
+    }
+
+    const RuleEditor: React.FC<{ editable: boolean, rule: Rule }> = ({ editable, rule }) => {
+        return <div className="horizontal-row wrap" style={{margin: "-1rem 0", padding: "0"}}>
+            <PreconditionSide
+                actors={actors}
+                editable={editable}
+                predicates={rule.preconditions}
+                removePredicate={(pred) => removePredicateFromRhs(pred)}
+                addPredicate={(pred) => addPredicateToRhs(pred)}
+                updatePredicate={(pred) => updatePredicateRhs(pred)}
+            >
+            </PreconditionSide>
+            <ResultSide
+                actors={actors}
+                editable={editable}
+                results={rule.results}
+                keptPredicates={rule.preconditions.filter((p) => p.keep)}
+                addResult={() => addResult()}
+                updateProbabilites={(index, value) => updatePercentage(index, value)}
+                addPredicate={(pred, result) => addPredicateToResult(pred, result)}
+                removePredicate={(pred, result) => removePredicateFromResult(pred, result)}>
+            </ResultSide>
         </div>
     }
 
-    const [openNew, setOpenNew] = useState(false);
-    const [openExplore, setOpenExplore] = useState(false);
+    function cardForRule(rule: Rule, toggleOpen: any, open: boolean) {
+        return <Card>
+            <Card.Header onClick={() => toggleOpen()}>
+                {ruleIconMapping[rule.name]}
+                {" "}
+                {rule.name}
+            </Card.Header>
+            <Collapse in={open}>
+                <Card.Body>
+                    <RuleEditor rule={rule} editable={false}></RuleEditor>
+                </Card.Body>
+            </Collapse>
+        </Card>
+    }
 
     return <DndProvider backend={HTML5Backend}>
         <h1 style={{ margin: "1rem 2rem" }}>Editor</h1>
@@ -138,66 +167,51 @@ function Editor() {
                 </div>
                 <div className="horizontal-row actor-pick-area" style={{ flexWrap: "wrap", width: "200px", margin: "1rem 0" }}>
                     {actors.map(actor => <SimplifiedActor actor={actor}></SimplifiedActor>)}
+                    <Button size="sm" onClick={() => setActors(createActors())}>
+                        <BsArrowCounterclockwise size=""></BsArrowCounterclockwise>
+                        New Actors
+                    </Button>
                 </div>
             </div>
 
-        <div>
-        <Card>
-            <Card.Header onClick={() => setOpenNew(!openNew)}>
-                New Rule
-            </Card.Header>
-            <Collapse in={openNew}>
-                <Card.Body>
-                    <div className="pick-rule" style={{}}>
-                        <InputGroup className="mb-3">
-                            <InputGroup.Prepend>
-                                <InputGroup.Text id="inputGroup-sizing-default">Rule Name</InputGroup.Text>
-                            </InputGroup.Prepend>
-                            <FormControl
-                                defaultValue={rule.name}
-                                aria-label="Default"
-                                placeholder="e.g. lie"
-                                aria-describedby="inputGroup-sizing-default"
-                            />
-                        </InputGroup>
-                    </div>
-                    <RuleEditor editable={true}></RuleEditor>
-                </Card.Body>
-            </Collapse>
-        </Card>
-        <Card>
-            <Card.Header onClick={() => setOpenExplore(!openExplore)}>
-                Explore Existing Rules
-            </Card.Header>
-            <Collapse in={openExplore}>
-                <Card.Body>
-                    <div className="pick-rule" style={{}}>
-                        <InputGroup className="mb-3">
-                            <InputGroup.Prepend>
-                                <InputGroup.Text id="inputGroup-sizing-default">Rule Name</InputGroup.Text>
-                            </InputGroup.Prepend>
-                            <FormControl
-                                defaultValue={rule.name}
-                                aria-label="Default"
-                                placeholder="e.g. lie"
-                                aria-describedby="inputGroup-sizing-default"
-                            />
-                        </InputGroup>
-                        <Dropdown alignRight style={{marginLeft: "1rem"}}>
-                            <Dropdown.Toggle variant="primary" id="dropdown-basic">
-                                Pick Rule
-                            </Dropdown.Toggle>
-                            <Dropdown.Menu>
-                                {murderMysteryRuleset.rules.map((rule) => <Dropdown.Item onClick={() => updateRule(parseRule(rule))}>{rule.name}</Dropdown.Item>)}
-                            </Dropdown.Menu>
-                        </Dropdown>
-                    </div>
-                    <RuleEditor editable={false}></RuleEditor>
-                </Card.Body>
-            </Collapse>
-        </Card>
-    </div>
-    </div>
+            <div style={{width: "100%", padding: "0 2rem 0 0"}}>
+                <Card>
+                    <Card.Header onClick={() => setOpenNew(!openNew)}>
+                        New Rule
+                    </Card.Header>
+                    <Collapse in={openNew}>
+                        <Card.Body>
+                            <div className="horizontal-row">
+                                <InputGroup className="mb-3" style={{width: "25%", marginRight: "1rem"}}>
+                                    <InputGroup.Prepend>
+                                        <InputGroup.Text id="inputGroup-sizing-default">Rule Icon</InputGroup.Text>
+                                    </InputGroup.Prepend>
+                                    <FormControl
+                                        defaultValue={ruleIconMapping[rule]}
+                                        aria-label="Default"
+                                        placeholder="e.g. 🤥"
+                                        aria-describedby="inputGroup-sizing-default"
+                                    />
+                                </InputGroup>
+                                <InputGroup className="mb-3">
+                                    <InputGroup.Prepend>
+                                        <InputGroup.Text id="inputGroup-sizing-default">Rule Name</InputGroup.Text>
+                                    </InputGroup.Prepend>
+                                    <FormControl
+                                        defaultValue={rule.name}
+                                        aria-label="Default"
+                                        placeholder="e.g. lie"
+                                        aria-describedby="inputGroup-sizing-default"
+                                    />
+                                </InputGroup>
+                            </div>
+                            <RuleEditor rule={rule} editable={true}></RuleEditor>
+                        </Card.Body>
+                    </Collapse>
+                </Card>
+                {murderMysteryRuleset.rules.map((rule, index) => cardForRule(parseRule(rule), () => toggleOpen(index), openExplore[index]))}
+            </div>
+        </div>
     </DndProvider>
 }
 

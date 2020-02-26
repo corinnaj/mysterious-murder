@@ -17,6 +17,7 @@ export class Predicate {
     constructor(abstract: AbstractPredicate) {
         this.abstract = abstract
         this.amount = 1
+        this.actorsNums = new Array(abstract.numActors)
     } 
 }
 

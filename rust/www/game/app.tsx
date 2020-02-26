@@ -1,20 +1,19 @@
 
 import React, { useState, useEffect, useMemo, createRef } from 'react'
 import Container from 'react-bootstrap/Container';
-import { iconMappings, feelingIconMapping, objectIconMapping, moodIconMapping, relationshipIconMapping, ruleIconMapping } from './emojis'
-import { murderMysteryRuleset } from './murder_mystery'
+import { iconMappings, feelingIconMapping, objectIconMapping, moodIconMapping, relationshipIconMapping, ruleIconMapping } from '../emojis'
+import { murderMysteryRuleset } from '../murder_mystery'
 import { IdCards } from './id_cards'
 import { TargetArea } from './target_area'
 import * as d3 from 'd3'
-import { DndProvider } from 'react-dnd'
-import HTML5Backend from 'react-dnd-html5-backend'
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Spinner from 'react-bootstrap/Spinner';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import { createActors, Actor } from './actors';
+import { createActors, Actor } from '../models/actors';
 import { RuleInvocation, Predicate, WitnessLog, graphFromAction, StoryStep, resetGraphResources } from './graph';
+import {Link} from "react-router-dom";
 
 let actors = createActors();
 
@@ -263,13 +262,13 @@ function App() {
     return rule.length > 0;
   }
 
-  return <div>
+  return <div className="body">
+    <div className="content">
     <AccuseModal
       show={modalShow}
       onHide={() => {setModalShow(false); replay()}}
     />
     <LoadingModal />
-    <DndProvider backend={HTML5Backend}>
       <Container fluid={true} className="main">
         {actors != null ? <IdCards actors={actors} isVictim={(actor: Actor) => isVictim(actor)} /> : <div/>}
         <div className="horizontal-row wrap">
@@ -293,7 +292,16 @@ function App() {
         <AnswerArea />
         {false && <div className="event-log">{log.map((item, i) => <div key={i}>{JSON.stringify(item)}</div>)}</div>}
       </Container>
-    </DndProvider>
+    </div>
+      <footer className="footer horizontal-row">
+        <p className="footer-text">
+          We hope you enjoyed our game! It's open source project, you can find the code and get in touch with us via <a href="https://github.com/corinnaj/mysterious-murder">GitHub</a>.
+          This web version is still a work in progress, if you are interested in updates you can subscribe to our <a href="https://twitter.com/sorcerless">Twitter.</a>
+        </p>
+        <Link to="/editor">
+          <Button style={{margin: "1rem"}}>Take a look inside!</Button>
+        </Link>
+      </footer>
   </div>
 }
 

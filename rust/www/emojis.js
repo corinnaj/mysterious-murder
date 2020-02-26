@@ -415,10 +415,14 @@ export const objectIconMapping = {
 export const ruleIconMapping = {
   steal: '💰',
   steal_E: '💰',
+  steal_N: '💰',
+  steal_debt: '💰',
   murder: '🔪',
   murder_anger: '🔪',
+  murder_cheating: '🔪',
   murder_money: '🔪',
   lie: '🤫',
+  lie_easy: '🤫',
   lie_difficult: '🤫',
   gamble: '🎰',
   fight: '🤬',
@@ -430,6 +434,7 @@ export const ruleIconMapping = {
   make_up: '🤝',
   unknown: '❓',
   nothing: '🤷',
+  grief: '😭',
 }
 
 export const iconMappings = {

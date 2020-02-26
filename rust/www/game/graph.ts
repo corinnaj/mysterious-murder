@@ -1,4 +1,4 @@
-import { Actor } from "./actors";
+import { Actor } from "../models/actors";
 
 const ignorePredicates = ['alive']
 

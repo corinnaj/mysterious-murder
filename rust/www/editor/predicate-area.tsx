@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Predicate, AbstractPredicate } from "../predicates";
+import { Predicate, AbstractPredicate } from "../models/predicates";
 import { useDrop, DragObjectWithType } from "react-dnd";
 import Button from "react-bootstrap/Button";
-import { Actor, DraggedActor } from "../actors";
+import { Actor, DraggedActor } from "../models/actors";
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 import Tooltip from 'react-bootstrap/Tooltip'
 
@@ -12,11 +12,13 @@ import Form from "react-bootstrap/Form";
 export const PredicateArea: React.FC<{
     isResultSide: boolean,
     predicates: Predicate[],
+    keptPredicates: Predicate[],
     editable: boolean,
     actors: Actor[],
+    updatePredicate: (predicate: Predicate) => void,
     removePredicate: (predicate: Predicate) => void,
     addPredicate: (predicate: Predicate) => void
-}> = ({ isResultSide, predicates, editable, actors, removePredicate, addPredicate }) => {
+}> = ({ isResultSide, predicates, keptPredicates, editable, actors, updatePredicate, removePredicate, addPredicate }) => {
 
     const [collectedProps, drop] = useDrop<DraggedPredicate, AbstractPredicate, { isDragging: boolean }>({
         accept: 'pred',
@@ -32,14 +34,57 @@ export const PredicateArea: React.FC<{
         }
     })
 
-    return <div ref={drop} className="predicate-area">
+    function updateKeep(pred: Predicate, val: boolean) {
+       pred.keep = val 
+       console.log(val)
+       updatePredicate(pred)
+    }
+
+    return editable
+    ? <div ref={drop} className="predicate-area-editable">
         {predicates.map(pred => <PredicateDisplay
             pred={pred}
             actors={actors}
             handleRemove={() => removePredicate(pred)}
+            setPredKeep={(val) => updateKeep(pred, val)}
             isResultSide={isResultSide}
             editable={editable}
         ></PredicateDisplay>)}
+        {keptPredicates.map(pred => <KeptPredicateDisplay
+            pred={pred}
+            actors={actors}
+        ></KeptPredicateDisplay>)}
+    </div>
+    : <div ref={drop} className="predicate-area">
+        {predicates.map(pred => <PredicateDisplay
+            pred={pred}
+            actors={actors}
+            handleRemove={() => removePredicate(pred)}
+            setPredKeep={(_) => {}}
+            isResultSide={isResultSide}
+            editable={editable}
+        ></PredicateDisplay>)}
+        {keptPredicates.map(pred => <KeptPredicateDisplay
+            pred={pred}
+            actors={actors}
+        ></KeptPredicateDisplay>)}
+    </div>
+}
+
+const KeptPredicateDisplay: React.FC<{
+    pred: Predicate,
+    actors: Actor[],
+}> = ({pred, actors}) => {
+
+    let areas = []
+    for (let i = 0; i < pred.abstract.numActors; i++) {
+        areas.push(<ActorDropArea index={i} editable={false} initActor={actors[pred.actorsNums[i]]}></ActorDropArea>)
+    }
+
+    return <div className="horizontal-row abs-pred-kept">
+        {pred.amount + "x "}
+        {pred.abstract.name}
+        {areas}
     </div>
 }
 
@@ -52,9 +97,10 @@ const PredicateDisplay: React.FC<{
             pred: Predicate,
             actors: Actor[],
             handleRemove: () => void,
+            setPredKeep: (arg0: boolean) => void,
             isResultSide: boolean,
             editable: boolean
-        }> = ({ pred, actors, handleRemove, isResultSide, editable }) => {
+        }> = ({ pred, actors, handleRemove, setPredKeep, isResultSide, editable }) => {
     let areas = []
     for (let i = 0; i < pred.abstract.numActors; i++) {
         areas.push(<ActorDropArea index={i} editable={editable} initActor={actors[pred.actorsNums[i]]}></ActorDropArea>)
@@ -63,7 +109,7 @@ const PredicateDisplay: React.FC<{
     function keepIndicator() {
         if (isResultSide) return
         if (!editable && pred.keep) {
-            return "will be kept"
+            return <p style={{color: "green", fontWeight: "bold", marginTop: "0", marginBottom: "0"}}>will be kept</p>
         }
         if (editable && pred.keep) {
             return <OverlayTrigger
@@ -71,7 +117,7 @@ const PredicateDisplay: React.FC<{
                 placement="bottom"
                 overlay={<Tooltip id="tooltip-keep">This predicate will be kept after the rule application.</Tooltip>}
             >
-                <Button variant="success"> 
+                <Button variant="success" onClick={() => setPredKeep(false)}> 
                     {<BsCheck/>}
                     keep
                 </Button>
@@ -83,7 +129,7 @@ const PredicateDisplay: React.FC<{
                 placement="bottom"
                 overlay={<Tooltip id="tooltip-keep">This predicate will not be kept after the rule application.</Tooltip>}
             >
-                <Button variant="danger"> 
+                <Button variant="danger" onClick={() => setPredKeep(true)}> 
                     {<BsX/>} 
                     don't keep
                 </Button>
@@ -94,7 +140,7 @@ const PredicateDisplay: React.FC<{
     function permanentIndicator() {
         if (!isResultSide) return
         if (!editable && pred.permanent) {
-            return <p style={{color: "red", fontWeight: "bold"}}>permanent</p>
+            return <p style={{color: "red", fontWeight: "bold", marginTop: "0", marginBottom: "0"}}>permanent</p>
         } else if (!editable && !pred.permanent) {
             return
         } else {
@@ -163,7 +209,11 @@ const ActorDropArea: React.FC<{ index: number, editable: boolean, initActor: Act
     let icon = "👤"
     if (actor != null)
         icon = actor.icon
-    return <div ref={drop} className="actor-drop-area">
+    return editable
+    ? <div ref={drop} className="actor-drop-area-editable">
+        {icon}
+    </div>
+    : <div ref={drop} className="actor-drop-area">
         {icon}
     </div>
 }

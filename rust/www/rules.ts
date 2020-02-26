@@ -1,6 +1,6 @@
 import { murderMysteryRuleset } from "./murder_mystery";
 import { Result } from "./editor/result";
-import { Predicate } from "./predicates";
+import { Predicate } from "./models/predicates";
 
 export class Rule {
     results: Result[]
@@ -51,6 +51,7 @@ export const parseRule = function (rule: { name: any; lhs: any; rhs: any; }) : R
     r.results = []
     for (let res of rule.rhs) {
         let newRes = new Result(res.probability)
+        newRes.title = res.title
         newRes.admit_probablity = res.admit_probability
         newRes.fulfilment = res.fulfilment
         newRes.sanity = res.sanity

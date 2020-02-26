@@ -3,7 +3,7 @@ import React from 'react'
 import Button from 'react-bootstrap/Button';
 import { useDrop } from 'react-dnd'
 import { ActorProfile } from './id_cards';
-import { Actor, DraggedActor } from './actors';
+import { Actor, DraggedActor } from '../models/actors';
 
 export function TargetArea({ onDrop, isVictim, index, droppedActors }) {
     const [collectedProps, drop] = useDrop<DraggedActor, Actor, {isDragging: boolean}>({

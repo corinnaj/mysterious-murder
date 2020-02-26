@@ -5,8 +5,8 @@ import Button from 'react-bootstrap/Button'
 import { PredicateArea } from './predicate-area'
 import Slider from 'rc-slider'
 import 'rc-slider/assets/index.css'
-import { Predicate } from '../predicates';
-import { Actor } from '../actors'
+import { Predicate } from '../models/predicates';
+import { Actor } from '../models/actors'
 
 export class Result {
     probability: number
@@ -29,11 +29,12 @@ export const ResultSide: React.FC<{
         editable: boolean,
         results: Result[],
         actors: Actor[],
+        keptPredicates: Predicate[],
         addResult: () => void,
         updateProbabilites: (index: number, value: number) => void,
         removePredicate: (pred: Predicate, result: Result) => void,
         addPredicate: (pred: Predicate, result: Result) => void
-    }> = ({editable, results, actors, addResult, updateProbabilites, removePredicate, addPredicate}) => {
+    }> = ({editable, results, actors, keptPredicates, addResult, updateProbabilites, removePredicate, addPredicate}) => {
 
 
     function addButton() {
@@ -52,6 +53,7 @@ export const ResultSide: React.FC<{
                     result={result}
                     editable={editable}
                     actors={actors}
+                    keptPredicates={keptPredicates}
                     onPercentageChange={(index: number, value: number) => updateProbabilites(index, value)}
                     removePredicateFromResult={removePredicate}
                     addPredicateToResult={addPredicate}>
@@ -66,10 +68,11 @@ const RuleResult: React.FC<{
         result: Result,
         editable: boolean,
         actors: Actor[],
+        keptPredicates: Predicate[],
         onPercentageChange: (index: number, value: number) => void,
         removePredicateFromResult: (pred: Predicate, result: Result) => void,
         addPredicateToResult: (pred: Predicate, result: Result) => void,
-    }> = ({index, result, editable, actors, onPercentageChange, removePredicateFromResult, addPredicateToResult}) => {
+    }> = ({index, result, editable, actors, keptPredicates, onPercentageChange, removePredicateFromResult, addPredicateToResult}) => {
 
     const addPredicateWrapper = function(pred: Predicate) {
         addPredicateToResult(pred, result)
@@ -121,7 +124,7 @@ const RuleResult: React.FC<{
                 <FormControl
                     defaultValue={result.title}
                     aria-label="Default"
-                    placeholder="e.g. "
+                    placeholder="e.g. success"
                     aria-describedby="inputGroup-sizing-default"
                 />
             </InputGroup>
@@ -136,7 +139,7 @@ const RuleResult: React.FC<{
 
     function template() {
         if (editable) {
-        <InputGroup className="mb-3">
+        return <InputGroup className="mb-3">
             <InputGroup.Prepend>
                 <InputGroup.Text id="inputGroup-sizing-default">Templating String</InputGroup.Text>
             </InputGroup.Prepend>
@@ -159,6 +162,7 @@ const RuleResult: React.FC<{
     }
 
     return <div className="result">
+        {title()}
         <Slider
             className="slider"
             value={result.probability}
@@ -171,11 +175,12 @@ const RuleResult: React.FC<{
             isResultSide={true}
             actors={actors}
             predicates={result.predicates != null ? result.predicates : []}
+            keptPredicates={keptPredicates}
+            updatePredicate={() => {}}
             editable={editable}
             removePredicate={(pred) => removePredicateWrapper(pred)}
             addPredicate={(pred) => addPredicateWrapper(pred)}>
         </PredicateArea>
-        {title()}
         {template()}
         <h4>Rewards</h4>
         <div className="input-row">
