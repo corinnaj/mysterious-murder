@@ -254,15 +254,15 @@ rule('murder_money',
      fulfilment=[100],
      sanity=[-60])
 
-rule('suicide',
-     [
-         p('alive', A),
-         pK('has_weapon', A),
-         *[pK('sadness', A)] * 3],
-     [pP('dead', A)],
-     short_template=['{0} committed suicide'],
-     template=['Endlessly depressed by the events, {0} committed suicide.'],
-     reset_rewards=True)
+#rule('suicide',
+#     [
+#         p('alive', A),
+#         pK('has_weapon', A),
+#         *[pK('sadness', A)] * 3],
+#     [pP('dead', A)],
+#     short_template=['{0} committed suicide'],
+#     template=['Endlessly depressed by the events, {0} committed suicide.'],
+#     reset_rewards=True)
 
 rule('grief',
      [

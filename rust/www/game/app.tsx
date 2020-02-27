@@ -66,8 +66,14 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [seed, setSeed] = useState<number>(() => randomSeed());
 
+  useEffect(() => {
+    setAnswer(null)
+  }, [droppedActors[0], droppedActors[1]])
+
   function AnswerArea() {
-    if (!answer || (Array.isArray(answer) && answer.length < 1))
+    if (!answer)
+      return <></>
+    if (Array.isArray(answer) && answer.length < 1)
       return <p className="horizontal-row bigger-font">None to speak of</p>
 
     return Array.isArray(answer)
