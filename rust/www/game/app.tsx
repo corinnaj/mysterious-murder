@@ -63,7 +63,7 @@ function App() {
   const [answer, setAnswer] = useState<Predicate[]|RuleInvocation|undefined>(undefined)
   const [droppedActors, setDroppedActors] = useState<[Actor|undefined, Actor|undefined]>([undefined, undefined])
   const [modalShow, setModalShow] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [seed, setSeed] = useState<number>(() => randomSeed());
 
   useEffect(() => {

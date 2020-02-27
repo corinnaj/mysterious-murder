@@ -13,7 +13,7 @@ export const ActorProfile: React.FC<{isVictim: boolean, actor: Actor}> = ({ acto
     })
 
     return <div ref={drag} style={{ opacity: isDragging ? 0.5 : 1 }}>
-        <div className="actor-profile horizontal-row">
+        <div className="actor-profile">
             <div className={(isVictim ? "actor-is-victim" : "") + " actor-icon emoji"}>{actor.icon}</div>
             <div>
                 <div className="actor-stats">{actor.name}</div>

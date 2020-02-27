@@ -30,6 +30,10 @@ body, #app {
 	border-radius: 0.2rem;
 	width: 400px;
 	align-self: center;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	justify-content: center;
 }
 
 .emoji {
@@ -45,6 +49,11 @@ body, #app {
 	position: relative;
 }
 
+.actor-stats {
+	margin-left: 1rem; 
+	font-size: 20px;
+}
+
 .actor-is-victim:before {
 	content: "❌";
 	position: absolute;
@@ -54,11 +63,6 @@ body, #app {
 	top: 0;
 	left: 0;
 	opacity: 0.85;
-}
-
-.actor-stats {
-	margin-left: 1rem; 
-	font-size: 20px;
 }
 
 .event-log {
@@ -305,3 +309,32 @@ html, body {
 .card {
 	margin: 0 0 0.5rem 0;
 }
+
+@media screen and (max-width: 800px) {
+  .actor-profile {
+    width: 80px;
+    flex-direction: column;
+    padding: 4px;
+    margin: 1px;
+    margin-top: 1rem;
+    align-items: center;
+    text-align: center;
+  }
+  .actor-stats {
+    font-size: 14px;
+    margin: 0;
+  }
+  .actor-icon {
+    width: 30px;
+    font-size: 20px;
+  }
+  .target-container {
+    min-width: 80px;
+    min-height: 0;
+    padding-bottom: 1rem;
+  }
+  .predicate span {
+    font-size: 64px;
+  }
+}
+
