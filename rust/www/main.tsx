@@ -11,7 +11,7 @@ import HTML5Backend from 'react-dnd-html5-backend'
 const routing = (
   <Router>
     <DndProvider backend={HTML5Backend}>
-      <div>
+      <div style={{height: '100%'}}>
         <Route exact path="/" component={App} />
         <Route path="/editor" component={Editor} />
       </div>
