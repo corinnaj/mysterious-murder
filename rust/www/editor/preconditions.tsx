@@ -23,7 +23,7 @@ export const PreconditionSide: React.FC<{
     }
 
     const updatePredicateWrapper = function(pred: Predicate) {
-        addPredicate(pred, null)
+        updatePredicate(pred, null)
     }
 
     return <div className="margin">

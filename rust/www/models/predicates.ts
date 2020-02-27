@@ -1,5 +1,3 @@
-import { Actor } from "./actors";
-
 export interface AbstractPredicate {
     category: number,
     name: string,
@@ -8,7 +6,6 @@ export interface AbstractPredicate {
 
 export class Predicate {
     abstract: AbstractPredicate
-    actors: Actor[]
     actorsNums: number[]
     amount: number
     keep: boolean

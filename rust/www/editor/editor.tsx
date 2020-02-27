@@ -21,6 +21,8 @@ import { ruleIconMapping } from '../emojis'
 import { BsArrowCounterclockwise } from 'react-icons/bs'
 import { Result } from '../models/result';
 import { ViewOnlyResultSide } from './view-only-result';
+import { Link } from 'react-router-dom';
+import { arrayEquals } from '../helpers';
 
 
 function AbstractPredicateDisplay({ abspred }) {
@@ -59,48 +61,47 @@ function Editor() {
 
         let sum = 0
         newPercentages.map(val => sum = sum + val)
-        const overflow = sum - 100;
+        const overflow = sum - 1;
         const overflowPerResult = overflow / (newPercentages.length - 1)
         for (let i = 0; i < newPercentages.length; i++) {
             if (i == index) continue
             //FIXME: what if one turns to 0
             newPercentages[i] = newPercentages[i] - overflowPerResult
+            if (newPercentages[i] < 0)  {
+                console.log('Do something')
+            }
         }
-        let updatedRule = rule
+        let updatedResults = rule.results
         for (const [index, value] of newPercentages.entries()) {
-            updatedRule.results[index].probability = value
+            updatedResults[index].probability = value
         }
-        updateRule(updatedRule)
+        updateRule({...rule, results: updatedResults})
     }
 
-    const removePredicateFromRhs = (pred: Predicate) => {
-        //TODO make sure to only delete with same name and actors
-        let updatePreconditions = rule.preconditions.filter((item) => item.abstract.name != pred.abstract.name)
+    const removePredicateFromLhs = (pred: Predicate) => {
+        let updatePreconditions = rule.preconditions.filter((item) => !(item.abstract.name == pred.abstract.name && arrayEquals(item.actorsNums, pred.actorsNums)))
         updateRule({ ...rule, preconditions: updatePreconditions })
     }
 
-    const addPredicateToRhs = (pred: Predicate) => {
+    const addPredicateToLhs = (pred: Predicate) => {
         let updatedPreconditions = [...rule.preconditions, pred]
         updateRule({ ...rule, preconditions: updatedPreconditions })
     }
 
-    const updatePredicateRhs = (pred: Predicate) => {
-        //const toEdit = rule.preconditions.find((p) => p.abstract.name = pred.abstract.name)
-        
+    const updatePredicateLhs = (pred: Predicate) => {
+        updateRule({...rule})
     }
 
     const removePredicateFromResult = (pred: Predicate, result: Result) => {
-        let r = rule.results.findIndex((res) => res == result)
-        let updatedPredicated = rule.results[r].predicates.filter((item) => item.abstract.name != pred.abstract.name)
-        //TODO
-        let updatedResults = rule.results
-        updateRule({ ...rule, results: updatedResults })
+        updateRule(rule => ({...rule, results: rule.results.map(r => r.template === result.template ? {...r, predicates: r.predicates.filter((p) => p !== pred)} : r)}))
     }
 
     const addPredicateToResult = (pred: Predicate, result: Result) => {
-        rule.results.find((res) => res.template == result.template).predicates.push(pred)
-        let updatedPreconditions = [...rule.preconditions, pred]
-        //updateRule({...rule, results: updatedResults})
+        updateRule(rule => ({...rule, results: rule.results.map(r => r.template === result.template ? {...r, predicates: [...r.predicates, pred]} : r)}))
+    }
+
+    const updatePredicateAtResult = (pred: Predicate, result: Result) => {
+        updateRule({...rule})
     }
 
     const toggleOpen = (index: number) => {
@@ -112,23 +113,24 @@ function Editor() {
     }
 
     const RuleEditor: React.FC<{ editable: boolean, rule: Rule }> = ({ editable, rule }) => {
-        return <div className="horizontal-row wrap" style={{margin: "-1rem 0", padding: "0"}}>
+        return <div className="horizontal-row wrap" style={{ margin: "-1rem 0", padding: "0" }}>
             <PreconditionSide
                 actors={actors}
                 editable={editable}
                 predicates={rule.preconditions}
-                removePredicate={(pred) => removePredicateFromRhs(pred)}
-                addPredicate={(pred) => addPredicateToRhs(pred)}
-                updatePredicate={(pred) => updatePredicateRhs(pred)}
+                removePredicate={(pred) => removePredicateFromLhs(pred)}
+                addPredicate={(pred) => addPredicateToLhs(pred)}
+                updatePredicate={(pred) => updatePredicateLhs(pred)}
             >
             </PreconditionSide>
-            {editable 
+            {editable
                 ? <ResultSide
                     actors={actors}
                     results={rule.results}
                     keptPredicates={rule.preconditions.filter((p) => p.keep)}
                     addResult={() => addResult()}
                     updateProbabilites={(index, value) => updatePercentage(index, value)}
+                    updatePredicate={(pred, result) => updatePredicateAtResult(pred, result)}
                     addPredicate={(pred, result) => addPredicateToResult(pred, result)}
                     removePredicate={(pred, result) => removePredicateFromResult(pred, result)}>
                 </ResultSide>
@@ -136,7 +138,7 @@ function Editor() {
                     actors={actors}
                     results={rule.results}
                     keptPredicates={rule.preconditions.filter((p) => p.keep)}
-                    >
+                >
                 </ViewOnlyResultSide>
             }
         </div>
@@ -158,7 +160,15 @@ function Editor() {
     }
 
     return <DndProvider backend={HTML5Backend}>
-        <h1 style={{ margin: "1rem 2rem" }}>Editor</h1>
+        <div style={{ display: "flex" }}>
+            <h1 style={{ margin: "1rem 2rem" }}>Editor</h1>
+            <div style={{ flexGrow: 1 }}></div>
+            <Link to="/" style={{ marginRight: "1rem", alignSelf: "center" }}>
+                <Button>
+                    Back to Game
+                </Button>
+            </Link>
+        </div>
         <p className="intro-text">
             Here you can explore the rules that drive our simulation.
             Each rule consists of preconditions that need to be met and will result in one of the possible outcomes.
@@ -170,7 +180,7 @@ function Editor() {
             Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
         </p>
         <div style={{ display: "flex", flexDirection: "row", margin: "0 0 0 2rem" }}>
-            <div className="">
+            <div>
                 <div className="horizontal-row predicate-pick-area" style={{ flexWrap: "wrap", width: "200px" }}>
                     {allPredicates.map(pred => <AbstractPredicateDisplay abspred={pred}></AbstractPredicateDisplay>)}
                 </div>
@@ -183,7 +193,7 @@ function Editor() {
                 </div>
             </div>
 
-            <div style={{width: "100%", padding: "0 2rem 0 0"}}>
+            <div style={{ width: "100%", padding: "0 2rem 0 0" }}>
                 <Card>
                     <Card.Header onClick={() => setOpenNew(!openNew)}>
                         New Rule
@@ -191,7 +201,7 @@ function Editor() {
                     <Collapse in={openNew}>
                         <Card.Body>
                             <div className="horizontal-row">
-                                <InputGroup className="mb-3" style={{width: "25%", marginRight: "1rem"}}>
+                                <InputGroup className="mb-3" style={{ width: "35%", marginRight: "1rem" }}>
                                     <InputGroup.Prepend>
                                         <InputGroup.Text id="inputGroup-sizing-default">Rule Icon</InputGroup.Text>
                                     </InputGroup.Prepend>
@@ -202,7 +212,7 @@ function Editor() {
                                         aria-describedby="inputGroup-sizing-default"
                                     />
                                 </InputGroup>
-                                <InputGroup className="mb-3">
+                                <InputGroup className="mb-3" style={{ marginRight: "1rem" }}>
                                     <InputGroup.Prepend>
                                         <InputGroup.Text id="inputGroup-sizing-default">Rule Name</InputGroup.Text>
                                     </InputGroup.Prepend>
@@ -213,6 +223,11 @@ function Editor() {
                                         aria-describedby="inputGroup-sizing-default"
                                     />
                                 </InputGroup>
+                                <Link to="/" style={{ minWidth: "15%" }}>
+                                    <Button>
+                                        Save and Run Game
+                                    </Button>
+                                </Link>
                             </div>
                             <RuleEditor rule={rule} editable={true}></RuleEditor>
                         </Card.Body>

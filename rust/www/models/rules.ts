@@ -1,6 +1,7 @@
 import { murderMysteryRuleset } from "../murder_mystery";
 import { Result } from "./result";
 import { Predicate } from "./predicates";
+import { arrayEquals } from "../helpers";
 
 export class Rule {
     results: Result[]
@@ -36,12 +37,7 @@ export const parseRule = function (rule: { name: any; lhs: any; rhs: any; }) : R
     r.preconditions = []
     for (let con of rule.lhs) {
         const similars = r.preconditions.filter((p) =>
-            {
-                const array1 = con.signature.actors
-                const array2 = p.actorsNums
-                return con.signature.name == p.abstract.name &&
-                    array1.length === array2.length && array1.every((value, index) => value === array2[index])
-            })
+            con.signature.name == p.abstract.name && arrayEquals(con.signature.actors, p.actorsNums))
         if (similars.length > 0) {
             similars[0].amount = similars[0].amount + 1
             break
@@ -61,12 +57,7 @@ export const parseRule = function (rule: { name: any; lhs: any; rhs: any; }) : R
         newRes.predicates = []
         for (let pred of res.predicates) {
             const similars = newRes.predicates.filter((p) =>
-                {
-                    const array1 = pred.signature.actors
-                    const array2 = p.actorsNums
-                    return pred.signature.name == p.abstract.name &&
-                        array1.length === array2.length && array1.every((value, index) => value === array2[index])
-                })
+                pred.signature.name == p.abstract.name && arrayEquals(pred.signature.actors, p.actorsNums))
             if (similars.length > 0) {
                 similars[0].amount = similars[0].amount + 1
                 break

@@ -30,17 +30,12 @@ export const PredicateArea: React.FC<{
         }),
     })
 
-    function updateKeep(pred: Predicate, val: boolean) {
-       pred.keep = val 
-       updatePredicate(pred)
-    }
-
     return <div ref={drop} className="predicate-area-editable">
         {predicates.map(pred => <PredicateDisplay
             pred={pred}
             actors={actors}
             handleRemove={() => removePredicate(pred)}
-            setPredKeep={(val) => updateKeep(pred, val)}
+            updatePredicate={() => updatePredicate(pred)}
             isResultSide={isResultSide}
         ></PredicateDisplay>)}
         {keptPredicates.map(pred => <KeptPredicateDisplay
@@ -57,7 +52,7 @@ const KeptPredicateDisplay: React.FC<{
 
     let areas = []
     for (let i = 0; i < pred.abstract.numActors; i++) {
-        areas.push(<ActorDropArea index={i} initActor={actors[pred.actorsNums[i]]}></ActorDropArea>)
+        areas.push(<ActorDropArea index={i} initActor={actors[pred.actorsNums[i]]} updateActor={() => {}}></ActorDropArea>)
     }
 
     return <div className="horizontal-row abs-pred-kept">
@@ -76,12 +71,17 @@ const PredicateDisplay: React.FC<{
             pred: Predicate,
             actors: Actor[],
             handleRemove: () => void,
-            setPredKeep: (arg0: boolean) => void,
+            updatePredicate: (pred: Predicate) => void,
             isResultSide: boolean,
-        }> = ({ pred, actors, handleRemove, setPredKeep, isResultSide }) => {
+        }> = ({ pred, actors, handleRemove, updatePredicate, isResultSide }) => {
     let areas = []
     for (let i = 0; i < pred.abstract.numActors; i++) {
-        areas.push(<ActorDropArea index={i} initActor={actors[pred.actorsNums[i]]}></ActorDropArea>)
+        areas.push(<ActorDropArea
+                index={i}
+                initActor={actors[pred.actorsNums[i]]}
+                updateActor={updateActor}>
+            </ActorDropArea>
+        )
     }
 
     function keepIndicator() {
@@ -92,7 +92,7 @@ const PredicateDisplay: React.FC<{
                 placement="bottom"
                 overlay={<Tooltip id="tooltip-keep">This predicate will be kept after the rule application.</Tooltip>}
             >
-                <Button variant="success" onClick={() => setPredKeep(false)}> 
+                <Button variant="success" onClick={() => updateKeep(false)}> 
                     {<BsCheck/>}
                     keep
                 </Button>
@@ -104,7 +104,7 @@ const PredicateDisplay: React.FC<{
                 placement="bottom"
                 overlay={<Tooltip id="tooltip-keep">This predicate will not be kept after the rule application.</Tooltip>}
             >
-                <Button variant="danger" onClick={() => setPredKeep(true)}> 
+                <Button variant="danger" onClick={() => updateKeep(true)}> 
                     {<BsX/>} 
                     don't keep
                 </Button>
@@ -120,21 +120,37 @@ const PredicateDisplay: React.FC<{
             placement="bottom"
             overlay={<Tooltip id="tooltip-permanent">This predicate is permanent and cannot be removed.</Tooltip>}
         >
-            <Button variant="success">permanent</Button>
+            <Button
+                variant="success"
+                onClick={() => updatePermanent(false)}>
+                    permanent
+            </Button>
         </OverlayTrigger> :
         <OverlayTrigger
             key={0}
             placement="bottom"
             overlay={<Tooltip id="tooltip-permanent">This predicate is not permanent.</Tooltip>}
         >
-            <Button variant="danger">not permanent</Button>
+            <Button
+                variant="danger"
+                onClick={() => updatePermanent(true)}>
+                    not permanent
+            </Button>
         </OverlayTrigger>
+    }
+
+    function updateAmount(val: number) {
+        pred.amount = val
+        updatePredicate(pred)
     }
 
     function amountIndicator() {
         return <Form>
             <Form.Group>
-                <Form.Control as="select">
+                <Form.Control
+                    as="select"
+                    defaultValue={pred.amount}
+                    onChange={(event) => {updateAmount((event.target as any).value)}}>
                     <option>1</option>
                     <option>2</option>
                     <option>3</option>
@@ -143,6 +159,21 @@ const PredicateDisplay: React.FC<{
                 </Form.Control>
             </Form.Group>
         </Form>
+    }
+
+    function updateKeep(val: boolean) {
+       pred.keep = val 
+       updatePredicate(pred)
+    }
+
+    function updatePermanent(val: boolean) {
+        pred.permanent = val
+        updatePredicate(pred)
+    }
+
+    function updateActor(index: number, val: number) {
+        pred.actorsNums[index] = val
+        updatePredicate(pred)
     }
 
     return <div className="horizontal-row abs-pred">
@@ -159,12 +190,13 @@ const PredicateDisplay: React.FC<{
     </div>
 }
 
-const ActorDropArea: React.FC<{ index: number, initActor: Actor }> = ({ index, initActor }) => {
+const ActorDropArea: React.FC<{ index: number, initActor: Actor, updateActor: (index: number, value: number) => void }> = ({ index, initActor, updateActor }) => {
     const [actor, setActor] = useState<Actor>(initActor)
     const [collectedProps, drop] = useDrop<DraggedActor, Actor, { isDragging: boolean }>({
         accept: 'actor',
         drop: (item, monitor) => {
             setActor(item.actor)
+            updateActor(index, item.actor.index)
             return item.actor
         },
         collect: monitor => ({
