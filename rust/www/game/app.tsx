@@ -131,7 +131,10 @@ function App() {
 
   function askWitnessQuestion(actors: Actor[], predNames: string[]): RuleInvocation {
       let allRules = witnessLog.filter(p => p.witness == actors[0] && p.rule.actors.includes(actors[1]))
-      return allRules[Math.floor(Math.random() * allRules.length)].rule
+      if (allRules.length < 1)
+        return []
+      else
+        return allRules[Math.floor(Math.random() * allRules.length)].rule
   }
 
   function LoadingModal() {
