@@ -46,7 +46,7 @@ class Simulation:
                 count += 1
         return count
 
-    def check_stop(self):
+    def check_stop(self, option):
         return False
 
     def get_actions_for_actor(self, actor):
