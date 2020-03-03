@@ -16,7 +16,7 @@ import { allPredicates, AbstractPredicate, Predicate } from '../models/predicate
 import { ResultSide } from './result';
 import { PreconditionSide } from './preconditions'
 import { DraggedPredicate } from './predicate-area'
-import { Rule, parseRule, ruleToJson, parseRuleByName } from '../models/rules'
+import { Rule, parseRule, ruleToJson } from '../models/rules'
 import { murderMysteryRuleset } from '../murder_mystery'
 import { ruleIconMapping } from '../emojis'
 
@@ -65,6 +65,15 @@ function Editor() {
 
     const addResult = () => {
         let updatedResults = [...rule.results, new Result(0)]
+        const prob = 1 / updatedResults.length;
+        updatedResults.map((res) => ({...res, probability: prob}))
+        updateRule({ ...rule, results: updatedResults })
+    }
+
+    const removeResult = (res: Result) => {
+        const updatedResults = rule.results.filter((r) => r !== res)
+        const prob = 1 / updatedResults.length;
+        updatedResults.map((res) => ({...res, probability: prob}))
         updateRule({ ...rule, results: updatedResults })
     }
 
@@ -123,6 +132,7 @@ function Editor() {
                     results={rule.results}
                     keptPredicates={rule.preconditions.filter((p) => p.keep)}
                     addResult={() => addResult()}
+                    removeResult={(result) => removeResult(result)}
                     updateProbabilites={values => updatePercentages(values)}
                     updatePredicate={(pred, result) => updatePredicateAtResult(pred, result)}
                     addPredicate={(pred, result) => addPredicateToResult(pred, result)}

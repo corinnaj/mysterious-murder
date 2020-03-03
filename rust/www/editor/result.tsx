@@ -1,91 +1,93 @@
-import React  from 'react'
+import React from 'react'
 import InputGroup from 'react-bootstrap/InputGroup'
 import FormControl from 'react-bootstrap/FormControl'
 import Button from 'react-bootstrap/Button'
 import { PredicateArea } from './predicate-area'
-import Range from 'rc-slider'
+import { Range } from 'rc-slider'
 import 'rc-slider/assets/index.css'
 import { Predicate } from '../models/predicates';
 import { Actor } from '../models/actors'
 import { Result } from '../models/result'
 
 export const ResultSide: React.FC<{
-        results: Result[],
-        actors: Actor[],
-        keptPredicates: Predicate[],
-        addResult: () => void,
-        updateProbabilites: (index: number, value: number) => void,
-        updatePredicate: (pred: Predicate, result: Result) => void,
-        removePredicate: (pred: Predicate, result: Result) => void,
-        addPredicate: (pred: Predicate, result: Result) => void
-    }> = ({results, actors, keptPredicates, addResult, updateProbabilites, updatePredicate, removePredicate, addPredicate}) => {
+    results: Result[],
+    actors: Actor[],
+    keptPredicates: Predicate[],
+    addResult: () => void,
+    removeResult: (result: Result) => void,
+    updateProbabilites: (values: number[]) => void,
+    updatePredicate: (pred: Predicate, result: Result) => void,
+    removePredicate: (pred: Predicate, result: Result) => void,
+    addPredicate: (pred: Predicate, result: Result) => void
+}> = ({ results, actors, keptPredicates, addResult, removeResult, updateProbabilites, updatePredicate, removePredicate, addPredicate }) => {
 
     function addButton() {
         return <Button
             className="add-result"
             onClick={addResult}>
-        +
+            +
         </Button>
     }
 
-    const percentages = [0.0, ...results.map((r, i) => results.slice(0, i + 1).reduce((sum, r) => sum + r.probability)), 1.0]
+    //const percentages = [0.0, ...results.map((r, i) => results.slice(0, i + 1).reduce<number>((sum, r) => sum + r.probability, 0)), 1.0]
 
     return <div className="margin">
         <h2 className="title2">Result</h2>
-        <Range
-            onChange={values => {console.log(values);updateProbabilites(values.slice(1, values.length - 1))}}
-            count={percentages.length + 2}
+        {/*<Range
+            onChange={values => updateProbabilites(values.slice(1, values.length - 1))}
             pushable={0.01}
             max={1}
             min={0}
             step={0.01}
-            value={percentages} />
+            value={percentages} />*/}
         <div className="horizontal-row wrap">
             {results.map((result: Result, index: number) => <RuleResult
-                    index={index}
-                    result={result}
-                    actors={actors}
-                    keptPredicates={keptPredicates}
-                    updatePredicateAtResult={updatePredicate}
-                    removePredicateFromResult={removePredicate}
-                    addPredicateToResult={addPredicate}>
+                index={index}
+                result={result}
+                actors={actors}
+                removeResult={removeResult}
+                keptPredicates={keptPredicates}
+                updatePredicateAtResult={updatePredicate}
+                removePredicateFromResult={removePredicate}
+                addPredicateToResult={addPredicate}>
             </RuleResult>)}
-            {addButton()} 
+            {addButton()}
         </div>
     </div>
 }
 
 const RuleResult: React.FC<{
-        index: number,
-        result: Result,
-        actors: Actor[],
-        keptPredicates: Predicate[],
-        removePredicateFromResult: (pred: Predicate, result: Result) => void,
-        addPredicateToResult: (pred: Predicate, result: Result) => void,
-        updatePredicateAtResult: (pred: Predicate, result: Result) => void,
-    }> = ({index, result, actors, keptPredicates, removePredicateFromResult, addPredicateToResult, updatePredicateAtResult}) => {
+    index: number,
+    result: Result,
+    actors: Actor[],
+    keptPredicates: Predicate[],
+    removeResult: (res: Result) => void,
+    removePredicateFromResult: (pred: Predicate, result: Result) => void,
+    addPredicateToResult: (pred: Predicate, result: Result) => void,
+    updatePredicateAtResult: (pred: Predicate, result: Result) => void,
+}> = ({ index, result, actors, keptPredicates, removeResult, removePredicateFromResult, addPredicateToResult, updatePredicateAtResult }) => {
 
-    const addPredicateWrapper = function(pred: Predicate) {
+    const addPredicateWrapper = function (pred: Predicate) {
         addPredicateToResult(pred, result)
     }
 
-    const removePredicateWrapper = function(pred: Predicate) {
+    const removePredicateWrapper = function (pred: Predicate) {
         removePredicateFromResult(pred, result)
     }
 
-    const updatePredicateWrapper = function(pred: Predicate) {
+    const updatePredicateWrapper = function (pred: Predicate) {
         updatePredicateAtResult(pred, result)
     }
 
     const reward_pairs = [
-        {name: "Sanity", value: result.sanity},
-        {name: "Fulfilment", value: result.fulfilment},
-        {name: "Social", value: result.social}
+        { name: "Sanity", value: result.sanity },
+        { name: "Fulfilment", value: result.fulfilment },
+        { name: "Social", value: result.social }
     ];
-    
+
     const probability_pairs = [
-        {name: "Witnessing", value: result.witness_probability},
-        {name: "Admitting", value: result.admit_probablity}
+        { name: "Witnessing", value: result.witness_probability },
+        { name: "Admitting", value: result.admit_probablity }
     ]
 
     function input(name: string, value: number) {
@@ -103,17 +105,20 @@ const RuleResult: React.FC<{
     }
 
     function title() {
-        return <InputGroup className="mb-3">
-            <InputGroup.Prepend>
-                <InputGroup.Text id="inputGroup-sizing-default">Title</InputGroup.Text>
-            </InputGroup.Prepend>
-            <FormControl
-                defaultValue={result.title}
-                aria-label="Default"
-                placeholder="e.g. success"
-                aria-describedby="inputGroup-sizing-default"
-            />
-        </InputGroup>
+        return <div className="horizontal-row">
+            <InputGroup className="mb-3">
+                <InputGroup.Prepend>
+                    <InputGroup.Text id="inputGroup-sizing-default">Title</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl
+                    defaultValue={result.title}
+                    aria-label="Default"
+                    placeholder="e.g. success"
+                    aria-describedby="inputGroup-sizing-default"
+                />
+            </InputGroup>
+            <Button variant="danger" className="mb-3" onClick={() => removeResult(result)}>Delete</Button>
+        </div>
     }
 
     function template() {
