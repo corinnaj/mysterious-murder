@@ -6,6 +6,7 @@ import { murderMysteryRuleset } from '../murder_mystery'
 import { IdCards } from './id_cards'
 import { TargetArea } from './target_area'
 import * as d3 from 'd3'
+import * as d3Graphviz from 'd3-graphviz'
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Spinner from 'react-bootstrap/Spinner';
@@ -101,11 +102,22 @@ function App() {
     setLoading(true)
     const worker = new Worker('worker.js')
     worker.addEventListener('message', event => {
-      if (event.data == 'ready')
+      if (event.data == 'ready') {
+        let rules = murderMysteryRuleset
+        if (localStorage.customRules) {
+          try {
+            const customRules = JSON.parse(localStorage.customRules)
+            rules = {...rules, rules: [...rules.rules, ...customRules]}
+          } catch(e) {
+            alert("Custom Rule Parsing failed: " + e)
+            delete localStorage.customRules
+          }
+        }
         return worker.postMessage({
-          'run': murderMysteryRuleset,
+          'run': rules,
           'seed': seed,
         })
+      }
 
       let data = JSON.parse(event.data)
       if (data.type == 'action') {

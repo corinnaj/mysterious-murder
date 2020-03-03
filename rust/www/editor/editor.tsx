@@ -16,7 +16,7 @@ import { allPredicates, AbstractPredicate, Predicate } from '../models/predicate
 import { ResultSide } from './result';
 import { PreconditionSide } from './preconditions'
 import { DraggedPredicate } from './predicate-area'
-import { Rule, parseRule } from '../models/rules'
+import { Rule, parseRule, ruleToJson, parseRuleByName } from '../models/rules'
 import { murderMysteryRuleset } from '../murder_mystery'
 import { ruleIconMapping } from '../emojis'
 
@@ -44,11 +44,24 @@ function AbstractPredicateDisplay({ abspred }) {
 }
 
 function Editor() {
-    const [rule, updateRule] = useState<Rule>(new Rule([new Result(1)]))
+    const [rule, updateRule] = useState<Rule>(restoreCustomRuleIfAvailable())
     const [actors, setActors] = useState<Actor[]>(createActors())
     const [openNew, setOpenNew] = useState(true);
     const [openExplore, setOpenExplore] = useState(new Array(murderMysteryRuleset.rules.length).fill(false));
     const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+
+    function restoreCustomRuleIfAvailable() {
+        if (localStorage.customRules) {
+          try {
+            const customRules = JSON.parse(localStorage.customRules)
+            return parseRule(customRules[0])
+          } catch(e) {
+            alert("Custom Rule Parsing failed: " + e)
+            delete localStorage.customRules
+          }
+        }
+        return new Rule([new Result(1)])
+    }
 
     const addResult = () => {
         let updatedResults = [...rule.results, new Result(0)]
@@ -162,9 +175,14 @@ function Editor() {
         </Card>
     }
 
+    function saveGame() {
+        let json = ruleToJson(rule)
+        localStorage.customRules = JSON.stringify([json])
+    }
+
     return <DndProvider backend={HTML5Backend}>
         <div style={{ display: "flex" }}>
-            <h1 style={{ margin: "1rem 2rem" }}>Editor</h1>
+            <h1 style={{ margin: "1rem 2rem 0 2rem" }}>Editor</h1>
             <div style={{ flexGrow: 1 }}></div>
             <Link to="/" style={{ marginRight: "1rem", alignSelf: "center" }}>
                 <Button>
@@ -207,10 +225,11 @@ function Editor() {
                                     </InputGroup.Prepend>
                                     <FormControl
                                         onFocus={() => setShowEmojiPicker(true)}
-                                        defaultValue={ruleIconMapping[rule]}
+                                        defaultValue={rule.icon ? rule.icon : ""}
                                         placeholder="e.g. 🤥"
                                     />
-                                    {showEmojiPicker && <Picker onEmojiClick={e => {
+                                    {showEmojiPicker && <Picker onEmojiClick={(_event, emoji) => {
+                                        updateRule({...rule, icon: emoji.emoji}) 
                                         setShowEmojiPicker(false)
                                     }} />}
                                 </InputGroup>
@@ -224,7 +243,7 @@ function Editor() {
                                     />
                                 </InputGroup>
                                 <Link to="/" style={{ minWidth: "15%" }}>
-                                    <Button>
+                                    <Button onClick={() => saveGame()}>
                                         Save and Run Game
                                     </Button>
                                 </Link>

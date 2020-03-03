@@ -1,4 +1,4 @@
-import { Predicate } from "./predicates"
+import { Predicate, predicateToJson } from "./predicates"
 
 export class Result {
     probability: number
@@ -15,4 +15,20 @@ export class Result {
         this.probability = probability
         this.predicates = []
     } 
+
+}
+
+export function resultToJson(result: Result) {
+    return {
+        probability: result.probability,
+        title: result.title || "",
+        admit_probability: result.admit_probablity || 0, 
+        witness_probability: result.admit_probablity || 0,
+        sanity: result.sanity || 0,
+        social: result.social || 0,
+        fulfilment: result.fulfilment || 0,
+        template: result.template || "",
+        predicates: result.predicates.map(p => predicateToJson(p)),
+        reset_rewards: false,
+    }
 }

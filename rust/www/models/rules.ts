@@ -1,16 +1,28 @@
 import { murderMysteryRuleset } from "../murder_mystery";
-import { Result } from "./result";
-import { Predicate } from "./predicates";
+import { Result, resultToJson } from "./result";
+import { Predicate, predicateToJson } from "./predicates";
 import { arrayEquals } from "../helpers";
+import { ruleIconMapping } from "../emojis";
 
 export class Rule {
     results: Result[]
     preconditions: Predicate[] 
     name: string
+    icon: string
 
     constructor(results?: Result[]) {
         this.preconditions = []
         this.results = results != null ? results : []
+    }
+
+}
+
+export function ruleToJson(rule: Rule) {
+    return {
+        name: rule.name || "",
+        rhs: rule.results.map(r => resultToJson(r)),
+        lhs: rule.preconditions.map(p => predicateToJson(p)),
+        icon: rule.icon || "",
     }
 }
 

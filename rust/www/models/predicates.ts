@@ -16,6 +16,18 @@ export class Predicate {
         this.amount = 1
         this.actorsNums = new Array(abstract.numActors)
     } 
+
+}
+
+export function predicateToJson(predicate: Predicate) {
+    return {
+        keep: predicate.keep || false,
+        permanent: predicate.permanent || false,
+        signature: {
+            name: predicate.abstract.name || "",
+            actors: predicate.actorsNums || []
+        }
+    }
 }
 
 export enum categories {Relationship, Feeling, Traits, Possesions, State, Alignment}
