@@ -46,7 +46,7 @@ function AbstractPredicateDisplay({ abspred }) {
 function Editor() {
     const [rule, updateRule] = useState<Rule>(new Rule([new Result(1)]))
     const [actors, setActors] = useState<Actor[]>(createActors())
-    const [openNew, setOpenNew] = useState(false);
+    const [openNew, setOpenNew] = useState(true);
     const [openExplore, setOpenExplore] = useState(new Array(murderMysteryRuleset.rules.length).fill(false));
     const [showEmojiPicker, setShowEmojiPicker] = useState(false)
 
@@ -155,17 +155,14 @@ function Editor() {
             Each rule consists of preconditions that need to be met and will result in one of the possible outcomes.
             Different rewards or penalties are then applied to the primary actor.
 
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-            Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-            Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            Drag predicates from the left-hand side into the blue areas. Each rule has a set of preconditions that define when it can be applied and one or more results. Which result is picked is non-deterministic and depends on their probabilities. Each result has a set of predicates that are then added to the game state and rewards for the primary actor. Once you are happy with your result, you can save the rule and run the game again.
         </p>
         <div style={{ display: "flex", flexDirection: "row", margin: "0 0 0 2rem" }}>
-            <div>
-                <div className="horizontal-row predicate-pick-area" style={{ flexWrap: "wrap", width: "200px" }}>
+            <div style={{display: "flex", flexDirection: "column", alignItems: "center", marginRight: "2rem"}}>
+                <div className="horizontal-row predicate-pick-area" >
                     {allPredicates.map(pred => <AbstractPredicateDisplay abspred={pred}></AbstractPredicateDisplay>)}
                 </div>
-                <div className="horizontal-row actor-pick-area" style={{ flexWrap: "wrap", width: "200px", margin: "1rem 0" }}>
+                <div className="horizontal-row actor-pick-area" style={{ flexWrap: "wrap", margin: "1rem 0" }}>
                     {actors.map(actor => <SimplifiedActor actor={actor}></SimplifiedActor>)}
                     <Button size="sm" onClick={() => setActors(createActors())}>
                         <BsArrowCounterclockwise size=""></BsArrowCounterclockwise>

@@ -40,7 +40,7 @@ export const parseRule = function (rule: { name: any; lhs: any; rhs: any; }) : R
             con.signature.name == p.abstract.name && arrayEquals(con.signature.actors, p.actorsNums))
         if (similars.length > 0) {
             similars[0].amount = similars[0].amount + 1
-            break
+            continue
         }
         r.preconditions.push(parsePredicate(con))
     }

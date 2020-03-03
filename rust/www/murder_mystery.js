@@ -94,7 +94,15 @@ export const murderMysteryRuleset = {
 
 		{
 			"name": "get_divorced",
-			"lhs": [{ "signature": { "name": "alive", "actors": [0] }, "keep": true, "permanent": false }, { "signature": { "name": "alive", "actors": [1] }, "keep": true, "permanent": false }, { "signature": { "name": "disgust", "actors": [1, 0] }, "keep": true, "permanent": false }, { "signature": { "name": "disgust", "actors": [1, 0] }, "keep": true, "permanent": false }, { "signature": { "name": "disgust", "actors": [1, 0] }, "keep": true, "permanent": false }, { "signature": { "name": "married", "actors": [0, 1] }, "keep": false, "permanent": false }, { "signature": { "name": "married", "actors": [1, 0] }, "keep": false, "permanent": false }],
+			"lhs": [
+				{ "signature": { "name": "alive", "actors": [0] }, "keep": true, "permanent": false },
+				{ "signature": { "name": "alive", "actors": [1] }, "keep": true, "permanent": false },
+				{ "signature": { "name": "disgust", "actors": [1, 0] }, "keep": true, "permanent": false },
+				{ "signature": { "name": "disgust", "actors": [1, 0] }, "keep": true, "permanent": false },
+				{ "signature": { "name": "disgust", "actors": [1, 0] }, "keep": true, "permanent": false },
+				{ "signature": { "name": "married", "actors": [0, 1] }, "keep": false, "permanent": false },
+				{ "signature": { "name": "married", "actors": [1, 0] }, "keep": false, "permanent": false }],
+
 			"rhs": [
 				{ "title": "divorce", "probability": 1, "predicates": [{ "signature": { "name": "single", "actors": [0] }, "keep": false, "permanent": false }, { "signature": { "name": "single", "actors": [1] }, "keep": false, "permanent": false }], "template": "{0} and {1} got divorced.", "sanity": 40, "fulfilment": 0, "social": -20, "witness_probability": 0.5, "admit_probability": 1.0, "reset_rewards": false }
 			]
@@ -157,14 +165,14 @@ export const murderMysteryRuleset = {
 			]
 		},
 
-		{
-			"name": "suicide",
-			"lhs": [{ "signature": { "name": "alive", "actors": [0] }, "keep": false, "permanent": false }, { "signature": { "name": "has_weapon", "actors": [0] }, "keep": true, "permanent": false }, { "signature": { "name": "sadness", "actors": [0] }, "keep": true, "permanent": false }, { "signature": { "name": "sadness", "actors": [0] }, "keep": true, "permanent": false }, { "signature": { "name": "sadness", "actors": [0] }, "keep": true, "permanent": false }],
-			"rhs": [
-				{ "title": "commit suicide", "probability": 1, "predicates": [{ "signature": { "name": "dead", "actors": [0] }, "keep": false, "permanent": true }], "template": "{0} committed suicide", "sanity": 0, "fulfilment": 0, "social": 0, "witness_probability": 0.5, "admit_probability": 0.0, "reset_rewards": true }
-			]
-		},
-
+//		{
+//			"name": "suicide",
+//			"lhs": [{ "signature": { "name": "alive", "actors": [0] }, "keep": false, "permanent": false }, { "signature": { "name": "has_weapon", "actors": [0] }, "keep": true, "permanent": false }, { "signature": { "name": "sadness", "actors": [0] }, "keep": true, "permanent": false }, { "signature": { "name": "sadness", "actors": [0] }, "keep": true, "permanent": false }, { "signature": { "name": "sadness", "actors": [0] }, "keep": true, "permanent": false }],
+//			"rhs": [
+//				{ "title": "commit suicide", "probability": 1, "predicates": [{ "signature": { "name": "dead", "actors": [0] }, "keep": false, "permanent": true }], "template": "{0} committed suicide", "sanity": 0, "fulfilment": 0, "social": 0, "witness_probability": 0.5, "admit_probability": 0.0, "reset_rewards": true }
+//			]
+//		},
+//
 		{
 			"name": "grief",
 			"lhs": [{ "signature": { "name": "alive", "actors": [0] }, "keep": true, "permanent": false }, { "signature": { "name": "dead", "actors": [1] }, "keep": false, "permanent": false }, { "signature": { "name": "trust", "actors": [0, 1] }, "keep": true, "permanent": false }],
