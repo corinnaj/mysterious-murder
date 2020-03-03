@@ -193,7 +193,7 @@ html, body {
 }
 
 .simplified-actor {
-	font-size: 3rem;
+	font-size: 4rem;
 	background: #ddd;
 	margin: 0.25rem 0.5rem;
 	padding: 0.2rem 0.5rem;
@@ -264,15 +264,15 @@ html, body {
   background: lightgoldenrodyellow;
 	border-radius: 0.5rem;
 	padding: 0.5rem;
-	max-width: 200px;
+	width: 250px;
 }
 
 .predicate-pick-area {
   background: lightblue;
 	border-radius: 0.5rem;
 	padding: 0.5rem;
-	max-width: 800px;
-	margin: 0 2rem 0 0;
+	width: 300px;
+	flex-wrap: wrap;
 }
 
 .intro-text {

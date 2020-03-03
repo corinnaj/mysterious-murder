@@ -117,7 +117,7 @@ const RuleResult: React.FC<{
                 defaultValue={result.template}
                 as="textarea"
                 aria-label="Default"
-                placeholder="e.g. "
+                placeholder="e.g. {0} lied to {1}"
                 aria-describedby="inputGroup-sizing-default"
             />
         </InputGroup>
