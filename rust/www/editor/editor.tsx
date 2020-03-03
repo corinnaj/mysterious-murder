@@ -9,6 +9,8 @@ import Collapse from 'react-bootstrap/Collapse'
 import Card from 'react-bootstrap/Card'
 import Button from 'react-bootstrap/Button'
 
+import Picker from 'emoji-picker-react'
+
 import { createActors, Actor, DraggedActor } from '../models/actors'
 import { allPredicates, AbstractPredicate, Predicate } from '../models/predicates'
 import { ResultSide } from './result';
@@ -46,6 +48,7 @@ function Editor() {
     const [actors, setActors] = useState<Actor[]>(createActors())
     const [openNew, setOpenNew] = useState(false);
     const [openExplore, setOpenExplore] = useState(new Array(murderMysteryRuleset.rules.length).fill(false));
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false)
 
     const addResult = () => {
         let updatedResults = [...rule.results, new Result(0)]
@@ -206,11 +209,13 @@ function Editor() {
                                         <InputGroup.Text id="inputGroup-sizing-default">Rule Icon</InputGroup.Text>
                                     </InputGroup.Prepend>
                                     <FormControl
+                                        onFocus={() => setShowEmojiPicker(true)}
                                         defaultValue={ruleIconMapping[rule]}
-                                        aria-label="Default"
                                         placeholder="e.g. 🤥"
-                                        aria-describedby="inputGroup-sizing-default"
                                     />
+                                    {showEmojiPicker && <Picker onEmojiClick={e => {
+                                        setShowEmojiPicker(false)
+                                    }} />}
                                 </InputGroup>
                                 <InputGroup className="mb-3" style={{ marginRight: "1rem" }}>
                                     <InputGroup.Prepend>
@@ -218,9 +223,7 @@ function Editor() {
                                     </InputGroup.Prepend>
                                     <FormControl
                                         defaultValue={rule.name}
-                                        aria-label="Default"
                                         placeholder="e.g. lie"
-                                        aria-describedby="inputGroup-sizing-default"
                                     />
                                 </InputGroup>
                                 <Link to="/" style={{ minWidth: "15%" }}>
