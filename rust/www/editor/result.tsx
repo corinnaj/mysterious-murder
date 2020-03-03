@@ -3,7 +3,7 @@ import InputGroup from 'react-bootstrap/InputGroup'
 import FormControl from 'react-bootstrap/FormControl'
 import Button from 'react-bootstrap/Button'
 import { PredicateArea } from './predicate-area'
-import Slider from 'rc-slider'
+import Range from 'rc-slider'
 import 'rc-slider/assets/index.css'
 import { Predicate } from '../models/predicates';
 import { Actor } from '../models/actors'
@@ -28,15 +28,24 @@ export const ResultSide: React.FC<{
         </Button>
     }
 
+    const percentages = [0.0, ...results.map((r, i) => results.slice(0, i + 1).reduce((sum, r) => sum + r.probability)), 1.0]
+
     return <div className="margin">
         <h2 className="title2">Result</h2>
+        <Range
+            onChange={values => {console.log(values);updateProbabilites(values.slice(1, values.length - 1))}}
+            count={percentages.length + 2}
+            pushable={0.01}
+            max={1}
+            min={0}
+            step={0.01}
+            value={percentages} />
         <div className="horizontal-row wrap">
             {results.map((result: Result, index: number) => <RuleResult
                     index={index}
                     result={result}
                     actors={actors}
                     keptPredicates={keptPredicates}
-                    onPercentageChange={(index: number, value: number) => updateProbabilites(index, value)}
                     updatePredicateAtResult={updatePredicate}
                     removePredicateFromResult={removePredicate}
                     addPredicateToResult={addPredicate}>
@@ -51,11 +60,10 @@ const RuleResult: React.FC<{
         result: Result,
         actors: Actor[],
         keptPredicates: Predicate[],
-        onPercentageChange: (index: number, value: number) => void,
         removePredicateFromResult: (pred: Predicate, result: Result) => void,
         addPredicateToResult: (pred: Predicate, result: Result) => void,
         updatePredicateAtResult: (pred: Predicate, result: Result) => void,
-    }> = ({index, result, actors, keptPredicates, onPercentageChange, removePredicateFromResult, addPredicateToResult, updatePredicateAtResult}) => {
+    }> = ({index, result, actors, keptPredicates, removePredicateFromResult, addPredicateToResult, updatePredicateAtResult}) => {
 
     const addPredicateWrapper = function(pred: Predicate) {
         addPredicateToResult(pred, result)
@@ -125,14 +133,6 @@ const RuleResult: React.FC<{
 
     return <div className="result">
         {title()}
-        <Slider
-            className="slider"
-            value={result.probability}
-            max={1.0}
-            step={0.01}
-            onChange={(value) => onPercentageChange(index, value)}
-            marks={{0: '0', 0.1: '10', 0.2: '20', 0.3: '30', 0.4: '40', 0.5: '50', 0.6: '60', 0.7: '70', 0.8: '80', 0.9: '90', 1: '100'}}>
-        </Slider>
         <PredicateArea
             isResultSide={true}
             actors={actors}

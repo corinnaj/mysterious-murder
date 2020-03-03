@@ -55,30 +55,8 @@ function Editor() {
         updateRule({ ...rule, results: updatedResults })
     }
 
-    function updatePercentage(index: number, newProb: number) {
-        const newPercentages = rule.results.map((rule) => rule.probability)
-        newPercentages[index] = newProb
-
-        //if we only have one option it has to be 100
-        if (newPercentages.length == 1) return
-
-        let sum = 0
-        newPercentages.map(val => sum = sum + val)
-        const overflow = sum - 1;
-        const overflowPerResult = overflow / (newPercentages.length - 1)
-        for (let i = 0; i < newPercentages.length; i++) {
-            if (i == index) continue
-            //FIXME: what if one turns to 0
-            newPercentages[i] = newPercentages[i] - overflowPerResult
-            if (newPercentages[i] < 0)  {
-                console.log('Do something')
-            }
-        }
-        let updatedResults = rule.results
-        for (const [index, value] of newPercentages.entries()) {
-            updatedResults[index].probability = value
-        }
-        updateRule({...rule, results: updatedResults})
+    function updatePercentages(values: number[]) {
+        updateRule({...rule, results: rule.results.map((r, i) => ({...r, probability: values[i]}))})
     }
 
     const removePredicateFromLhs = (pred: Predicate) => {
@@ -132,7 +110,7 @@ function Editor() {
                     results={rule.results}
                     keptPredicates={rule.preconditions.filter((p) => p.keep)}
                     addResult={() => addResult()}
-                    updateProbabilites={(index, value) => updatePercentage(index, value)}
+                    updateProbabilites={values => updatePercentages(values)}
                     updatePredicate={(pred, result) => updatePredicateAtResult(pred, result)}
                     addPredicate={(pred, result) => addPredicateToResult(pred, result)}
                     removePredicate={(pred, result) => removePredicateFromResult(pred, result)}>
