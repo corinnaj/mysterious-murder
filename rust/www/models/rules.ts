@@ -20,7 +20,7 @@ export class Rule {
 export function ruleToJson(rule: Rule) {
     return {
         name: rule.name || "",
-        rhs: rule.results.map(r => resultToJson(r)),
+        rhs: rule.results.map(r => resultToJson(r, rule.results.length)),
         lhs: rule.preconditions.map(p => predicateToJson(p)),
         icon: rule.icon || "",
     }

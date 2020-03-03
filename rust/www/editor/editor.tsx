@@ -65,15 +65,11 @@ function Editor() {
 
     const addResult = () => {
         let updatedResults = [...rule.results, new Result(0)]
-        const prob = 1 / updatedResults.length;
-        updatedResults.map((res) => ({...res, probability: prob}))
         updateRule({ ...rule, results: updatedResults })
     }
 
     const removeResult = (res: Result) => {
         const updatedResults = rule.results.filter((r) => r !== res)
-        const prob = 1 / updatedResults.length;
-        updatedResults.map((res) => ({...res, probability: prob}))
         updateRule({ ...rule, results: updatedResults })
     }
 

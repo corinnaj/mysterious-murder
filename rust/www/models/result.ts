@@ -18,9 +18,9 @@ export class Result {
 
 }
 
-export function resultToJson(result: Result) {
+export function resultToJson(result: Result, numResults: number) {
     return {
-        probability: result.probability,
+        probability: (1.0 / numResults),
         title: result.title || "",
         admit_probability: result.admit_probablity || 0, 
         witness_probability: result.admit_probablity || 0,
