@@ -18,6 +18,7 @@ import {Link} from "react-router-dom";
 
 let actors = createActors();
 
+const _ = d3Graphviz.graphviz
 const readablePredicate = predicate => predicate.name.replace('_', ' ')
 
 const RuleInvocationDisplay: React.FC<{ruleInvocation: RuleInvocation}> = ({ ruleInvocation }) => {
