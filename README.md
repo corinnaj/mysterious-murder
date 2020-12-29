@@ -1,6 +1,6 @@
 # Mysterious Murder
 A murder mystery generator using the concepts found in Ceptre and MCTS agents.  
-You can play a web version of the game [here.](https://corinnaj.github.io/mysterious-murder/)
+You can play a web version of the game [here.](https://mm.corinnaj.me/)
 
 ## Implementation
 This project was originally written in Python using a Kivy-based UI.
