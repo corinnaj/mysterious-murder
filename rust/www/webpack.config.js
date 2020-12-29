@@ -17,7 +17,7 @@ module.exports = [
     },
     mode: mode,
     plugins: [
-      new CopyWebpackPlugin(['index.html', 'logo.png', 'style.css']),
+      new CopyWebpackPlugin({ patterns: ['index.html', 'logo.png', 'style.css'] }),
       new WasmPackPlugin({
         crateDirectory: path.resolve(__dirname, '..'),
         outName: 'mysterious_murder',
@@ -42,6 +42,9 @@ module.exports = [
       extensions: ['*', '.js', '.jsx', '.ts', '.tsx'],
       modules: [path.resolve(__dirname), 'node_modules'],
     },
+    experiments: {
+      asyncWebAssembly: true,
+    },
   },
   {
     entry: "./worker.js",
@@ -51,7 +54,7 @@ module.exports = [
       filename: "worker.js"
     },
     resolve: {
-      alias:  {
+      alias: {
         "mysterious-murder": path.resolve(__dirname, '../pkg')
       },
     },
@@ -65,5 +68,8 @@ module.exports = [
       ]
     },
     mode: mode,
+    experiments: {
+      asyncWebAssembly: true,
+    },
   }
 ];
