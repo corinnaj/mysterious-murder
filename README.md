@@ -19,4 +19,4 @@ This project was developed in the course of a university project at the Universi
   The parts of the generated narratives are then presented to a player whose task it is to figure out who the murderer in this story could have been. Rather than aiming to replace highly authored narratives, this project generates puzzles, which may contain emerging arcs of a story as perceived by the player.
   While we found that even a simple rule set can create stories that are interesting to reason about, we expect that this type of system is flexible enough to create considerably more engaging stories if enough time is invested in authoring more complex rule sets.
   
-  You can find the full paper [here.](http://ieee-cog.org/papers/paper_45.pdf)
+  You can find the full paper [here.](https://ieee-cog.org/2019/papers/paper_45.pdf)
